@@ -10,8 +10,14 @@ function monthKey(iso: string): string {
   return d.toLocaleString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 }
 
-export default async function TimelinePage() {
-  const latest = await getLatestDocument("demo");
+export default async function TimelinePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ canvas?: string }>;
+}) {
+  const { canvas: canvasParam } = await searchParams;
+  const canvasId = canvasParam || "demo";
+  const latest = await getLatestDocument(canvasId);
   const cards = (latest?.document?.nodes ?? []).map((node) => node.data.card);
   const events: EventCard[] = cards.filter((card): card is EventCard => card.kind === "event");
   events.sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
@@ -32,7 +38,7 @@ export default async function TimelinePage() {
           <p className="page-subtitle">
             {events.length === 0
               ? "Event cards projected onto a time axis."
-              : `${events.length} event card${events.length === 1 ? "" : "s"} — snapshot v${latest?.version ?? 0}`}
+              : `${events.length} event card${events.length === 1 ? "" : "s"} — ${canvasId} · snapshot v${latest?.version ?? 0}`}
           </p>
         </div>
       </header>
@@ -44,7 +50,7 @@ export default async function TimelinePage() {
             connectors page
           </Link>{" "}
           or add events on the{" "}
-          <Link className="empty-link" href="/canvas/demo">
+          <Link className="empty-link" href={`/canvas/${canvasId}`}>
             canvas
           </Link>
           .

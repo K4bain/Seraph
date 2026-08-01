@@ -6,8 +6,14 @@ import type { EntityCard } from "meridian-graph-types";
 
 export const dynamic = "force-dynamic";
 
-export default async function GeoPage() {
-  const latest = await getLatestDocument("demo");
+export default async function GeoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ canvas?: string }>;
+}) {
+  const { canvas: canvasParam } = await searchParams;
+  const canvasId = canvasParam || "demo";
+  const latest = await getLatestDocument(canvasId);
   const cards = (latest?.document?.nodes ?? []).map((node) => node.data.card);
   const entities: EntityCard[] = cards.filter((card): card is EntityCard => card.kind === "entity");
 
@@ -36,7 +42,7 @@ export default async function GeoPage() {
           <p className="page-subtitle">
             {markers.length === 0
               ? "Entities with coordinates or country attribution land on the map."
-              : `${markers.length} of ${entities.length} entities plotted — snapshot v${latest?.version ?? 0}`}
+              : `${markers.length} of ${entities.length} entities plotted — ${canvasId} · snapshot v${latest?.version ?? 0}`}
           </p>
         </div>
       </header>

@@ -283,6 +283,18 @@ export async function ingestEvents(
           document: doc as unknown as Prisma.InputJsonValue,
         },
       });
+
+      // Optionally mirror confirmed records into the AGE graph. Gated
+      // by ENABLE_GRAPH_IMPORT so it stays off on managed hosts (Neon)
+      // where the extension is unavailable. Failures are logged but
+      // never surface — the canvas write is the source of truth.
+      if (process.env.ENABLE_GRAPH_IMPORT === "true") {
+        const { importCanvasToGraph } = await import("@/core/graph/import");
+        importCanvasToGraph(canvasId).catch((err) => {
+          console.error(`[ingest] graph import failed for "${canvasId}":`, err);
+        });
+      }
+
       return result;
     } catch (error) {
       const code = (error as { code?: string }).code;

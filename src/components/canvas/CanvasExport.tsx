@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useCanvasStore } from "@/store/canvas";
+import { generateCanvasPdf } from "./generatePdf";
 import styles from "./CanvasExport.module.css";
 
 interface CanvasExportProps {
@@ -11,6 +13,7 @@ export default function CanvasExport({ canvasId }: CanvasExportProps) {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareError, setShareError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -31,6 +34,25 @@ export default function CanvasExport({ canvasId }: CanvasExportProps) {
     anchor.download = `meridian-${canvasId}-snapshot-v${data.version}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function exportPdf() {
+    setPdfBusy(true);
+    try {
+      const { nodes, edges } = useCanvasStore.getState();
+      if (nodes.length === 0) return;
+      const pdf = generateCanvasPdf({
+        canvasId,
+        nodes,
+        edges,
+        exportedAt: new Date().toISOString(),
+      });
+      pdf.save(`meridian-${canvasId}-report.pdf`);
+    } catch (error) {
+      console.error("PDF export failed:", error);
+    } finally {
+      setPdfBusy(false);
+    }
   }
 
   async function createShare() {
@@ -71,6 +93,14 @@ export default function CanvasExport({ canvasId }: CanvasExportProps) {
     <span className={styles.wrap}>
       <button className="btn btn-ghost" onClick={() => void exportJson()} title="Export snapshot as JSON">
         Export
+      </button>
+      <button
+        className="btn btn-ghost"
+        onClick={() => void exportPdf()}
+        disabled={pdfBusy}
+        title="Export intelligence report as PDF"
+      >
+        {pdfBusy ? "…" : "PDF"}
       </button>
       <button
         className="btn btn-ghost"

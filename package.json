@@ -1,0 +1,55 @@
+{
+  "name": "meridian",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Meridian — open-source intelligence fusion platform. Graph-first, AI-native investigation canvases for OSINT researchers.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@8.14.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate",
+    "worker:connectors": "tsx workers/connector-runner.ts",
+    "worker:ai": "tsx workers/ai-processor.ts"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "7",
+    "@prisma/adapter-pg": "7",
+    "@prisma/client": "7",
+    "@xyflow/react": "^12.11.2",
+    "bullmq": "^6.0.5",
+    "immer": "^11.1.15",
+    "meridian-connector-sdk": "workspace:^",
+    "meridian-graph-types": "workspace:^",
+    "next": "15",
+    "next-auth": "5.0.0-beta.32",
+    "pg": "^8.22.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "@types/pg": "^8.20.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "dotenv": "^17.4.2",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "15",
+    "prisma": "7",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3"
+  }
+}

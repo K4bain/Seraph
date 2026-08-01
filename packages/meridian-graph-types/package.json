@@ -1,0 +1,16 @@
+{
+  "name": "meridian-graph-types",
+  "version": "0.1.0",
+  "description": "Shared entity, edge, and canvas card types for Meridian.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "files": ["src"]
+}

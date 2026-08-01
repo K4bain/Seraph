@@ -15,3 +15,9 @@
   border-color: var(--accent);
   color: var(--text);
 }
+
+.proposed {
+  border-style: dashed;
+  border-color: #8b7fae;
+  color: #a99cc9;
+}

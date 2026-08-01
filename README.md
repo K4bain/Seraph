@@ -9,9 +9,12 @@ narratives, and build shareable investigation canvases where every entity is a
 node, every relationship is an edge, and every insight is a version-controlled
 object.
 
-**Status:** v0.1 — Phase 1 foundation + Phase 2 canvas persistence (snapshot
-autosave, edge inspector, inline card editing). Realtime presence (Yjs) and
-connectors land in later phases.
+**Status:** v0.1 — Phases 1–3. Canvas persistence (snapshot autosave, edge
+inspector, inline card editing), realtime presence (Yjs cursors/selection), and
+the Phase 3 connector runtime: OpenSanctions, GDELT DOC API, and SEC EDGAR
+connectors with a canvas ingestion engine (dedup + proposed edges), a no-Redis
+run CLI (`pnpm tsx scripts/run-connector.ts`), a BullMQ worker path, and a
+`/api/connectors` HTTP API.
 
 ## Quickstart
 
@@ -32,6 +35,9 @@ pnpm db:seed
 
 # 4. Run
 pnpm dev          # → http://localhost:3000 (canvas at /canvas/demo)
+
+# 5. Realtime presence (optional — Yjs cursors, selection)
+pnpm collab:server   # in-memory WS server, default ws://localhost:3001
 ```
 
 The `meridian` AGE graph is created automatically on first volume init from

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import {
   ReactFlow,
   Background,
@@ -8,11 +8,16 @@ import {
   MiniMap,
   BackgroundVariant,
   type OnSelectionChangeParams,
+  type Viewport,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import IntelligenceNode from "@/components/canvas/IntelligenceNode";
 import IntelligenceEdge from "@/components/canvas/IntelligenceEdge";
 import EdgeInspector from "@/components/canvas/EdgeInspector";
+import AiPanel from "@/components/canvas/AiPanel";
+import CanvasExport from "@/components/canvas/CanvasExport";
+import { useCollabPresence } from "@/components/canvas/useCollabPresence";
+import type { CursorState } from "@/core/collab/presence";
 import { useCanvasStore, type CardNode, type RelationEdge, type CanvasDocument } from "@/store/canvas";
 import styles from "./CanvasView.module.css";
 
@@ -143,9 +148,39 @@ export default function CanvasView({ canvasId }: { canvasId: string }) {
     useCanvasStore();
   const [loaded, setLoaded] = useState(false);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const baseVersion = useRef(0);
   const dirtyRef = useRef(false);
+
+  // --- Realtime presence (Yjs awareness) ---------------------------------
+  const { peers, sendPresence } = useCollabPresence(canvasId);
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  const viewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
+  const lastCursorRef = useRef<CursorState | null>(null);
+  const lastPointerSentAt = useRef(0);
+
+  /** Convert a screen point into flow coordinates for the current viewport. */
+  const toFlowPoint = useCallback((clientX: number, clientY: number): CursorState => {
+    const rect = shellRef.current?.getBoundingClientRect();
+    const vp = viewportRef.current;
+    return { x: (clientX - (rect?.left ?? 0) - vp.x) / vp.zoom, y: (clientY - (rect?.top ?? 0) - vp.y) / vp.zoom };
+  }, []);
+
+  const onShellPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      const now = performance.now();
+      if (now - lastPointerSentAt.current < 80) return;
+      lastPointerSentAt.current = now;
+      lastCursorRef.current = toFlowPoint(event.clientX, event.clientY);
+      sendPresence({ cursor: lastCursorRef.current });
+    },
+    [sendPresence, toFlowPoint],
+  );
+
+  const onMove = useCallback((_event: unknown, viewport: Viewport) => {
+    viewportRef.current = viewport;
+  }, []);
 
   // Hydrate from the latest snapshot on mount; seed a demo graph when empty.
   useEffect(() => {
@@ -210,13 +245,42 @@ export default function CanvasView({ canvasId }: { canvasId: string }) {
     return () => clearTimeout(t);
   }, [nodes, edges, loaded, canvasId]);
 
-  // Track the selected edge to drive the inspector panel.
-  const onSelectionChange = useCallback(({ edges: selectedEdges }: OnSelectionChangeParams) => {
-    setSelectedEdgeId(selectedEdges[0]?.id ?? null);
-  }, []);
+  // Track the selected edge to drive the inspector panel; broadcast node selection.
+  const onSelectionChange = useCallback(
+    ({ nodes: selectedNodes, edges: selectedEdges }: OnSelectionChangeParams) => {
+      setSelectedEdgeId(selectedEdges[0]?.id ?? null);
+      sendPresence({ selection: selectedNodes.map((n) => n.id), cursor: lastCursorRef.current ?? undefined });
+    },
+    [sendPresence],
+  );
+
+  const remoteCursors = Array.from(peers.values())
+    .map((peer) => {
+      if (!peer.cursor) return null;
+      const rect = shellRef.current?.getBoundingClientRect();
+      const left = rect?.left ?? 0;
+      const top = rect?.top ?? 0;
+      return (
+        <div
+          key={peer.user.id}
+          className={styles.remoteCursor}
+          style={{
+            left: left + peer.cursor.x * viewportRef.current.zoom + viewportRef.current.x,
+            top: top + peer.cursor.y * viewportRef.current.zoom + viewportRef.current.y,
+          }}
+        >
+          <span className={styles.cursorArrow} style={{ borderTopColor: peer.user.color }} />
+          <span className={styles.cursorTag} style={{ background: peer.user.color }}>
+            {peer.user.name}
+            {peer.selection?.length ? ` · ${peer.selection.length} selected` : ""}
+          </span>
+        </div>
+      );
+    })
+    .filter(Boolean);
 
   return (
-    <div className={styles.canvasShell}>
+    <div className={styles.canvasShell} ref={shellRef} onPointerMove={onShellPointerMove}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -226,6 +290,7 @@ export default function CanvasView({ canvasId }: { canvasId: string }) {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onSelectionChange={onSelectionChange}
+        onMove={onMove}
         fitView
         proOptions={{ hideAttribution: true }}
         colorMode="dark"
@@ -249,10 +314,27 @@ export default function CanvasView({ canvasId }: { canvasId: string }) {
         <button className="btn btn-ghost" onClick={() => addSource()}>
           + Source
         </button>
+        <button
+          className={`btn btn-ghost ${aiOpen ? styles.aiActive : ""}`}
+          onClick={() => setAiOpen((open) => !open)}
+        >
+          AI
+        </button>
+        <span className={styles.peerList} title="Analysts viewing this canvas">
+          {Array.from(peers.values()).map((peer) => (
+            <span key={peer.user.id} className={styles.peerDot} style={{ background: peer.user.color }} />
+          ))}
+          {peers.size > 0 ? <span className={styles.peerCount}>{peers.size}</span> : null}
+        </span>
+        <CanvasExport canvasId={canvasId} />
         <span className={`${styles.saveBadge} ${styles[saveState]}`}>
           {saveState === "saving" ? "saving…" : saveState === "saved" ? "saved" : saveState === "error" ? "save failed" : ""}
         </span>
       </div>
+
+      {remoteCursors}
+
+      {aiOpen ? <AiPanel canvasId={canvasId} onClose={() => setAiOpen(false)} /> : null}
 
       {selectedEdgeId ? (
         <EdgeInspector

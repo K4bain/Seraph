@@ -29,6 +29,7 @@ model User {
   memberships   WorkspaceMember[]
   canvases      Canvas[]    @relation("CanvasOwner")
   snapshots     CanvasSnapshot[] @relation("SnapshotAuthor")
+  shares        Share[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -109,6 +110,7 @@ model Canvas {
   workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdBy   User             @relation("CanvasOwner", fields: [createdById], references: [id])
   snapshots   CanvasSnapshot[]
+  shares      Share[]
 
   @@index([workspaceId])
 }
@@ -127,4 +129,19 @@ model CanvasSnapshot {
   createdBy  User?    @relation("SnapshotAuthor", fields: [createdById], references: [id])
 
   @@unique([canvasId, version])
+}
+
+// ---------- Share links ----------
+
+/// Read-only share token for a canvas (Phase 5). The token is the
+/// capability: anyone holding the URL can view the latest snapshot.
+model Share {
+  token     String   @id
+  canvasId  String
+  createdById String?
+  createdAt DateTime @default(now())
+  canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation(fields: [createdById], references: [id])
+
+  @@index([canvasId])
 }

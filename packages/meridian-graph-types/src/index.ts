@@ -203,6 +203,8 @@ export interface CanvasEdgeData extends Record<string, unknown> {
   relationship: EdgeType;
   label?: string;
   confidence?: number;
+  /** True when written by a connector/AI and awaiting analyst confirmation. */
+  proposed?: boolean;
 }
 
 /* ------------------------------------------------------------------ */

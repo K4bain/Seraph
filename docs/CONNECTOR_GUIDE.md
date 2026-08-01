@@ -74,33 +74,38 @@ Notes:
 
 ## Registering & running
 
-```ts
-// src/connectors/index.ts — the connector registry assembly point
-import { registerConnector } from "meridian-connector-sdk/runtime";
-import { gdeltConnector } from "./gdelt/connector";
+All connectors register themselves in `src/connectors/index.ts` — the app's
+assembly point (it imports every connector and calls `registerConnector`).
 
-registerConnector(gdeltConnector);
-```
+Three paths run a connector:
 
-Run the runner worker (`pnpm worker:connectors`), then enqueue a job:
-
-```ts
-import { connectorQueue } from "./workers/queues";
-await connectorQueue.add("run", { connectorId: "gdelt", trigger: "schedule" });
-```
-
-The runner drives `poll()`, publishes each event to the EventBus on topic
-`stream:gdelt`, and the graph engine + AI processor consume from there.
+1. **Inline (no Redis, dev/test)** — `src/core/ingest/ingest.ts` engine:
+   ```bash
+   pnpm tsx scripts/run-connector.ts <id> --canvas <canvasId> [--query ...] [--max 25]
+   ```
+2. **BullMQ worker (needs Redis)** — `pnpm worker:connectors`, then:
+   ```ts
+   import { connectorQueue } from "./workers/queues";
+   await connectorQueue.add("run", { connectorId: "gdelt", trigger: "schedule", canvasId });
+   ```
+3. **HTTP** — `POST /api/connectors` `{ connectorId, canvasId, config }`
+   (202 + jobId, or 503 with an inline hint when Redis is down);
+   `GET /api/connectors` lists registered manifests.
 
 ## Event → graph pipeline (Phase 3)
 
-1. **Dedup** — `src/core/graph/dedup.ts` fingerprints each entity; exact
-   matches merge, fuzzy matches become *proposed merges* awaiting analyst
-   confirmation.
-2. **Write** — confirmed entities/edges are persisted as AGE vertices/edges
-   under labels `Entity` / `Relationship` with full provenance properties.
-3. **Fan-out** — the AI processor receives the same events for extraction,
-   edge inference, and anomaly flagging (`proposed: true`).
+Connector events land in the canvas document — the canvas is the source of
+truth (see ARCHITECTURE):
+
+1. **Merge** — `mergeEvents` in `src/core/ingest/ingest.ts` dedups entities by
+   name fingerprint and events by title fingerprint; same-identity records
+   merge their `sources[]`, aliases, and confidence (max), keeping full
+   provenance. Edges are written `proposed: true`.
+2. **Write** — `ingestEvents` appends merged events to the canvas snapshot as
+   entity/event cards + proposed edges, idempotently (version-collision retry).
+3. **Confirm** — analysts accept proposed edges / merge cards in the canvas UI;
+   nothing is auto-committed. The AGE graph (self-hosted, `prisma/graph/age-init.sql`)
+   stays the long-term graph store once deployed with Apache AGE.
 
 ## Connector checklist
 

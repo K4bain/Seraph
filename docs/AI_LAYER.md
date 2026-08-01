@@ -49,9 +49,13 @@ Input (URL / document / canvas selection / NL query)
 
 ## Client surface
 
-`src/core/ai/client.ts` ships the typed `complete()` surface now. The task
-handlers (extraction, inference, anomaly, narrative) slot in behind the
-`AiJobData.task` union in `workers/queues.ts`, dispatched from the AI worker.
+`src/core/ai/client.ts` ships the typed `complete()` surface plus
+`completeStructured()` (tool_use). Extraction + edge inference run
+interactively via `src/core/ai/tasks/analyze.ts` behind `POST /api/ai/analyze`
+(preview only) and `POST /api/ai/apply` (analyst-confirmed write through the
+connector ingest pipeline). Anomaly flags, narrative briefing, and NL query
+stay behind `AiJobData.task` in `workers/queues.ts` for the AI worker / later
+subphases.
 
 ## Structured output via tool_use
 

@@ -18,6 +18,8 @@ function redisConnection(): ConnectionOptions {
     port: Number(url.port || 6379),
     username: url.username || undefined,
     password: url.password || undefined,
+    // Upstash etc. use TLS: rediss:// → ioredis tls:{} (verify via system CAs)
+    tls: url.protocol === "rediss:" ? {} : undefined,
     maxRetriesPerRequest: null,
   };
 }
@@ -25,6 +27,10 @@ function redisConnection(): ConnectionOptions {
 export interface ConnectorJobData {
   connectorId: string;
   trigger: "schedule" | "webhook";
+  /** Target canvas for ingestion — events land here as cards + proposed edges. */
+  canvasId?: string;
+  /** Raw connector config (query, limits, dataset, ...). Secrets stay server-side. */
+  config?: Record<string, string>;
   payload?: unknown;
 }
 
@@ -37,10 +43,10 @@ export interface AiJobData {
 
 export const connection = redisConnection();
 
-export const connectorQueue = new Queue<ConnectorJobData>("meridian:connectors", {
+export const connectorQueue = new Queue<ConnectorJobData>("meridian-connectors", {
   connection,
 });
 
-export const aiQueue = new Queue<AiJobData>("meridian:ai", {
+export const aiQueue = new Queue<AiJobData>("meridian-ai", {
   connection,
 });

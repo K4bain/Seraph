@@ -18,15 +18,9 @@
  */
 
 import { prisma } from "@/core/db";
+import { ensureCanvas } from "@/core/anchor";
 import { Prisma } from "@/generated/prisma/client";
 import type { CanvasDocument } from "@/store/canvas";
-
-/** Demo workspace/user anchor — replaced by real auth in a later phase. */
-async function demoAnchor() {
-  const workspace = await prisma.workspace.findUnique({ where: { slug: "demo" } });
-  const user = await prisma.user.findUnique({ where: { email: "analyst@meridian.local" } });
-  return { workspaceId: workspace?.id, userId: user?.id };
-}
 
 export async function GET(
   _req: Request,
@@ -62,18 +56,11 @@ export async function POST(
   // Lazy canvas creation on first save.
   const existing = await prisma.canvas.findUnique({ where: { id } });
   if (!existing) {
-    const { workspaceId, userId } = await demoAnchor();
-    if (!workspaceId || !userId) {
+    try {
+      await ensureCanvas(id, "Untitled Canvas");
+    } catch {
       return Response.json({ error: "seed_missing" }, { status: 500 });
     }
-    await prisma.canvas.create({
-      data: {
-        id,
-        workspaceId,
-        createdById: userId,
-        title: "Untitled Canvas",
-      },
-    });
   }
 
   const latest = await prisma.canvasSnapshot.findFirst({

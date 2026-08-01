@@ -31,3 +31,5 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 dev-*.log
+collab-server*.log
+*.log

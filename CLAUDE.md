@@ -33,6 +33,7 @@ pnpm db:push          # push relational schema (dev)
 pnpm db:seed          # demo user/workspace/canvas
 pnpm worker:connectors  # BullMQ connector runner (needs Redis up)
 pnpm worker:ai          # BullMQ AI processor (needs Redis up)
+pnpm collab:server      # y-websocket in-memory presence server (ws://localhost:3001)
 ```
 
 Typecheck **must** pass before considering a change done. Run `pnpm lint` too.
@@ -76,14 +77,24 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
    panel aesthetic; mono for data; hairline borders.
 8. **pnpm workspaces.** New shared code → a package in `packages/` with
    `main/types` pointing at `src/index.ts`. App consumes via transpilePackages.
+9. **Check skills first — always.** Before starting any task, check the
+   available skills (the `skill` tool) and load a matching one if present.
+   Never begin work without that check.
 
 ## Phase plan (v0.1)
 
 - Phase 1 (done): monorepo, schema, AGE bootstrap, auth stub, canvas shell
-- Phase 2: full card types, edges + annotation UI, persistence, Yjs presence
-- Phase 3: connector SDK runtime, EventBus + BullMQ wiring, OpenSanctions/GDELT/EDGAR
-- Phase 4: AI layer — extraction, edge inference, anomaly flags, narrative, NL query
-- Phase 5: timeline, geo (Leaflet), PDF/JSON export, shareable links
+- Phase 2 (done): full card types, edges + annotation UI, persistence, Yjs presence
+- Phase 3 (done): connector SDK runtime, BullMQ wiring, OpenSanctions/GDELT/EDGAR
+  → live connectors + canvas ingestion engine + `/api/connectors` + run CLI +
+  status dashboard (live queue/job/canvas stats) + run-from-UI page.
+  Verified against Upstash Redis (`rediss://` URL in REDIS_URL) — queue,
+  worker, job logs, dedup all confirmed. Remaining: AGE graph import.
+- Phase 4 (parked): AI layer — extraction + edge inference code exists
+  (`src/core/ai/tasks/analyze.ts`, /api/ai/analyze + /api/ai/apply, canvas
+  "AI" panel) but is idle: ANTHROPIC_API_KEY is unset and the user chose to
+  defer AI work. Do not spend effort here unless asked.
+- Phase 5 (in progress): timeline, geo (Leaflet), PDF/JSON export, shareable links
 
 ## Milestone checklist for new work
 

@@ -1,0 +1,130 @@
+/**
+ * SEC EDGAR connector — corporate filings via the full-text search API.
+ *
+ * Free, no key, but SEC **requires** a descriptive User-Agent header
+ * (name + contact email) and rate-limits to ~10 req/s; configure the
+ * `userAgent` value accordingly. Each matching filing becomes an
+ * `event` EntityStreamEvent.
+ *
+ * Docs: https://www.sec.gov/search-filings/edgar-full-text-search
+ */
+
+import { defineConnector } from "meridian-connector-sdk";
+import type { EntityStreamEvent } from "meridian-graph-types";
+
+const FTS_BASE = "https://efts.sec.gov/LATEST/search-index";
+const FETCH_TIMEOUT_MS = 20_000;
+
+interface FtsHit {
+  _id?: string;
+  _source?: {
+    ciks?: string[];
+    form?: string;
+    file_date?: string;
+    display_names?: string[];
+    adsh?: string;
+    items?: string[];
+  };
+}
+
+interface FtsResponse {
+  hits?: {
+    hits?: FtsHit[];
+  };
+}
+
+export const edgarConnector = defineConnector({
+  manifest: {
+    id: "edgar",
+    name: "SEC EDGAR",
+    version: "0.1.0",
+    description: "Corporate filings from the SEC full-text search API",
+    author: "meridian",
+    pollIntervalMs: 3_600_000,
+    webhookSupported: false,
+    entityTypes: ["event", "organization"],
+  },
+
+  config: {
+    query: "sanctions",
+    forms: "8-K",
+    dateRange: "1m",
+    maxRecords: "20",
+    userAgent: "Meridian OSINT Research demo@meridian.local",
+  },
+
+  async configure(config) {
+    this.config = { ...this.config, ...config };
+  },
+
+  async *poll() {
+    const query = this.config.query.trim();
+    const maxRecords = Math.min(Number(this.config.maxRecords) || 20, 100);
+    if (!query) throw new Error("edgar: `query` is required in config");
+
+    const params = new URLSearchParams({ q: query, dateRange: this.config.dateRange });
+    if (this.config.forms) params.set("forms", this.config.forms);
+
+    const res = await fetch(`${FTS_BASE}?${params}`, {
+      headers: {
+        "User-Agent": this.config.userAgent,
+        "Accept": "application/json",
+      },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (res.status === 403) {
+      throw new Error(
+        "edgar: SEC rejected the request (403). Set `userAgent` to \"YourName contact@example.com\" — SEC blocks anonymous UAs.",
+      );
+    }
+    if (!res.ok) throw new Error(`edgar: API returned ${res.status} ${res.statusText}`);
+
+    const data = (await res.json()) as FtsResponse;
+    const fetchedAt = new Date().toISOString();
+    let emitted = 0;
+
+    for (const hit of data.hits?.hits ?? []) {
+      if (emitted >= maxRecords) break;
+      const source = hit._source;
+      const cik = source?.ciks?.[0];
+      if (!cik || !source?.form) continue;
+
+      const company = source.display_names?.[0]?.split("  (")[0] ?? `CIK ${cik}`;
+      const title = `${source.form} — ${company}`;
+      const accession = source.adsh ?? (hit._id ?? "").split(":")[0] ?? "";
+      const filingUrl = `https://www.sec.gov/Archives/edgar/data/${cik}/${accession.replace(/-/g, "")}/`;
+
+      const event: EntityStreamEvent = {
+        connectorId: this.manifest.id,
+        entityType: "event",
+        entity: {
+          type: "event",
+          externalId: hit._id ?? `${cik}-${source.form}`,
+          name: title,
+          attributes: {
+            cik,
+            form: source.form,
+            company,
+            accession,
+            items: source.items,
+          },
+          lastSeen: source.file_date ? new Date(source.file_date).toISOString() : undefined,
+          sources: [
+            {
+              connectorId: this.manifest.id,
+              title: `SEC EDGAR — form ${source.form}`,
+              url: filingUrl,
+              fetchedAt,
+            },
+          ],
+        },
+        relationships: [],
+        sourceUrl: filingUrl,
+        fetchedAt,
+        confidence: 0.75,
+      };
+      emitted += 1;
+      yield event;
+    }
+  },
+});

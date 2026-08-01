@@ -1,0 +1,83 @@
+.map {
+  width: 100%;
+  height: calc(100vh - 250px);
+  min-height: 420px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.map :global(.leaflet-container) {
+  background: var(--bg);
+  font-family: var(--font-sans);
+}
+
+.map :global(.leaflet-control-attribution) {
+  background: rgba(11, 14, 19, 0.75);
+  color: var(--text-faint);
+  font: var(--font-mono);
+  font-size: 10px;
+}
+
+.map :global(.leaflet-control-attribution a) {
+  color: var(--text-faint);
+}
+
+.map :global(.leaflet-bar a) {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.map :global(.leaflet-bar a:hover) {
+  background: var(--bg-raised);
+}
+
+.geo-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #0b0e13;
+  box-shadow: 0 0 0 1px var(--accent), 0 0 10px rgba(232, 163, 61, 0.45);
+}
+
+.geo-dot--approx {
+  background: transparent;
+  border: 2px dashed var(--accent);
+  box-shadow: 0 0 0 1px rgba(232, 163, 61, 0.35);
+}
+
+.geo-dot__core {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin: 3px auto 0;
+}
+
+:global(.geo-popup) .leaflet-popup-content-wrapper {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+:global(.geo-popup) .leaflet-popup-tip {
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+}
+
+:global(.geo-popup) .geo-popup__label {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+:global(.geo-popup) .geo-popup__sub {
+  font: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}

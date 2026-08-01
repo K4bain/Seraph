@@ -20,14 +20,14 @@ const sections: { label: string; links: NavLink[] }[] = [
   {
     label: "Lenses",
     links: [
-      { href: "/timeline", label: "Timeline", soon: true },
-      { href: "/geo", label: "Geo View", soon: true },
+      { href: "/timeline", label: "Timeline" },
+      { href: "/geo", label: "Geo View" },
     ],
   },
   {
     label: "Platform",
     links: [
-      { href: "/connectors", label: "Connectors", soon: true },
+      { href: "/connectors", label: "Connectors" },
       { href: "/health", label: "System", soon: true },
     ],
   },

@@ -30,17 +30,24 @@ export default function IntelligenceEdge(props: EdgeProps<RelationEdge>) {
   });
 
   const label = data?.label ?? (data?.relationship ? EDGE_TYPE_LABELS[data.relationship] : "");
+  const proposed = data?.proposed === true;
 
   return (
     <>
-      <BaseEdge id={id} path={path} markerEnd={markerEnd} />
+      <BaseEdge
+        id={id}
+        path={path}
+        markerEnd={markerEnd}
+        style={proposed ? { strokeDasharray: "6 4", stroke: "#8b7fae" } : undefined}
+      />
       {label ? (
         <EdgeLabelRenderer>
           <div
-            className={`${styles.edgeLabel}${selected ? ` ${styles.selected}` : ""}`}
+            className={`${styles.edgeLabel}${selected ? ` ${styles.selected}` : ""}${proposed ? ` ${styles.proposed}` : ""}`}
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
           >
             {label}
+            {proposed ? " · proposed" : ""}
           </div>
         </EdgeLabelRenderer>
       ) : null}

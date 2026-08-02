@@ -91,12 +91,15 @@ export class GraphClient {
   ): Promise<CypherResult> {
     await this.ensureAge();
     return this.withSession(async (client) => {
-      // AGE (1.6+/PG18) rejects a graph name passed as a bind parameter
-      // ("a name constant is expected"); GRAPH_NAME is a hardcoded
-      // constant, so interpolating it as a literal is injection-safe.
+      // AGE 1.6+/PG18 requires the graph name as a literal `name` and the
+      // statement as a dollar-quoted literal `cstring`; bind parameters
+      // are rejected ("a name constant is expected" / "a dollar-quoted
+      // string constant is expected"). GRAPH_NAME is a hardcoded constant
+      // and the statement is internal (never user text), so interpolating
+      // both is injection-safe. Params travel as the third agtype arg.
       const res = await client.query(
-        `SELECT * FROM ag_catalog.cypher('${GRAPH_NAME}', $1, $2) AS (row agtype)`,
-        [statement, JSON.stringify(params)],
+        `SELECT * FROM ag_catalog.cypher('${GRAPH_NAME}', $mrd$ ${statement} $mrd$, $1) AS (row agtype)`,
+        [JSON.stringify(params)],
       );
       return { columns: ["row"], rows: res.rows.map((row) => [row.row]) };
     });

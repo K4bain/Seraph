@@ -102,7 +102,7 @@ const ANALYZE_TOOL: AiToolDefinition = {
             source: { type: "string" },
             target: { type: "string" },
             type: { type: "string", enum: EDGE_TYPES },
-            confidence: { type: "number", minimum: 0, maximum: 1 },
+            confidence: { type: "number", description: "0–1" },
             rationale: { type: "string", description: "One sentence: which text supports this edge" },
           },
           required: ["source", "target", "type"],

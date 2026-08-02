@@ -93,11 +93,14 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   `importCanvasToGraph()` writes confirmed entities/edges into the AGE
   property graph via idempotent MERGE, gated by `ENABLE_GRAPH_IMPORT=true`,
   with a `POST /api/graph/import` route for manual triggering.
-- Phase 4 (in progress): AI layer — extraction + edge inference runs through
+- Phase 4 (done): AI layer — extraction + edge inference runs through
   OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`) via
   `src/core/ai/client.ts` (OpenAI-compatible function calling),
   `src/core/ai/tasks/analyze.ts`, /api/ai/analyze + /api/ai/apply, canvas
-  "AI" panel. End-to-end verification pending a live key.
+  "AI" panel. Verified end-to-end with `nvidia/nemotron-3-super-120b-a12b:free`:
+  analyze → apply → 13 cards created, 4 proposed edges (8 duplicate edges
+  skipped by the ingest dedup). Client falls back to instruction-only
+  structured output when a provider can't enforce `tool_choice`.
 - Phase 5 (done): timeline, geo (Leaflet), PDF + JSON export, shareable links.
   Timeline + geo pages accept `?canvas=` query param (default: demo). PDF
   export is client-side via jsPDF (reads live canvas store state). Share

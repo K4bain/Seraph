@@ -28,7 +28,7 @@ const sections: { label: string; links: NavLink[] }[] = [
     label: "Platform",
     links: [
       { href: "/connectors", label: "Connectors" },
-      { href: "/health", label: "System", soon: true },
+      { href: "/health", label: "System" },
     ],
   },
 ] as const satisfies { label: string; links: NavLink[] }[];

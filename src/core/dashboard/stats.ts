@@ -13,6 +13,7 @@ import { listConnectors } from "meridian-connector-sdk/runtime";
 import type { Job } from "bullmq";
 import "../../connectors";
 import { connectorQueue } from "../../../workers/queues";
+import { GRAPH_LABELS } from "@/core/graph/age";
 
 const REDIS_TIMEOUT_MS = 3500;
 
@@ -50,7 +51,7 @@ export interface DashboardStats {
   canvases: CanvasStats[];
   redis: {
     available: boolean;
-    counts?: { wait: number; active: number; delayed: number; completed: number; failed: number };
+    counts?: { waiting: number; active: number; delayed: number; completed: number; failed: number };
     jobs?: JobSummary[];
   };
 }
@@ -66,7 +67,7 @@ function countCards(doc: CanvasDocument | null) {
   };
 }
 
-type JobCounts = { wait: number; active: number; delayed: number; completed: number; failed: number };
+type JobCounts = { waiting: number; active: number; delayed: number; completed: number; failed: number };
 
 async function loadRedis(): Promise<DashboardStats["redis"]> {
   const fallback = { available: false };
@@ -95,7 +96,7 @@ async function loadRedis(): Promise<DashboardStats["redis"]> {
   return {
     available: true,
     counts: {
-      wait: counts.wait,
+      waiting: counts.waiting,
       active: counts.active,
       delayed: counts.delayed,
       completed: counts.completed,
@@ -142,4 +143,49 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   }
 
   return { connectors, canvases, redis: await loadRedis() };
+}
+
+/* ------------------------------------------------------------------ */
+/* System status (health page)                                         */
+/* ------------------------------------------------------------------ */
+
+export interface SystemStatus {
+  db: { ok: boolean; latencyMs: number | null; error?: string };
+  redis: DashboardStats["redis"];
+  age: { configured: boolean; enabled: boolean; labels: string[] };
+  connectors: DashboardStats["connectors"];
+}
+
+/** Cheap relational-DB liveness probe, bounded like the Redis reads. */
+async function probeDb(): Promise<SystemStatus["db"]> {
+  const started = Date.now();
+  try {
+    await withTimeout(prisma.$queryRaw`SELECT 1`, null);
+    return { ok: true, latencyMs: Date.now() - started };
+  } catch (error) {
+    return {
+      ok: false,
+      latencyMs: Date.now() - started,
+      error: error instanceof Error ? error.message : "unknown",
+    };
+  }
+}
+
+export async function getSystemStatus(): Promise<SystemStatus> {
+  const ageEnabled = process.env.ENABLE_GRAPH_IMPORT === "true";
+  return {
+    db: await probeDb(),
+    redis: await loadRedis(),
+    age: {
+      configured: Boolean(process.env.DATABASE_URL),
+      enabled: ageEnabled,
+      labels: ageEnabled ? Object.values(GRAPH_LABELS) : [],
+    },
+    connectors: listConnectors().map((c) => ({
+      id: c.manifest.id,
+      name: c.manifest.name,
+      version: c.manifest.version,
+      entityTypes: c.manifest.entityTypes,
+    })),
+  };
 }

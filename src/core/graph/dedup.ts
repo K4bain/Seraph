@@ -12,6 +12,7 @@ export function normalizeName(name: string): string {
     .toLowerCase()
     .replace(/\b(inc|inc\.|llc|ltd|limited|corp|corporation|gmbh|sa|sarl|co|company|s\.l\.?)\b/g, "")
     .replace(/\s+/g, " ")
+    .replace(/[.,;:]+$/g, "")
     .trim();
 }
 
@@ -25,8 +26,9 @@ export function networkFingerprint(value: string): string {
   return value
     .toLowerCase()
     .replace(/^[a-z]+:\/\//, "")
-    .replace(/:\d+$/, "")
+    .replace(/[?#].*$/, "")
     .replace(/\/.*$/, "")
+    .replace(/:\d+$/, "")
     .trim();
 }
 

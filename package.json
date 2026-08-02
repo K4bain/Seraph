@@ -22,7 +22,8 @@
     "postinstall": "prisma generate",
     "worker:connectors": "tsx workers/connector-runner.ts",
     "worker:ai": "tsx workers/ai-processor.ts",
-    "collab:server": "node node_modules/@y/websocket-server/src/server.js"
+    "collab:server": "node node_modules/@y/websocket-server/src/server.js",
+    "test": "vitest run"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -60,6 +61,7 @@
     "prisma": "7",
     "tsx": "^4.23.1",
     "typescript": "^5.9.3",
+    "vitest": "^4.1.10",
     "ws": "^8.21.1"
   }
 }

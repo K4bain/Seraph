@@ -30,7 +30,7 @@ const SCHEMA_TO_TYPE: Record<string, EntityType> = {
 };
 
 /** Minimal RFC-4180 line parser: quoted fields, "" escapes, commas inside quotes. */
-function parseCsvLine(line: string): string[] {
+export function parseCsvLine(line: string): string[] {
   const fields: string[] = [];
   let field = "";
   let inQuotes = false;

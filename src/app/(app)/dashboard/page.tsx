@@ -63,7 +63,7 @@ export default async function DashboardPage() {
           </div>
           <div className="stat-note">
             {redis.available
-              ? `${redis.counts?.wait ?? 0} waiting · ${redis.counts?.failed ?? 0} failed`
+              ? `${redis.counts?.waiting ?? 0} waiting · ${redis.counts?.failed ?? 0} failed`
               : "Redis unavailable"}
           </div>
         </div>

@@ -1,0 +1,37 @@
+# ================================================================
+# seraph-app — main Next.js app on Fly.io
+# Deploy: fly deploy -c fly.toml
+# All runtime secrets are set via `fly secrets set` (see
+# scripts/fly-deploy.sh) — nothing secret lives in this file.
+# ================================================================
+app = "seraph-app"
+primary_region = "del" # closest Fly region to Peshawar, PK; fallback: "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+  [build.args]
+    # Inlined into the client bundle at build time (NEXT_PUBLIC_*).
+    # Set before the first deploy; changing it requires a rebuild.
+    NEXT_PUBLIC_WS_SERVER_URL = "wss://seraph-collab.fly.dev"
+
+[env]
+  PORT = "3000"
+  NODE_ENV = "production"
+
+[vm]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 0
+  max_machines_running = 1
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "10s"
+    grace_period = "45s"
+    method = "GET"
+    path = "/api/health"

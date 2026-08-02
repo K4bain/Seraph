@@ -1,0 +1,41 @@
+# ================================================================
+# Fly.io machine cron jobs for Meridian (seraph-app).
+# This file is the canonical spec; scripts/fly-deploy.sh applies it
+# via `fly cron create` (alpine image with busybox wget).
+# ================================================================
+
+jobs:
+  # Keep the app warm — free tier machines suspend on idle.
+  - name: keep-warm-app
+    frequency: "*/5 * * * *"
+    command: >
+      wget -qO- --spider https://seraph-app.fly.dev/api/health
+
+  # Keep the collab WebSocket server warm (it sleeps on free tier).
+  - name: keep-warm-collab
+    frequency: "*/5 * * * *"
+    command: >
+      wget -qO- --spider https://seraph-collab.fly.dev
+
+  # Trigger connector polling — one BullMQ job per connector.
+  # seraph-worker consumes these; jobs just pile up otherwise.
+  - name: poll-connectors
+    frequency: "*/30 * * * *"
+    command: >
+      wget -qO- --post-data='{"connectorId":"gdelt","canvasId":"demo"}'
+      --header='Content-Type: application/json'
+      https://seraph-app.fly.dev/api/connectors ;
+      wget -qO- --post-data='{"connectorId":"opensanctions","canvasId":"demo"}'
+      --header='Content-Type: application/json'
+      https://seraph-app.fly.dev/api/connectors ;
+      wget -qO- --post-data='{"connectorId":"edgar","canvasId":"demo"}'
+      --header='Content-Type: application/json'
+      https://seraph-app.fly.dev/api/connectors
+
+  # Sync confirmed canvas entities into the AGE property graph.
+  - name: graph-import
+    frequency: "0 * * * *"
+    command: >
+      wget -qO- --post-data='{"canvasId":"demo"}'
+      --header='Content-Type: application/json'
+      https://seraph-app.fly.dev/api/graph/import

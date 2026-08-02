@@ -20,6 +20,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
 COPY . .
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time —
+# supplied via fly.toml [build.args] (e.g. the collab WebSocket URL).
+ARG NEXT_PUBLIC_WS_SERVER_URL
+ENV NEXT_PUBLIC_WS_SERVER_URL=${NEXT_PUBLIC_WS_SERVER_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm db:generate && pnpm build
 

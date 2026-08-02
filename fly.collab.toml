@@ -1,0 +1,33 @@
+# ================================================================
+# seraph-collab — Yjs WebSocket presence server on Fly.io
+# Runs node_modules/@y/websocket-server/src/server.js (pnpm collab:server).
+# Public wss://seraph-collab.fly.dev; plain GET / returns "okay" (health).
+# Sleeps on idle (free tier); keep-warm cron in .fly/cron.yml.
+# ================================================================
+app = "seraph-collab"
+primary_region = "del"
+
+[build]
+  dockerfile = "Dockerfile.collab"
+
+[env]
+  PORT = "3001"
+  HOST = "0.0.0.0" # must not stay localhost inside the container
+
+[vm]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 0
+  max_machines_running = 1
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "15s"
+    method = "GET"
+    path = "/"

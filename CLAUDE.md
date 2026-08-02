@@ -110,6 +110,26 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   export is client-side via jsPDF (reads live canvas store state). Share
   links are token-capability read-only views at `/share/[token]`.
 
+## Deployment (Fly.io)
+
+Four Fly apps + managed Redis; everything on the free tier, region `del`
+(Delhi — closest to Peshawar, PK; `fra` is the fallback):
+
+| App | Role | Config | Port |
+| --- | --- | --- | --- |
+| `seraph-app` | Next.js standalone server (Dockerfile, `output: "standalone"`) | `fly.toml` | 3000 (public, `/api/health` check) |
+| `seraph-age` | Apache AGE Postgres, persistent 1 GB volume `age_data`, **internal-only** | `fly.age.toml` | 5432 (`seraph-age.internal`) |
+| `seraph-worker` | BullMQ connector worker (`pnpm worker:connectors`) — POST /api/connectors only enqueues; without this app cron jobs would never execute | `fly.worker.toml` + `Dockerfile.worker` | none (private) |
+| `seraph-collab` | Yjs WebSocket presence server (`pnpm collab:server`); sleeps on idle | `fly.collab.toml` + `Dockerfile.collab` | 3001 (public wss) |
+| Upstash Redis | BullMQ queues (`REDIS_URL`, free tier) | — | external |
+
+Key wiring:
+- `GRAPH_DATABASE_URL=postgresql://postgres:<pw>@seraph-age.internal:5432/meridian` — only the app and worker hold it as a secret; `ENABLE_GRAPH_IMPORT=true`.
+- `NEXT_PUBLIC_WS_SERVER_URL` is **build-time** (inlined into the client bundle) — set in `fly.toml [build.args]`; changing it requires a rebuild. `WS_SERVER_URL` (runtime, server-side) is a Fly secret.
+- Cron (`.fly/cron.yml`, applied by `scripts/fly-deploy.sh` via `fly cron create`, alpine + busybox wget): keep-warm app every 5 min, keep-warm collab every 5 min, poll all 3 connectors every 30 min, graph import hourly.
+- Deploy everything in order with `bash scripts/fly-deploy.sh` — creates apps/volume, deploys age → init AGE graph (idempotent DO-block wrapper; `prisma/graph/age-init.sql` stays authoritative) → worker → collab → app, sets secrets, installs cron, verifies endpoints.
+- GDELT note: HTTPS to `api.gdeltproject.org` is TLS-filtered on the home network; the connector falls back to plain HTTP automatically (works fine from Fly — but keep the default `baseUrl`).
+
 ## Milestone checklist for new work
 
 - [ ] Typecheck passes (`pnpm typecheck`)

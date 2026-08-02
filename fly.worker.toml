@@ -1,0 +1,20 @@
+# ================================================================
+# seraph-worker — BullMQ connector worker on Fly.io
+# Runs `pnpm worker:connectors`. POST /api/connectors only enqueues
+# jobs; without this app the cron polling jobs would pile up in
+# Upstash and never execute.
+# Deploy: fly deploy -c fly.worker.toml
+# ================================================================
+app = "seraph-worker"
+primary_region = "del"
+
+[build]
+  dockerfile = "Dockerfile.worker"
+
+[vm]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+# No public service — workers only talk to Redis/Postgres on the
+# private network. Kept awake; it must be running to process jobs.
+min_machines_running = 1

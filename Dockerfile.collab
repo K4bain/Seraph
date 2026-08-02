@@ -1,0 +1,22 @@
+# ================================================================
+# Meridian collab server — Yjs WebSocket presence daemon.
+# Mirrors `pnpm collab:server` (devDependency @y/websocket-server).
+# ================================================================
+
+FROM node:24-alpine
+RUN corepack enable
+WORKDIR /app
+
+# Full install: @y/websocket-server is a devDependency and the
+# monorepo has workspace packages (graph-types, connector-sdk).
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY packages/meridian-graph-types/package.json packages/meridian-graph-types/package.json
+COPY packages/meridian-connector-sdk/package.json packages/meridian-connector-sdk/package.json
+RUN pnpm install --frozen-lockfile
+
+ENV PORT=3001
+ENV HOST=0.0.0.0
+ENV NODE_ENV=production
+EXPOSE 3001
+
+CMD ["node", "node_modules/@y/websocket-server/src/server.js"]

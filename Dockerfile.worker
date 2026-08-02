@@ -1,31 +1,23 @@
 # ================================================================
 # Meridian connector worker — BullMQ consumer for connector runs.
-# Bundles the full runtime (src/, workers/, prisma client) and
-# starts `pnpm worker:connectors`.
+# Bundles the full runtime (src/, workers/, prisma client) and starts
+# `pnpm worker:connectors`.
+#
+# Same context constraint as Dockerfile.collab: Railway builds this
+# service with context = services/worker, so COPY from the repo root is
+# impossible — clone the repo instead (builds have outbound network).
 # ================================================================
 
-FROM node:24-alpine AS deps
-RUN corepack enable
-WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
-COPY packages/meridian-graph-types/package.json packages/meridian-graph-types/package.json
-COPY packages/meridian-connector-sdk/package.json packages/meridian-connector-sdk/package.json
-COPY prisma/ prisma/
-RUN pnpm install --frozen-lockfile
-
 FROM node:24-alpine
-RUN corepack enable
+RUN corepack enable && apk add --no-cache git
 WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages ./packages
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
-COPY prisma/ prisma/
-COPY src/ src/
-COPY workers/ workers/
-COPY scripts/ scripts/
-# Prisma client is generated into src/generated at install; regenerate
-# in the final image so the worker picks it up.
+
+RUN git clone --depth 1 --branch master https://github.com/K4bain/Seraph.git .
+RUN pnpm install --frozen-lockfile
+# Prisma client is generated at install (postinstall); regenerate
+# explicitly so the worker always ships a fresh client.
 RUN pnpm db:generate
+
+ENV NODE_ENV=production
 
 CMD ["pnpm", "worker:connectors"]

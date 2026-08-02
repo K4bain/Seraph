@@ -1,17 +1,19 @@
 # ================================================================
 # Meridian collab server — Yjs WebSocket presence daemon.
-# Mirrors `pnpm collab:server` (devDependency @y/websocket-server).
+# Mirrors `pnpm collab:server` (@y/websocket-server devDependency).
+#
+# Railway builds this service with context = services/collab (the
+# service root directory), so repo-root files are unreachable via COPY.
+# The Dockerfile.age trick of avoiding COPYs (heredocs only) doesn't
+# work here — the collab server needs the full workspace install. Clone
+# the repo instead; builds have outbound network on Railway.
 # ================================================================
 
 FROM node:24-alpine
-RUN corepack enable
+RUN corepack enable && apk add --no-cache git
 WORKDIR /app
 
-# Full install: @y/websocket-server is a devDependency and the
-# monorepo has workspace packages (graph-types, connector-sdk).
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
-COPY packages/meridian-graph-types/package.json packages/meridian-graph-types/package.json
-COPY packages/meridian-connector-sdk/package.json packages/meridian-connector-sdk/package.json
+RUN git clone --depth 1 --branch master https://github.com/K4bain/Seraph.git .
 RUN pnpm install --frozen-lockfile
 
 ENV PORT=3001

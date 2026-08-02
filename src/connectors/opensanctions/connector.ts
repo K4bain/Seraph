@@ -10,8 +10,8 @@
  * Docs: https://www.opensanctions.org/docs/developers/
  */
 
-import { defineConnector } from "meridian-connector-sdk";
-import type { EntityStreamEvent, EntityType } from "meridian-graph-types";
+import { defineConnector } from "seraph-connector-sdk";
+import type { EntityStreamEvent, EntityType } from "seraph-graph-types";
 
 const INDEX_BASE = "https://data.opensanctions.org/datasets/latest";
 const FETCH_TIMEOUT_MS = 60_000;
@@ -71,7 +71,7 @@ export const opensanctionsConnector = defineConnector({
     name: "OpenSanctions",
     version: "0.1.0",
     description: "Sanctions, PEP and crime-watchlist entities (free, no key)",
-    author: "meridian",
+    author: "seraph",
     pollIntervalMs: 3_600_000,
     webhookSupported: false,
     entityTypes: ["person", "organization", "location", "vessel", "aircraft", "domain"],

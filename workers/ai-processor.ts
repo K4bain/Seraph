@@ -27,7 +27,7 @@ const worker = new Worker<AiJobData>(
     // Phase 4: dispatch to extraction / inference / anomaly handlers.
     // For now, a smoke call validates connectivity end to end.
     const result = await ai.complete({
-      system: "You are the Meridian reasoning layer.",
+      system: "You are the Seraph reasoning layer.",
       messages: [{ role: "user", content: `Run task: ${task}. Reply with OK.` }],
       maxTokens: 64,
     });

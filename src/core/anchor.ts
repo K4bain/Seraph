@@ -8,7 +8,7 @@ import { prisma } from "@/core/db";
 
 export async function demoAnchor() {
   const workspace = await prisma.workspace.findUnique({ where: { slug: "demo" } });
-  const user = await prisma.user.findUnique({ where: { email: "analyst@meridian.local" } });
+  const user = await prisma.user.findUnique({ where: { email: "analyst@seraph.local" } });
   return { workspaceId: workspace?.id, userId: user?.id };
 }
 

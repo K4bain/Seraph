@@ -12,10 +12,10 @@
 
 import { Worker } from "bullmq";
 import { connection, connectorQueue, type ConnectorJobData } from "./queues";
-import { getConnector } from "meridian-connector-sdk/runtime";
-import type { EntityStreamEvent } from "meridian-graph-types";
+import { getConnector } from "seraph-connector-sdk/runtime";
+import type { EntityStreamEvent } from "seraph-graph-types";
 import "../src/connectors";
-import { meridianBus } from "../src/core/stream/bus";
+import { seraphBus } from "../src/core/stream/bus";
 import { streamTopic } from "../src/core/stream/types";
 import { ingestEvents } from "../src/core/ingest/ingest";
 
@@ -44,7 +44,7 @@ const worker = new Worker<ConnectorJobData>(
     const batch: EntityStreamEvent[] = [];
 
     for await (const event of source) {
-      meridianBus.publish(streamTopic(event.connectorId), event);
+      seraphBus.publish(streamTopic(event.connectorId), event);
       emitted += 1;
       batch.push(event);
     }

@@ -9,7 +9,7 @@
 
 import { prisma } from "@/core/db";
 import type { CanvasDocument } from "@/store/canvas";
-import { listConnectors } from "meridian-connector-sdk/runtime";
+import { listConnectors } from "seraph-connector-sdk/runtime";
 import type { Job } from "bullmq";
 import "../../connectors";
 import { connectorQueue } from "../../../workers/queues";

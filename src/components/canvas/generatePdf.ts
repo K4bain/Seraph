@@ -16,7 +16,7 @@ import type {
   SourceCard,
   EdgeType,
   SourceRef,
-} from "meridian-graph-types";
+} from "seraph-graph-types";
 import type { CardNode, RelationEdge } from "@/store/canvas";
 
 /* ---- colour tokens matching the instrument-panel aesthetic ---- */
@@ -190,7 +190,7 @@ export function generateCanvasPdf(opts: PdfExportOptions): jsPDF {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
   doc.setTextColor(...COL.accent);
-  doc.text("MERIDIAN", MARGIN, 50);
+  doc.text("SERAPH", MARGIN, 50);
   doc.setFontSize(10);
   doc.setTextColor(...COL.muted);
   doc.text("Intelligence Canvas Export", MARGIN, 58);
@@ -327,7 +327,7 @@ export function generateCanvasPdf(opts: PdfExportOptions): jsPDF {
     doc.setFontSize(7);
     doc.setTextColor(...COL.muted);
     doc.text(
-      `Meridian Intelligence Report — ${opts.canvasId} — Page ${i}/${totalPages}`,
+      `Seraph Intelligence Report — ${opts.canvasId} — Page ${i}/${totalPages}`,
       MARGIN,
       PAGE_H - 8,
     );

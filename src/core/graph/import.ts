@@ -11,7 +11,7 @@
  * - Server-only (imports `@/core/graph/age` and `@/core/db`).
  * - All-or-nothing per entity batch: a write failure aborts the import
  *   and surfaces the error — the graph never holds a partial canvas.
- * - Idempotent: MERGE on `meridianId` keeps re-imports safe.
+ * - Idempotent: MERGE on `seraphId` keeps re-imports safe.
  * - No-op on managed hosts without the AGE extension (a clear error is
  *   thrown by `GraphClient.ensureAge()`).
  */
@@ -19,7 +19,7 @@
 import { prisma } from "@/core/db";
 import { getGraph } from "@/core/graph/age";
 import type { CanvasDocument, CardNode, RelationEdge } from "@/store/canvas";
-import type { EntityCard, EdgeType } from "meridian-graph-types";
+import type { EntityCard, EdgeType } from "seraph-graph-types";
 
 export interface GraphImportResult {
   canvasId: string;
@@ -37,7 +37,7 @@ export interface GraphImportError {
 
 /**
  * Allowlist of edge types safe to interpolate as Cypher labels. Mirrors
- * the `EdgeType` union from meridian-graph-types — defence in depth so
+ * the `EdgeType` union from seraph-graph-types — defence in depth so
  * an unexpected string can never reach the Cypher statement.
  */
 const ALLOWED_EDGE_TYPES: ReadonlySet<string> = new Set<EdgeType>([
@@ -99,11 +99,11 @@ export async function importCanvasToGraph(
 
   const graph = getGraph();
 
-  // ---- Write entity vertices (idempotent MERGE on meridianId) ----
+  // ---- Write entity vertices (idempotent MERGE on seraphId) ----
   for (const card of entities) {
     const e = card.entity;
     const params = {
-      mid: e.meridianId,
+      mid: e.seraphId,
       name: e.name,
       type: e.type,
       fingerprint: e.fingerprint,
@@ -113,7 +113,7 @@ export async function importCanvasToGraph(
       lon: e.geo?.lon ?? null,
     };
     await graph.write(
-      `MERGE (n:Entity {meridianId: $mid})
+      `MERGE (n:Entity {seraphId: $mid})
        SET n.name = $name,
            n.type = $type,
            n.fingerprint = $fingerprint,
@@ -129,12 +129,12 @@ export async function importCanvasToGraph(
   let edgesWritten = 0;
   let edgesSkipped = 0;
 
-  // Build a lookup from card id → meridianId for edge endpoint resolution.
-  const meridianIdByCardId = new Map(entities.map((e) => [e.id, e.entity.meridianId]));
+  // Build a lookup from card id → seraphId for edge endpoint resolution.
+  const seraphIdByCardId = new Map(entities.map((e) => [e.id, e.entity.seraphId]));
 
   for (const edge of confirmedEdges) {
-    const sourceMid = meridianIdByCardId.get(edge.source);
-    const targetMid = meridianIdByCardId.get(edge.target);
+    const sourceMid = seraphIdByCardId.get(edge.source);
+    const targetMid = seraphIdByCardId.get(edge.target);
     if (!sourceMid || !targetMid) {
       edgesSkipped += 1;
       continue;
@@ -149,7 +149,7 @@ export async function importCanvasToGraph(
       continue;
     }
     await graph.write(
-      `MATCH (a:Entity {meridianId: $sourceMid}), (b:Entity {meridianId: $targetMid})
+      `MATCH (a:Entity {seraphId: $sourceMid}), (b:Entity {seraphId: $targetMid})
        MERGE (a)-[r:${rel}]->(b)
        SET r.confidence = $confidence`,
       { sourceMid, targetMid, confidence },

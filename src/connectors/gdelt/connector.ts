@@ -8,8 +8,8 @@
  * Docs: https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/
  */
 
-import { defineConnector } from "meridian-connector-sdk";
-import type { EntityStreamEvent } from "meridian-graph-types";
+import { defineConnector } from "seraph-connector-sdk";
+import type { EntityStreamEvent } from "seraph-graph-types";
 
 const API_BASE = "https://api.gdeltproject.org/api/v2/doc/doc";
 const FETCH_TIMEOUT_MS = 20_000;
@@ -36,7 +36,7 @@ export const gdeltConnector = defineConnector({
     name: "GDELT DOC API",
     version: "0.1.0",
     description: "Global news events in near real time (free, no key)",
-    author: "meridian",
+    author: "seraph",
     pollIntervalMs: 300_000,
     webhookSupported: false,
     entityTypes: ["event"],
@@ -59,7 +59,7 @@ export const gdeltConnector = defineConnector({
     for (let attempt = 0; attempt < 3; attempt++) {
       if (attempt > 0) await sleep(5_000 * 2 ** (attempt - 1));
       const res = await fetch(url, {
-        headers: { "User-Agent": "meridian-connector/0.1 (OSINT research)" },
+        headers: { "User-Agent": "seraph-connector/0.1 (OSINT research)" },
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
 

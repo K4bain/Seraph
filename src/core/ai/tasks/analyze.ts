@@ -16,7 +16,7 @@ import type {
   EntityType,
   RawRelationship,
   SourceRef,
-} from "meridian-graph-types";
+} from "seraph-graph-types";
 import { nameFingerprint, normalizeName } from "../../graph/dedup";
 import { getAiClient, type AiToolDefinition } from "../client";
 

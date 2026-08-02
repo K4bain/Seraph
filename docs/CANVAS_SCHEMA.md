@@ -1,19 +1,19 @@
 # Canvas Schema
 
-The canvas export format — an open, versioned JSON standard. Anything Meridian
+The canvas export format — an open, versioned JSON standard. Anything Seraph
 can render can be serialized to this document, and any tool that produces it
 can be imported. No lock-in: export to Gephi, Neo4j, Maltego, or back.
 
 ## Status
 
 Draft v0.1 — the canonical TypeScript shapes live in
-`packages/meridian-graph-types` and this document describes the serialization.
+`packages/seraph-graph-types` and this document describes the serialization.
 
 ## Structure
 
 ```json
 {
-  "schema": "meridian.canvas.v1",
+  "schema": "seraph.canvas.v1",
   "id": "canvas-demo",
   "title": "Starter Canvas",
   "description": "...",
@@ -27,7 +27,7 @@ Draft v0.1 — the canonical TypeScript shapes live in
       "kind": "entity",
       "position": { "x": 60, "y": 80 },
       "createdAt": "2026-08-01T00:00:00.000Z",
-      "meridianId": "dem-1001",
+      "seraphId": "dem-1001",
       "entity": {
         "type": "organization",
         "name": "Northwind Trading LLC",
@@ -75,7 +75,7 @@ Draft v0.1 — the canonical TypeScript shapes live in
 
 ## Rules
 
-1. `schema` is mandatory and gates version migrations (`meridian.canvas.vN`).
+1. `schema` is mandatory and gates version migrations (`seraph.canvas.vN`).
 2. Card `kind` is one of `entity | event | memo | source`. Unknown kinds must
    be preserved as `opaque` cards on import, never dropped.
 3. Every entity/edge may carry `proposed: true` — **importers must preserve

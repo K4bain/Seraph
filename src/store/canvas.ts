@@ -21,7 +21,7 @@ import type {
   IntelligenceCard,
   MemoCard,
   SourceCard,
-} from "meridian-graph-types";
+} from "seraph-graph-types";
 
 export type CardNode = Node<CardNodeData, "intelligence">;
 export type RelationEdge = Edge<CanvasEdgeData>;

@@ -1,28 +1,28 @@
-name: meridian
+name: seraph
 
 services:
   postgres:
     image: apache/age:latest
-    container_name: meridian-postgres
+    container_name: seraph-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: meridian
+      POSTGRES_USER: seraph
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: meridian
+      POSTGRES_DB: seraph
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./prisma/graph/age-init.sql:/docker-entrypoint-initdb.d/01-age-init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U meridian -d meridian"]
+      test: ["CMD-SHELL", "pg_isready -U seraph -d seraph"]
       interval: 5s
       timeout: 5s
       retries: 12
 
   redis:
     image: redis:7-alpine
-    container_name: meridian-redis
+    container_name: seraph-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -36,12 +36,12 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: meridian-minio
+    container_name: seraph-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: meridian
-      MINIO_ROOT_PASSWORD: meridian-secret-key
+      MINIO_ROOT_USER: seraph
+      MINIO_ROOT_PASSWORD: seraph-secret-key
     ports:
       - "9000:9000"
       - "9001:9001"

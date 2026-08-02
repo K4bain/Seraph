@@ -1,7 +1,7 @@
 {
-  "name": "meridian-connector-sdk",
+  "name": "seraph-connector-sdk",
   "version": "0.1.0",
-  "description": "Typed connector authoring SDK for Meridian. Write a connector, emit EntityStreamEvents, feed the graph.",
+  "description": "Typed connector authoring SDK for Seraph. Write a connector, emit EntityStreamEvents, feed the graph.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -18,6 +18,6 @@
   },
   "files": ["src"],
   "dependencies": {
-    "meridian-graph-types": "workspace:*"
+    "seraph-graph-types": "workspace:*"
   }
 }

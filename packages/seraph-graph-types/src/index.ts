@@ -1,7 +1,7 @@
 /**
- * meridian-graph-types
+ * seraph-graph-types
  *
- * Shared canonical types for the Meridian graph engine, canvas model,
+ * Shared canonical types for the Seraph graph engine, canvas model,
  * and connector SDK. Single source of truth — the app, SDK, workers,
  * and canvas export schema all build on these.
  */
@@ -45,8 +45,8 @@ export interface RawEntity {
 
 /** Canonical graph node, after deduplication and merge. */
 export interface EntityRecord extends RawEntity {
-  /** Meridian graph id (AGE vertex id). */
-  meridianId: string;
+  /** Seraph graph id (AGE vertex id). */
+  seraphId: string;
   /** Deduplication fingerprint (see src/core/graph/dedup.ts). */
   fingerprint: string;
   /** Aggregate confidence across sources, 0–1. */
@@ -110,9 +110,9 @@ export const EDGE_TYPE_LABELS: Record<EdgeType, string> = {
 
 export interface RawRelationship {
   type: EdgeType;
-  /** Reference to the source entity (externalId or meridianId). */
+  /** Reference to the source entity (externalId or seraphId). */
   source: string;
-  /** Reference to the target entity (externalId or meridianId). */
+  /** Reference to the target entity (externalId or seraphId). */
   target: string;
   confidence: number;
   validFrom?: string;
@@ -123,7 +123,7 @@ export interface RawRelationship {
 
 /** Canonical graph edge. */
 export interface RelationshipRecord extends RawRelationship {
-  meridianId: string;
+  seraphId: string;
   proposed?: boolean;
 }
 
@@ -160,7 +160,7 @@ export interface BaseCard {
   createdAt: string;
   updatedAt: string;
   /** Optional link to a canonical graph record. */
-  meridianId?: string;
+  seraphId?: string;
 }
 
 export interface EntityCard extends BaseCard {

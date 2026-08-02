@@ -24,7 +24,7 @@ import type {
   EventCard,
   IntelligenceCard,
   SourceRef,
-} from "meridian-graph-types";
+} from "seraph-graph-types";
 
 export interface IngestResult {
   canvasId: string;
@@ -78,13 +78,13 @@ function buildEventCard(event: EntityStreamEvent, id: string): EventCard {
 function buildEntityCard(event: EntityStreamEvent, id: string, fingerprint: string): EntityCard {
   const entity = event.entity;
   const now = new Date().toISOString();
-  const meridianId = `${event.connectorId}:${entity.externalId ?? fingerprint}`;
+  const seraphId = `${event.connectorId}:${entity.externalId ?? fingerprint}`;
   return {
     id,
     kind: "entity",
     createdAt: now,
     updatedAt: now,
-    meridianId,
+    seraphId,
     entity: {
       externalId: entity.externalId,
       type: entity.type,
@@ -95,7 +95,7 @@ function buildEntityCard(event: EntityStreamEvent, id: string, fingerprint: stri
       firstSeen: entity.firstSeen,
       lastSeen: entity.lastSeen,
       sources: entity.sources,
-      meridianId,
+      seraphId,
       fingerprint,
       confidence: event.confidence,
     },
@@ -137,7 +137,7 @@ function indexDoc(doc: CanvasDocument): DocIndex {
     if (!card) continue;
     if (card.kind === "entity") {
       index.entityByFingerprint.set(card.entity.fingerprint, node);
-      index.entityByExternalId.set(card.entity.meridianId, node);
+      index.entityByExternalId.set(card.entity.seraphId, node);
     } else if (card.kind === "event") {
       index.eventByTitleFingerprint.set(nameFingerprint(card.title), node);
     }
@@ -220,7 +220,7 @@ function mergeEvents(doc: CanvasDocument, events: EntityStreamEvent[]): IngestRe
       doc.nodes.push(node);
       index.byId.set(id, node);
       index.entityByFingerprint.set(fingerprint, node);
-      index.entityByExternalId.set(card.entity.meridianId, node);
+      index.entityByExternalId.set(card.entity.seraphId, node);
       batchIds.set(entity.externalId ?? "", id);
       result.cardsCreated += 1;
     }

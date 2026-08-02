@@ -1,6 +1,6 @@
 "use client";
 
-import { EDGE_TYPES, EDGE_TYPE_LABELS } from "meridian-graph-types";
+import { EDGE_TYPES, EDGE_TYPE_LABELS } from "seraph-graph-types";
 import { useCanvasStore, type RelationEdge } from "@/store/canvas";
 import styles from "./EdgeInspector.module.css";
 

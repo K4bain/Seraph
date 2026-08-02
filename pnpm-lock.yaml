@@ -41,12 +41,6 @@ importers:
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
-      meridian-connector-sdk:
-        specifier: workspace:^
-        version: link:packages/meridian-connector-sdk
-      meridian-graph-types:
-        specifier: workspace:^
-        version: link:packages/meridian-graph-types
       next:
         specifier: '15'
         version: 15.5.22(react-dom@19.2.8)(react@19.2.8)
@@ -62,6 +56,12 @@ importers:
       react-dom:
         specifier: ^19.2.8
         version: 19.2.8(react@19.2.8)
+      seraph-connector-sdk:
+        specifier: workspace:^
+        version: link:packages/seraph-connector-sdk
+      seraph-graph-types:
+        specifier: workspace:^
+        version: link:packages/seraph-graph-types
       y-websocket:
         specifier: ^3.0.0
         version: 3.0.0(yjs@13.6.31)
@@ -115,13 +115,13 @@ importers:
         specifier: ^8.21.1
         version: 8.21.1
 
-  packages/meridian-connector-sdk:
+  packages/seraph-connector-sdk:
     dependencies:
-      meridian-graph-types:
+      seraph-graph-types:
         specifier: workspace:*
-        version: link:../meridian-graph-types
+        version: link:../seraph-graph-types
 
-  packages/meridian-graph-types: {}
+  packages/seraph-graph-types: {}
 
 packages:
 

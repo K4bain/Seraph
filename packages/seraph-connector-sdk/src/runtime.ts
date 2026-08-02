@@ -6,21 +6,21 @@
  * on a schedule and funnels yielded events into the EventBus.
  */
 
-import type { MeridianConnector } from "./index";
+import type { SeraphConnector } from "./index";
 
-const registry = new Map<string, MeridianConnector>();
+const registry = new Map<string, SeraphConnector>();
 
-export function registerConnector(connector: MeridianConnector): void {
+export function registerConnector(connector: SeraphConnector): void {
   if (registry.has(connector.manifest.id)) {
     throw new Error(`Connector already registered: ${connector.manifest.id}`);
   }
   registry.set(connector.manifest.id, connector);
 }
 
-export function listConnectors(): MeridianConnector[] {
+export function listConnectors(): SeraphConnector[] {
   return [...registry.values()];
 }
 
-export function getConnector(id: string): MeridianConnector | undefined {
+export function getConnector(id: string): SeraphConnector | undefined {
   return registry.get(id);
 }

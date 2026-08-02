@@ -40,9 +40,9 @@ function seedGraph(): { nodes: CardNode[]; edges: RelationEdge[] } {
           kind: "entity",
           createdAt: now,
           updatedAt: now,
-          meridianId: "dem-1001",
+          seraphId: "dem-1001",
           entity: {
-            meridianId: "dem-1001",
+            seraphId: "dem-1001",
             type: "organization",
             name: "Northwind Trading LLC",
             fingerprint: "northwind trading",
@@ -69,9 +69,9 @@ function seedGraph(): { nodes: CardNode[]; edges: RelationEdge[] } {
           kind: "entity",
           createdAt: now,
           updatedAt: now,
-          meridianId: "dem-1002",
+          seraphId: "dem-1002",
           entity: {
-            meridianId: "dem-1002",
+            seraphId: "dem-1002",
             type: "person",
             name: "Igor Volkov",
             fingerprint: "igor volkov",

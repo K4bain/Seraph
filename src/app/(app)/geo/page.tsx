@@ -2,7 +2,7 @@ import { getLatestDocument } from "@/core/document";
 import { entityPoint } from "@/core/geo/gazetteer";
 import GeoView, { type GeoMarkerData } from "@/components/geo/GeoView";
 import styles from "./geo.module.css";
-import type { EntityCard } from "meridian-graph-types";
+import type { EntityCard } from "seraph-graph-types";
 
 export const dynamic = "force-dynamic";
 

@@ -1,9 +1,9 @@
-# Meridian
+# Seraph
 
 Open-source intelligence fusion platform. Graph-first, AI-native investigation
 canvases for OSINT researchers, journalists, and analysts.
 
-Palantir sells you a black box. **Meridian** gives you the engine room: ingest
+Palantir sells you a black box. **Seraph** gives you the engine room: ingest
 heterogeneous public data streams, surface relationships, anomalies, and
 narratives, and build shareable investigation canvases where every entity is a
 node, every relationship is an edge, and every insight is a version-controlled
@@ -27,7 +27,7 @@ report), JSON snapshot export, and token-based shareable read-only links.
 docker compose up -d
 
 #    …or serverless Postgres (no AGE graph): set DATABASE_URL in .env
-#    (see .env.example). Meridian uses the Neon HTTP driver via
+#    (see .env.example). Seraph uses the Neon HTTP driver via
 #    @prisma/adapter-neon.
 
 # 2. Install + relational schema
@@ -44,7 +44,7 @@ pnpm dev          # → http://localhost:3000 (canvas at /canvas/demo)
 pnpm collab:server   # in-memory WS server, default ws://localhost:3001
 ```
 
-The `meridian` AGE graph is created automatically on first volume init from
+The `seraph` AGE graph is created automatically on first volume init from
 `prisma/graph/age-init.sql`. Workers (optional, need Redis): `pnpm
 worker:connectors`, `pnpm worker:ai`.
 
@@ -57,8 +57,8 @@ src/core/                 platform internals (db, graph, stream, ai, collab)
 src/store/canvas.ts       Zustand canvas store (nodes, edges, persistence)
 src/app/api/canvas/       snapshot persistence API (versioned, optimistic)
 packages/
-  meridian-graph-types/   shared canonical types
-  meridian-connector-sdk/ connector authoring SDK
+  seraph-graph-types/   shared canonical types
+  seraph-connector-sdk/ connector authoring SDK
 workers/                  BullMQ workers
 prisma/                   relational schema + AGE bootstrap
 docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER

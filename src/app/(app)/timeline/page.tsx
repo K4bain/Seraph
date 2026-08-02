@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLatestDocument } from "@/core/document";
-import type { EventCard } from "meridian-graph-types";
+import type { EventCard } from "seraph-graph-types";
 import styles from "./timeline.module.css";
 
 export const dynamic = "force-dynamic";

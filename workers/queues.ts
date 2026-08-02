@@ -43,10 +43,10 @@ export interface AiJobData {
 
 export const connection = redisConnection();
 
-export const connectorQueue = new Queue<ConnectorJobData>("meridian-connectors", {
+export const connectorQueue = new Queue<ConnectorJobData>("seraph-connectors", {
   connection,
 });
 
-export const aiQueue = new Queue<AiJobData>("meridian-ai", {
+export const aiQueue = new Queue<AiJobData>("seraph-ai", {
   connection,
 });

@@ -1,5 +1,5 @@
 # ================================================================
-# Meridian collab server — Yjs WebSocket presence daemon.
+# Seraph collab server — Yjs WebSocket presence daemon.
 # Mirrors `pnpm collab:server` (@y/websocket-server devDependency).
 #
 # Railway builds this service with context = services/collab (the

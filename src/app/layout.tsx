@@ -3,8 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Meridian — OSINT Fusion Platform",
-    template: "%s · Meridian",
+    default: "Seraph — OSINT Fusion Platform",
+    template: "%s · Seraph",
   },
   description:
     "Open-source intelligence fusion. Graph-first investigation canvases for journalists, researchers, and analysts.",

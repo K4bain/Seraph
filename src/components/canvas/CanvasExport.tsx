@@ -31,7 +31,7 @@ export default function CanvasExport({ canvasId }: CanvasExportProps) {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `meridian-${canvasId}-snapshot-v${data.version}.json`;
+    anchor.download = `seraph-${canvasId}-snapshot-v${data.version}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -47,7 +47,7 @@ export default function CanvasExport({ canvasId }: CanvasExportProps) {
         edges,
         exportedAt: new Date().toISOString(),
       });
-      pdf.save(`meridian-${canvasId}-report.pdf`);
+      pdf.save(`seraph-${canvasId}-report.pdf`);
     } catch (error) {
       console.error("PDF export failed:", error);
     } finally {

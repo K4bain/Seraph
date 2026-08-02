@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/core/db";
 import styles from "./share.module.css";
 import type { CanvasDocument } from "@/store/canvas";
-import type { EntityCard, EventCard } from "meridian-graph-types";
+import type { EntityCard, EventCard } from "seraph-graph-types";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   if (!share) {
     return (
       <main className={styles.shell}>
-        <div className={styles.brand}>Meridian</div>
+        <div className={styles.brand}>Seraph</div>
         <div className={styles.card}>
           <h1 className={styles.title}>Link not found</h1>
           <p className={styles.muted}>
@@ -44,7 +44,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   return (
     <main className={styles.shell}>
       <header className={styles.header}>
-        <span className={styles.brand}>Meridian</span>
+        <span className={styles.brand}>Seraph</span>
         <span className={styles.badge}>shared snapshot v{snapshot?.version ?? 0}</span>
       </header>
 
@@ -149,7 +149,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
 
       <footer className={styles.footer}>
         <Link href="/" className={styles.homeLink}>
-          Meridian — OSINT fusion platform
+          Seraph — OSINT fusion platform
         </Link>
       </footer>
     </main>

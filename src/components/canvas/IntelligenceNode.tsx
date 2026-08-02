@@ -2,7 +2,7 @@
 
 import { memo, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import type { EntityCard, EventCard, MemoCard, SourceCard } from "meridian-graph-types";
+import type { EntityCard, EventCard, MemoCard, SourceCard } from "seraph-graph-types";
 import { useCanvasStore, type CardNode } from "@/store/canvas";
 import styles from "./IntelligenceNode.module.css";
 
@@ -204,9 +204,9 @@ function IntelligenceNode({ data, selected }: NodeProps<CardNode>) {
     <div className={`${styles.node}${selected ? ` ${styles.selected}` : ""}`}>
       <div className={`${styles.header} ${styles[kind]}`}>
         <span className={styles.kind}>{KIND_LABEL[kind]}</span>
-        {card.meridianId ? (
+        {card.seraphId ? (
           <span className={styles.nodeId} title="Canonical graph record">
-            {card.meridianId.slice(0, 8)}
+            {card.seraphId.slice(0, 8)}
           </span>
         ) : null}
       </div>

@@ -10,7 +10,7 @@
  */
 
 import { connectorQueue } from "../../../../workers/queues";
-import { listConnectors } from "meridian-connector-sdk/runtime";
+import { listConnectors } from "seraph-connector-sdk/runtime";
 import "../../../../src/connectors";
 
 export async function GET() {

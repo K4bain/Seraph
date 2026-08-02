@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ================================================================
-# Meridian — idempotent Apache AGE bootstrap for the Railway AGE
+# Seraph — idempotent Apache AGE bootstrap for the Railway AGE
 # service. The Dockerfile.age container auto-initializes AGE on
 # first boot (docker-entrypoint-initdb.d); this script is the
 # fallback for volumes that predate the init hook, and for
 # verifying the graph exists.
 #
 # Usage (run from the repo root):
-#   bash scripts/railway-init-age.sh "postgresql://postgres:PW@HOST:PORT/meridian"
+#   bash scripts/railway-init-age.sh "postgresql://postgres:PW@HOST:PORT/seraph"
 #   RAILWAY_AGE_URL="postgresql://..." bash scripts/railway-init-age.sh
 #
 # Reachability: the private <service>.railway.internal hostname

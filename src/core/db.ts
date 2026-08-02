@@ -21,7 +21,7 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 function createPrisma(): PrismaClient {
   const connectionString =
     process.env.DATABASE_URL ??
-    "postgresql://meridian:password@localhost:5432/meridian";
+    "postgresql://seraph:password@localhost:5432/seraph";
   const adapter = new PrismaNeonHttp(connectionString, {});
   return new PrismaClient({ adapter });
 }

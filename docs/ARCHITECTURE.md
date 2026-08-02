@@ -1,8 +1,8 @@
-# Meridian Architecture
+# Seraph Architecture
 
 ## What it is
 
-Meridian is a graph-first, AI-native investigation workbench. It ingests
+Seraph is a graph-first, AI-native investigation workbench. It ingests
 heterogeneous public data streams (connectors), stores entities and
 relationships in a property graph (Apache AGE), and presents them on
 collaborative, versioned canvases. The canvas is the source of truth — every
@@ -51,7 +51,7 @@ External sources
 | Concern | Engine | Location |
 |---|---|---|
 | Identity, auth, workspaces, canvas documents, snapshots | Prisma/PostgreSQL | `prisma/schema.prisma` |
-| Entities, relationships (the graph) | Apache AGE | `meridian` graph, same PG instance |
+| Entities, relationships (the graph) | Apache AGE | `seraph` graph, same PG instance |
 | Dedup fingerprints | computed, stored on AGE vertices | `src/core/graph/dedup.ts` |
 | Queues, cross-node bus | Redis | `workers/queues.ts` |
 | Files, exports | MinIO (S3) | Phase 3+ |
@@ -70,7 +70,7 @@ relational tables coexist in the same database.
 
 ### src/core/stream
 - `EventBus.ts` — generic typed pub/sub with topic-prefix subscription.
-- `bus.ts` — the platform-wide `meridianBus` for `EntityStreamEvent`s.
+- `bus.ts` — the platform-wide `seraphBus` for `EntityStreamEvent`s.
 - `types.ts` — re-exports canonical stream types; `streamTopic(connectorId)`
   topic convention (`stream:<connectorId>`).
 
@@ -86,8 +86,8 @@ relational tables coexist in the same database.
 ## Canvas model
 
 A canvas is a React Flow graph whose nodes are `IntelligenceCard`s (entity,
-event, memo, source — see `packages/meridian-graph-types`) and whose edges are
-typed relationships. Canonical graph records link to cards via `meridianId`.
+event, memo, source — see `packages/seraph-graph-types`) and whose edges are
+typed relationships. Canonical graph records link to cards via `seraphId`.
 Persistence: the relational `Canvas` table + versioned `CanvasSnapshot`
 documents (full Yjs CRDT sync lands in Phase 2).
 

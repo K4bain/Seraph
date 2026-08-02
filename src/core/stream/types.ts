@@ -3,7 +3,7 @@
  * shared packages so app code imports from one place.
  */
 
-export type { EntityStreamEvent, RawEntity, RawRelationship } from "meridian-graph-types";
+export type { EntityStreamEvent, RawEntity, RawRelationship } from "seraph-graph-types";
 
 /** EventBus topic convention: stream:<connectorId> */
 export const streamTopic = (connectorId: string): string => `stream:${connectorId}`;

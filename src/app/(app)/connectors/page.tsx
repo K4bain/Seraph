@@ -1,4 +1,4 @@
-import { listConnectors } from "meridian-connector-sdk/runtime";
+import { listConnectors } from "seraph-connector-sdk/runtime";
 import "../../../connectors";
 import ConnectorRunPanel from "@/components/connectors/ConnectorRunPanel";
 

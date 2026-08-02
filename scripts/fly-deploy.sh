@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ================================================================
-# Meridian — one-shot Fly.io deploy: AGE Postgres, worker, collab,
+# Seraph — one-shot Fly.io deploy: AGE Postgres, worker, collab,
 # main app, secrets, AGE init, cron jobs, verification.
 #
 # Prereqs:
@@ -46,7 +46,7 @@ fi
 fly deploy -c fly.age.toml -a seraph-age --region "$REGION" --yes
 echo "    waiting for Postgres to accept connections..."
 for i in $(seq 1 30); do
-  if fly ssh console -a seraph-age -C "pg_isready -U postgres -d meridian" 2>/dev/null | grep -q accepting; then
+  if fly ssh console -a seraph-age -C "pg_isready -U postgres -d seraph" 2>/dev/null | grep -q accepting; then
     break
   fi
   sleep 5
@@ -56,9 +56,9 @@ done
 # AGE bootstrap (idempotent — safe to re-run)
 # ---------------------------------------------------------------
 echo "==> [2/7] AGE graph init on seraph-age"
-fly ssh console -a seraph-age -C "psql -U postgres -d meridian -c \"CREATE EXTENSION IF NOT EXISTS age; LOAD 'age'; DO \\\$\\\$ BEGIN IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = 'meridian') THEN PERFORM ag_catalog.create_graph('meridian'); END IF; END \\\$\\\$;\"" || {
+fly ssh console -a seraph-age -C "psql -U postgres -d seraph -c \"CREATE EXTENSION IF NOT EXISTS age; LOAD 'age'; DO \\\$\\\$ BEGIN IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = 'seraph') THEN PERFORM ag_catalog.create_graph('seraph'); END IF; END \\\$\\\$;\"" || {
   echo "    psql init failed — try manually:"
-  echo "    fly ssh console -a seraph-age -C \"psql -U postgres -d meridian -f -\" < prisma/graph/age-init.sql"
+  echo "    fly ssh console -a seraph-age -C \"psql -U postgres -d seraph -f -\" < prisma/graph/age-init.sql"
 }
 
 # ---------------------------------------------------------------
@@ -71,7 +71,7 @@ fi
 fly secrets set -a seraph-worker \
   "DATABASE_URL=$DATABASE_URL" \
   "REDIS_URL=$REDIS_URL" \
-  "GRAPH_DATABASE_URL=postgresql://postgres:${AGE_PG_PASSWORD}@seraph-age.internal:5432/meridian" \
+  "GRAPH_DATABASE_URL=postgresql://postgres:${AGE_PG_PASSWORD}@seraph-age.internal:5432/seraph" \
   "ENABLE_GRAPH_IMPORT=true"
 fly deploy -c fly.worker.toml -a seraph-worker --region "$REGION" --yes
 
@@ -96,7 +96,7 @@ fi
 AUTH_SECRET="${AUTH_SECRET:-$(openssl rand -hex 32)}"
 fly secrets set -a seraph-app \
   "DATABASE_URL=$DATABASE_URL" \
-  "GRAPH_DATABASE_URL=postgresql://postgres:${AGE_PG_PASSWORD}@seraph-age.internal:5432/meridian" \
+  "GRAPH_DATABASE_URL=postgresql://postgres:${AGE_PG_PASSWORD}@seraph-age.internal:5432/seraph" \
   "REDIS_URL=$REDIS_URL" \
   "OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}" \
   "OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-oss-120b:free}" \

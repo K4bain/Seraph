@@ -1,7 +1,7 @@
 "use client";
 
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from "@xyflow/react";
-import { EDGE_TYPE_LABELS } from "meridian-graph-types";
+import { EDGE_TYPE_LABELS } from "seraph-graph-types";
 import type { RelationEdge } from "@/store/canvas";
 import styles from "./IntelligenceEdge.module.css";
 

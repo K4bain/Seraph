@@ -1,13 +1,13 @@
 # Connector Guide
 
 A connector turns a data source into a typed `EntityStreamEvent` stream. The
-SDK lives in `packages/meridian-connector-sdk`; this guide shows how to write,
+SDK lives in `packages/seraph-connector-sdk`; this guide shows how to write,
 register, and run one.
 
 ## Contract
 
 ```ts
-interface MeridianConnector {
+interface SeraphConnector {
   manifest: ConnectorManifest;          // identity + capabilities
   configure(config: Record<string, string>): Promise<void>;
   poll(): AsyncGenerator<EntityStreamEvent>;              // required
@@ -23,8 +23,8 @@ non-negotiable** — the graph engine and auditors rely on it.
 
 ```ts
 // src/connectors/gdelt/connector.ts
-import { defineConnector } from "meridian-connector-sdk";
-import type { EntityStreamEvent } from "meridian-graph-types";
+import { defineConnector } from "seraph-connector-sdk";
+import type { EntityStreamEvent } from "seraph-graph-types";
 
 export const gdeltConnector = defineConnector({
   manifest: {
@@ -32,7 +32,7 @@ export const gdeltConnector = defineConnector({
     name: "GDELT",
     version: "0.1.0",
     description: "Global news events, near-real-time",
-    author: "meridian",
+    author: "seraph",
     pollIntervalMs: 60_000,
     webhookSupported: false,
     entityTypes: ["event", "location"],

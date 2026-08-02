@@ -2,18 +2,20 @@
 
 Migrating from the (dormant) Fly.io configs to Railway. Everything is
 free-tier; the Fly files remain in the repo in case we switch back.
+**Status: live and verified** (2026-08-02) — all services below are
+deployed on `observant-determination`, see the Verification section.
 
 ## Service map
 
 | Service | Image / build | Config file | Port | Notes |
 | --- | --- | --- | --- | --- |
 | **seraph-app** | repo `Dockerfile` (Next.js standalone) | `railway.toml` (repo root) | 3000 | public HTTP, healthcheck `/api/health` |
-| **seraph-age** | `Dockerfile.age` (apache/age:latest) | `services/age/railway.toml` | 5432 | private-only, persistent volume `/var/lib/postgresql/data` |
+| **seraph-age** | `Dockerfile.age` (apache/age:latest) | `services/age/railway.toml` | 5432 | private-only, persistent volume `/var/lib/postgresql` (PG18 convention — NOT `/data`) |
 | **seraph-collab** | `Dockerfile.collab` (y-websocket server) | `services/collab/railway.toml` | 3001 | public HTTP, healthcheck `/` |
 | **seraph-worker** | `Dockerfile.worker` (BullMQ consumer) | `services/worker/railway.toml` | — | private, consumes connector jobs |
-| **seraph-redis** | Railway Redis plugin (free) | — | 6379 | `REDIS_URL` injected into **all** services project-wide |
-| **cron-poll** | `Dockerfile.cron` (alpine + curl) | `services/cron-poll/railway.toml` | — | `cronSchedule = "*/30 * * * *"`, exits after POST |
-| **cron-import** | `Dockerfile.cron` (alpine + curl) | `services/cron-import/railway.toml` | — | `cronSchedule = "0 * * * *"`, exits after POST |
+| **seraph-redis** | Railway Redis plugin (free) | — | 6379 | `REDIS_URL` is injected into the plugin's own service only — set it **explicitly** on app + worker |
+| **cron-poll** | `Dockerfile.cron` (alpine + curl) | `services/cron-poll/railway.toml` | — | **dormant** — free tier caps at 5 services; the in-process scheduler in `src/instrumentation.ts` covers polling |
+| **cron-import** | `Dockerfile.cron` (alpine + curl) | `services/cron-import/railway.toml` | — | **dormant** — see Step 7 |
 
 Keep-warm crons are **not** needed: Railway services do not auto-sleep
 (unlike Fly), so the app/collab stay up on their own.
@@ -35,8 +37,11 @@ Keep-warm crons are **not** needed: Railway services do not auto-sleep
 ## Step 2 — Redis plugin
 
 1. In the project canvas click **+ New** → **Database** → **Redis** (free).
-2. Railway generates `REDIS_URL` and injects it into **every service** in
-   the project automatically. No copying needed.
+2. Railway generates `REDIS_URL` — but **it is only injected into the
+   plugin's own service**. Set it **explicitly as a variable on the app
+   and worker** (copy from the Redis service's Variables tab).
+   Without it the app still boots but BullMQ code retries
+   `redis://localhost:6379` forever (ECONNREFUSED log spam).
 
 ## Step 3 — seraph-age (Apache AGE Postgres)
 
@@ -48,17 +53,20 @@ Keep-warm crons are **not** needed: Railway services do not auto-sleep
    > set the service variable `RAILWAY_DOCKERFILE_PATH=Dockerfile.age`
    > instead and clear the root directory to `.`.
 4. **Variables**:
-   - `POSTGRES_DB=meridian`
+   - `POSTGRES_DB=seraph`
    - `POSTGRES_USER=postgres`
    - `POSTGRES_PASSWORD=<generate a strong one, e.g. openssl rand -base64 24>`
-5. **Settings → Volumes**: add a volume mounted at
-   `/var/lib/postgresql/data` (persistent storage).
+5. **Settings → Volumes**: add a volume mounted at **`/var/lib/postgresql`**
+   (persistent storage). ⚠️ `apache/age:latest` is now PostgreSQL 18.x and
+   *refuses* a data dir at `/var/lib/postgresql/data` (`18+ version volume
+   convention` crash) — mount the parent, not the `data` subdir.
 6. Deploy. On first boot the initdb.d hook auto-creates the AGE extension
-   and the `meridian` graph (see `Dockerfile.age`).
+   and the `seraph` graph (see `Dockerfile.age`). The service is ready
+   when logs show `database system is ready to accept connections`.
 7. Grab the connection details from **Settings → Private Networking**:
    - private hostname, e.g. `<hash>.railway.internal` on port `5432`
    - this becomes `GRAPH_DATABASE_URL` on the app and worker:
-     `postgresql://postgres:<PW>@<hash>.railway.internal:5432/meridian`
+     `postgresql://postgres:<PW>@<hash>.railway.internal:5432/seraph`
 
 > For local one-off access, enable **TCP Proxy** in Settings → Networking
 > and use the public proxy URL with `scripts/railway-init-age.sh`.
@@ -79,9 +87,12 @@ Keep-warm crons are **not** needed: Railway services do not auto-sleep
 3. **Variables**:
    - `DATABASE_URL` (Neon)
    - `GRAPH_DATABASE_URL` (from Step 3)
+   - `REDIS_URL` (copy from the Redis plugin — **not** auto-injected)
    - `ENABLE_GRAPH_IMPORT=true`
-   - `REDIS_URL` is auto-injected by the Redis plugin.
-4. Deploy. It waits on the queue; jobs appear once cron-poll fires.
+4. Deploy. It waits on the queue; jobs appear once a connector run fires
+   (cron or instrumentation). Without `DATABASE_URL` the worker consumes
+   jobs but fails every Prisma write with `ECONNREFUSED` — all three
+   connection variables are required.
 
 ## Step 6 — seraph-app (main Next.js app) — deploy LAST
 
@@ -101,7 +112,6 @@ Keep-warm crons are **not** needed: Railway services do not auto-sleep
    | `OPENROUTER_API_KEY` | existing key |
    | `OPENROUTER_MODEL` | `nvidia/nemotron-3-super-120b-a12b:free` (note: `openai/gpt-oss-120b:free` returns 404 — it went paid-only; keep the free nemotron) |
    | `AUTH_SECRET` | `openssl rand -hex 32` |
-   | `NEXTAUTH_URL` | `https://seraph-app-production-xxxx.up.railway.app` (the app's own URL) |
    | `WS_SERVER_URL` | collab URL from Step 4, with `https://` → `wss://` |
    | `NEXT_PUBLIC_WS_SERVER_URL` | same value as `WS_SERVER_URL` (build-time) |
    | `ENABLE_GRAPH_IMPORT` | `true` |
@@ -109,7 +119,24 @@ Keep-warm crons are **not** needed: Railway services do not auto-sleep
 
 4. Deploy. The healthcheck `/api/health` must return 200.
 
-## Step 7 — cron services
+> Changing `NEXT_PUBLIC_WS_SERVER_URL` or `ENABLE_GRAPH_IMPORT` requires a
+> **fresh build** — Railway's in-dashboard "Redeploy" reuses the last build
+> artifact. Use **Deploy → Rebuild** in the dashboard, or push a commit;
+> via the CLI, `railway up -s <name> -y -d` always rebuilds from source.
+
+## Step 7 — scheduling: instrumentation (free tier) vs cron services
+
+The free starter plan caps the project at **5 services** (app + age +
+collab + worker + Redis), so cron services cannot be created. Instead,
+`src/instrumentation.ts` (auto-loaded by Next.js in production) runs
+**inside the always-on app**:
+
+- every 30 min → enqueues `gdelt`, `opensanctions`, `edgar` runs on the
+  connector queue (canvas `demo`)
+- every hour → `POST /api/graph/import` (only when `ENABLE_GRAPH_IMPORT=true`)
+
+Verified live: autopoll fires and imports succeed. If the plan is ever
+upgraded, the dormant cron services can replace it:
 
 1. **cron-poll**: New Service → GitHub → `K4bain/Seraph`, root directory
    `services/cron-poll` (config: `Dockerfile.cron`, start
@@ -123,11 +150,14 @@ Keep-warm crons are **not** needed: Railway services do not auto-sleep
 
 ## Verification
 
-1. `curl https://<app-url>/api/health` → 200
-2. Open `<app-url>/dashboard` and `<app-url>/canvas/demo` — canvas renders.
-3. `curl -X POST -H "Content-Type: application/json" -d '{"canvasId":"demo"}' https://<app-url>/api/graph/import` → 200; then query the AGE service (`SELECT * FROM ag_catalog.ag_graph;`) to see `meridian`.
-4. Open a canvas in two browsers — presence list shows the collab connection (console: `ws://<collab-url>/meridian-canvas-demo` connects).
-5. After the next `*/30` cron tick: `GET /api/connectors` (dashboard Status page) shows queue activity.
+All of the following are confirmed on the live deployment (2026-08-02):
+
+1. `curl https://<app-url>/api/health` → 200 `{"ok":true,...}`
+2. `curl https://<app-url>/api/graph/import` → `{"available":true}`
+3. `curl -X POST -H "Content-Type: application/json" -d '{"canvasId":"demo"}' https://<app-url>/api/graph/import` → 200 with `entitiesWritten`/`edgesWritten`; re-running returns the same counts (MERGE is idempotent).
+4. `curl -X POST -H "Content-Type: application/json" -d '{"connectorId":"opensanctions","canvasId":"demo"}' https://<app-url>/api/connectors` → 202 `{"enqueued":true,"jobId":"<n>"}`; the worker completes the job (BullMQ `completed` state; `job.log()` lines are stored in Redis, the worker's stdout only prints boot + failures).
+5. Open `<app-url>/canvas/demo` in two browsers — presence shows the collab connection. Direct check: a WebSocket handshake to `wss://<collab-url>/` must connect.
+6. After the next 30-min tick, app logs show `[autopoll]` lines.
 
 ## Usage budget (free tier)
 
@@ -154,13 +184,30 @@ hour cap.
 - **Config-as-code not applied**: the build log prints
   `config-as-code path set as ...` — if missing, set the service's root
   directory to the matching `services/<name>` path and redeploy.
+- **"Redeploy" didn't pick up code**: Railway's Redeploy reuses the last
+  build artifact. Rebuild from source instead (dashboard **Deploy →
+  Rebuild**, a git push, or `railway up -s <name> -y -d`). Push-triggered
+  builds can lag several minutes.
 - **NEXT_PUBLIC_WS_SERVER_URL stale**: it is inlined at build time —
-  change it in Variables, then **redeploy** (Settings → Redeploy).
+  change it in Variables, then trigger a fresh **rebuild** (see above).
 - **Collab won't connect**: check `WS_SERVER_URL` is `wss://` and the
   collab service is awake; the server logs each connection.
 - **GRAPH_DATABASE_URL refused**: verify you used the private
   `railway.internal` hostname for app/worker (public proxy only for local
   psql) and the password matches `POSTGRES_PASSWORD`.
+- **`GET /api/graph/import` → `{"available":false}` while AGE looks fine**:
+  the check swallows the real error. Confirm the DB/extension/graph with a
+  one-off TCP proxy + `node -e` against `pg`; the current client code is
+  already correct for AGE 1.6 (see next bullet).
+- **AGE errors `a name constant is expected` / `a dollar-quoted string
+  constant is expected`**: `apache/age:latest` (PG18, AGE 1.6) declares
+  `cypher(name, cstring, agtype)` — graph name and statement must be
+  **literals**, only params can bind. `src/core/graph/age.ts` already does
+  this (`cypher('seraph', $mrd$ <stmt> $mrd$, $1)`); don't regress to
+  bind parameters for the first two args.
+- **Worker consumes jobs but fails with Prisma `ECONNREFUSED`**: the
+  worker needs `DATABASE_URL` (Neon) set explicitly — it is not inherited
+  from the app.
 
 ## Fly.io leftovers
 

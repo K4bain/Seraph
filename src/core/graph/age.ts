@@ -1,10 +1,10 @@
 /**
  * Apache AGE graph client. Server-only.
  *
- * Talks to the `meridian` AGE graph inside the shared Postgres
+ * Talks to the `seraph` AGE graph inside the shared Postgres
  * instance. Every Cypher query runs through ag_catalog.cypher and
  * returns agtype rows; this module maps the raw results into the
- * canonical types from meridian-graph-types.
+ * canonical types from seraph-graph-types.
  *
  * AGE session requirements: SET search_path = ag_catalog, "$user", public
  * before querying (done per-query here via a pooled connection that
@@ -13,7 +13,7 @@
 
 import { Pool, type PoolClient } from "pg";
 
-export const GRAPH_NAME = "meridian";
+export const GRAPH_NAME = "seraph";
 
 /** AGE vertex labels for the canonical model. */
 export const GRAPH_LABELS = {
@@ -49,7 +49,7 @@ export class GraphClient {
       connectionUrl ??
       process.env.GRAPH_DATABASE_URL ??
       process.env.DATABASE_URL ??
-      "postgresql://meridian:password@localhost:5432/meridian";
+      "postgresql://seraph:password@localhost:5432/seraph";
     this.pool = new Pool({ connectionString: url, max: 5 });
   }
 

@@ -1,5 +1,5 @@
 # ================================================================
-# Meridian Apache AGE Postgres — custom container.
+# Seraph Apache AGE Postgres — custom container.
 # Root directory: services/age (config-as-code discovery).
 # dockerfilePath is resolved relative to the repo root.
 # Volume (attach in dashboard): /var/lib/postgresql/data

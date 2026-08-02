@@ -40,7 +40,7 @@ export default function AppSidebar() {
     <aside className="sidebar">
       <div className="brand">
         <div className="brand-mark">M</div>
-        <div className="brand-name">Meridian</div>
+        <div className="brand-name">Seraph</div>
       </div>
 
       {sections.map((section) => (

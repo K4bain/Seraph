@@ -1,5 +1,5 @@
 # ================================================================
-# Meridian cron job — AGE graph import every hour.
+# Seraph cron job — AGE graph import every hour.
 # Railway runs startCommand on cronSchedule; the process must exit.
 # APP_URL variable must point at the main app's public URL.
 # ================================================================

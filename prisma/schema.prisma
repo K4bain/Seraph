@@ -1,5 +1,5 @@
 // ================================================================
-// Meridian — relational schema (Prisma)
+// Seraph — relational schema (Prisma)
 //
 // Relational layer: identity, auth, workspaces, canvas documents.
 // The graph itself (entities/relationships) lives in Apache AGE

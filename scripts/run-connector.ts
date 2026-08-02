@@ -11,8 +11,8 @@
  */
 
 import "dotenv/config";
-import { getConnector, listConnectors } from "meridian-connector-sdk/runtime";
-import type { EntityStreamEvent } from "meridian-graph-types";
+import { getConnector, listConnectors } from "seraph-connector-sdk/runtime";
+import type { EntityStreamEvent } from "seraph-graph-types";
 import "../src/connectors";
 import { ingestEvents } from "../src/core/ingest/ingest";
 

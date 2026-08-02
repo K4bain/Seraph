@@ -14,18 +14,18 @@ import { PrismaClient } from "../src/generated/prisma/client";
 const prisma = new PrismaClient({
   adapter: new PrismaNeonHttp(
     process.env.DATABASE_URL ??
-      "postgresql://meridian:password@localhost:5432/meridian",
+      "postgresql://seraph:password@localhost:5432/seraph",
     {},
   ),
 });
 
 async function main() {
   const user =
-    (await prisma.user.findUnique({ where: { email: "analyst@meridian.local" } })) ??
+    (await prisma.user.findUnique({ where: { email: "analyst@seraph.local" } })) ??
     (await prisma.user.create({
       data: {
         name: "Demo Analyst",
-        email: "analyst@meridian.local",
+        email: "analyst@seraph.local",
       },
     }));
 
@@ -68,7 +68,7 @@ async function main() {
       },
     }));
 
-  console.log("Seed complete: analyst@meridian.local / workspace 'demo' / canvas 'Starter Canvas'");
+  console.log("Seed complete: analyst@seraph.local / workspace 'demo' / canvas 'Starter Canvas'");
 }
 
 main()

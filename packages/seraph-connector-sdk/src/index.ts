@@ -1,14 +1,14 @@
 /**
- * meridian-connector-sdk
+ * seraph-connector-sdk
  *
- * Public SDK for authoring Meridian connectors. A connector describes a
+ * Public SDK for authoring Seraph connectors. A connector describes a
  * data source (manifest), optionally polls it, optionally accepts
- * webhooks, and emits typed EntityStreamEvents into the Meridian EventBus.
+ * webhooks, and emits typed EntityStreamEvents into the Seraph EventBus.
  *
  * See docs/CONNECTOR_GUIDE.md for the full walkthrough.
  */
 
-import type { EntityType, EntityStreamEvent } from "meridian-graph-types";
+import type { EntityType, EntityStreamEvent } from "seraph-graph-types";
 
 export type {
   EntityStreamEvent,
@@ -16,7 +16,7 @@ export type {
   RawEntity,
   RawRelationship,
   SourceRef,
-} from "meridian-graph-types";
+} from "seraph-graph-types";
 
 export interface ConnectorManifest {
   id: string;
@@ -35,7 +35,7 @@ export interface ConnectorContext {
   log: (level: "info" | "warn" | "error", message: string, meta?: unknown) => void;
 }
 
-export interface MeridianConnector {
+export interface SeraphConnector {
   manifest: ConnectorManifest;
   configure(config: Record<string, string>): Promise<void>;
   poll(): AsyncGenerator<EntityStreamEvent>;
@@ -51,6 +51,6 @@ export interface MeridianConnector {
  *     async *poll() { yield event; },
  *   });
  */
-export function defineConnector<T extends MeridianConnector>(connector: T): T {
+export function defineConnector<T extends SeraphConnector>(connector: T): T {
   return connector;
 }

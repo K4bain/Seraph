@@ -1,5 +1,5 @@
 # ================================================================
-# Meridian collab server — Yjs WebSocket presence daemon.
+# Seraph collab server — Yjs WebSocket presence daemon.
 # Root directory: services/collab (config-as-code discovery).
 # dockerfilePath is resolved relative to the repo root.
 # ================================================================

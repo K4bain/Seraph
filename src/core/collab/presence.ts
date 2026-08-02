@@ -41,7 +41,7 @@ export interface CollabChannel {
 }
 
 const DEFAULT_WS_URL = "ws://localhost:3001";
-const ROOM_PREFIX = "meridian-canvas";
+const ROOM_PREFIX = "seraph-canvas";
 
 /** Awareness payload carried for the local client. */
 interface AwarenessState {

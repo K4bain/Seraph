@@ -1,5 +1,5 @@
 # ================================================================
-# Meridian — main Next.js app service (Railway config-as-code).
+# Seraph — main Next.js app service (Railway config-as-code).
 # Railway reads this file for the service whose root directory is
 # the repo root. Other services carry their own config in
 # services/<name>/railway.toml.

@@ -2,7 +2,7 @@
 
 ## Project
 
-**Meridian** — open-source intelligence fusion platform. Graph-first, AI-native
+**Seraph** — open-source intelligence fusion platform. Graph-first, AI-native
 investigation canvases for OSINT researchers, journalists, and analysts.
 
 - License: Apache 2.0
@@ -51,8 +51,8 @@ src/core/                 platform internals — server-only unless marked other
   collab/                 presence/collab stubs (Phase 2)
 src/store/canvas.ts       Zustand canvas store (nodes, edges, actions)
 packages/
-  meridian-graph-types/   canonical entity/edge/card types — single source of truth
-  meridian-connector-sdk/ public SDK: ConnectorManifest, EntityStreamEvent, defineConnector
+  seraph-graph-types/   canonical entity/edge/card types — single source of truth
+  seraph-connector-sdk/ public SDK: ConnectorManifest, EntityStreamEvent, defineConnector
 workers/                  BullMQ workers (connector-runner, ai-processor)
 prisma/                   schema.prisma + graph/age-init.sql (AGE bootstrap)
 docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
@@ -129,7 +129,7 @@ step-by-step: `scripts/railway-deploy.md`.
 
 Key wiring:
 - Private inter-service DNS: `<service>.railway.internal` — used for
-  `GRAPH_DATABASE_URL=postgresql://postgres:<pw>@<hash>.railway.internal:5432/meridian`
+  `GRAPH_DATABASE_URL=postgresql://postgres:<pw>@<hash>.railway.internal:5432/seraph`
   on app + worker. TCP Proxy only for local psql one-offs
   (`scripts/railway-init-age.sh` is the AGE bootstrap fallback; the
   `Dockerfile.age` initdb.d hook handles fresh volumes automatically).
@@ -155,4 +155,4 @@ Key wiring:
 - [ ] Lint passes (`pnpm lint`)
 - [ ] No server-only imports leaked into client components
 - [ ] Provenance fields preserved on all new graph writes
-- [ ] New shared types live in `packages/meridian-graph-types` or the SDK
+- [ ] New shared types live in `packages/seraph-graph-types` or the SDK

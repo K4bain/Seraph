@@ -9,7 +9,7 @@ all outputs land as *proposals* that require analyst confirmation
 
 1. **Provenance on every output.** Every extracted entity, inferred edge, and
    anomaly flag carries the source documents and the reasoning that produced
-   it (`Provenance` in `meridian-graph-types`).
+   it (`Provenance` in `seraph-graph-types`).
 2. **No silent commits.** AI writes `proposed: true` records. Nothing merges,
    links, or flags itself into the graph without an analyst's click.
 3. **Server-only.** `src/core/ai/client.ts` runs in the Next.js server and the
@@ -61,7 +61,7 @@ subphases.
 
 Extraction uses OpenRouter function calling (OpenAI-compatible) to force a
 stable JSON shape matching `RawEntity` / `RawRelationship` from
-`meridian-graph-types` — freeform text is never written to the graph. Schema
+`seraph-graph-types` — freeform text is never written to the graph. Schema
 drift is caught by the worker against the canonical types before anything is
 proposed.
 

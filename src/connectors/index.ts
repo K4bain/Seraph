@@ -6,7 +6,7 @@
  * a connector added here is automatically runnable everywhere.
  */
 
-import { registerConnector } from "meridian-connector-sdk/runtime";
+import { registerConnector } from "seraph-connector-sdk/runtime";
 import { gdeltConnector } from "./gdelt/connector";
 import { opensanctionsConnector } from "./opensanctions/connector";
 import { edgarConnector } from "./edgar/connector";

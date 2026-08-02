@@ -1,5 +1,5 @@
 # ================================================================
-# Meridian connector worker — BullMQ consumer for connector runs.
+# Seraph connector worker — BullMQ consumer for connector runs.
 # Bundles the full runtime (src/, workers/, prisma client) and starts
 # `pnpm worker:connectors`.
 #

@@ -9,8 +9,8 @@
  * Docs: https://www.sec.gov/search-filings/edgar-full-text-search
  */
 
-import { defineConnector } from "meridian-connector-sdk";
-import type { EntityStreamEvent } from "meridian-graph-types";
+import { defineConnector } from "seraph-connector-sdk";
+import type { EntityStreamEvent } from "seraph-graph-types";
 
 const FTS_BASE = "https://efts.sec.gov/LATEST/search-index";
 const FETCH_TIMEOUT_MS = 20_000;
@@ -39,7 +39,7 @@ export const edgarConnector = defineConnector({
     name: "SEC EDGAR",
     version: "0.1.0",
     description: "Corporate filings from the SEC full-text search API",
-    author: "meridian",
+    author: "seraph",
     pollIntervalMs: 3_600_000,
     webhookSupported: false,
     entityTypes: ["event", "organization"],
@@ -50,7 +50,7 @@ export const edgarConnector = defineConnector({
     forms: "8-K",
     dateRange: "1m",
     maxRecords: "20",
-    userAgent: "Meridian OSINT Research demo@meridian.local",
+    userAgent: "Seraph OSINT Research demo@seraph.local",
   },
 
   async configure(config) {

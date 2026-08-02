@@ -8,6 +8,6 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env.DATABASE_URL ?? "postgresql://meridian:password@localhost:5432/meridian",
+    url: process.env.DATABASE_URL ?? "postgresql://seraph:password@localhost:5432/seraph",
   },
 });

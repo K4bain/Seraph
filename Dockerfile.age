@@ -1,5 +1,5 @@
 # ================================================================
-# Meridian AGE Postgres — custom container for Railway (no native
+# Seraph AGE Postgres — custom container for Railway (no native
 # Apache AGE plugin). Self-contained: nothing is COPYed from the
 # repo, so it builds under any Railway root directory / context.
 # Mirrors the canonical bootstrap in prisma/graph/age-init.sql.
@@ -20,8 +20,8 @@ SET search_path = ag_catalog, "$user", public;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = 'meridian') THEN
-    PERFORM ag_catalog.create_graph('meridian');
+  IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = 'seraph') THEN
+    PERFORM ag_catalog.create_graph('seraph');
   END IF;
 END $$;
 SQL

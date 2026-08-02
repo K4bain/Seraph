@@ -1,5 +1,5 @@
 # ================================================================
-# Meridian — multi-stage build
+# Seraph — multi-stage build
 # Stage 1: install dependencies
 # Stage 2: build the Next.js app
 # Stage 3: minimal production image (standalone output)
@@ -9,8 +9,8 @@ FROM node:24-alpine AS deps
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
-COPY packages/meridian-graph-types/package.json packages/meridian-graph-types/package.json
-COPY packages/meridian-connector-sdk/package.json packages/meridian-connector-sdk/package.json
+COPY packages/seraph-graph-types/package.json packages/seraph-graph-types/package.json
+COPY packages/seraph-connector-sdk/package.json packages/seraph-connector-sdk/package.json
 COPY prisma/ prisma/
 RUN pnpm install --frozen-lockfile
 

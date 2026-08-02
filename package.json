@@ -1,8 +1,8 @@
 {
-  "name": "meridian",
+  "name": "seraph",
   "version": "0.1.0",
   "private": true,
-  "description": "Meridian — open-source intelligence fusion platform. Graph-first, AI-native investigation canvases for OSINT researchers.",
+  "description": "Seraph — open-source intelligence fusion platform. Graph-first, AI-native investigation canvases for OSINT researchers.",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=20"
@@ -37,8 +37,8 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "leaflet": "^1.9.4",
-    "meridian-connector-sdk": "workspace:^",
-    "meridian-graph-types": "workspace:^",
+    "seraph-connector-sdk": "workspace:^",
+    "seraph-graph-types": "workspace:^",
     "next": "15",
     "next-auth": "5.0.0-beta.32",
     "pg": "^8.22.0",

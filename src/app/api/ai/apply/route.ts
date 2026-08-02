@@ -11,6 +11,7 @@ import {
   analysisToEvents,
   type AnalysisResult,
 } from "@/core/ai/tasks/analyze";
+import { publishFeedEvent } from "@/core/stream/publish";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,20 @@ export async function POST(req: Request) {
       SOURCE_URL,
     );
     const result = await ingestEvents(events, body.canvasId);
+    void publishFeedEvent({
+      kind: "batch",
+      id: `ai:apply:${body.canvasId}:${Date.now().toString(36)}`,
+      ts: new Date().toISOString(),
+      source: "ai",
+      canvasId: body.canvasId,
+      action: "applied",
+      summary: {
+        cardsCreated: result.cardsCreated,
+        cardsUpdated: result.cardsUpdated,
+        cardsSkipped: result.cardsSkipped,
+        edgesProposed: result.edgesProposed,
+      },
+    });
     return Response.json({ applied: true, result });
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown_error";

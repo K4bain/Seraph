@@ -19,6 +19,7 @@ import "../src/connectors";
 import { seraphBus } from "../src/core/stream/bus";
 import { streamTopic } from "../src/core/stream/types";
 import { ingestEvents } from "../src/core/ingest/ingest";
+import { publishFeedEvent } from "../src/core/stream/publish";
 
 const worker = new Worker<ConnectorJobData>(
   connectorQueue.name,
@@ -48,6 +49,19 @@ const worker = new Worker<ConnectorJobData>(
       seraphBus.publish(streamTopic(event.connectorId), event);
       emitted += 1;
       batch.push(event);
+      void publishFeedEvent({
+        kind: "entity",
+        id: `${event.connectorId}:${event.entity.externalId}:${event.fetchedAt}`,
+        ts: new Date().toISOString(),
+        source: event.connectorId,
+        connectorId: event.connectorId,
+        canvasId,
+        jobId: String(job.id),
+        entityType: event.entityType,
+        name: event.entity.name,
+        externalId: event.entity.externalId,
+        action: "emitted",
+      });
     }
 
     if (canvasId && batch.length > 0) {
@@ -57,6 +71,22 @@ const worker = new Worker<ConnectorJobData>(
         `Ingested into "${canvasId}": ${result.cardsCreated} created, ${result.cardsUpdated} updated, ` +
           `${result.cardsSkipped} duplicates, ${result.edgesProposed} edges proposed`,
       );
+      void publishFeedEvent({
+        kind: "batch",
+        id: `${connectorId}:batch:${job.id}:${Date.now().toString(36)}`,
+        ts: new Date().toISOString(),
+        source: connectorId,
+        connectorId,
+        canvasId,
+        jobId: String(job.id),
+        action: "applied",
+        summary: {
+          cardsCreated: result.cardsCreated,
+          cardsUpdated: result.cardsUpdated,
+          cardsSkipped: result.cardsSkipped,
+          edgesProposed: result.edgesProposed,
+        },
+      });
     }
 
     job.log(`Emitted ${emitted} EntityStreamEvent(s), ingested ${ingested}`);

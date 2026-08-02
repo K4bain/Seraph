@@ -20,6 +20,7 @@ import { connectorQueue } from "../../../workers/queues";
 import { prisma } from "../db";
 import { getGraph } from "../graph/age";
 import { ingestEvents } from "../ingest/ingest";
+import { publishFeedEvent } from "../stream/publish";
 import type { EntityStreamEvent, EntityType, SourceRef } from "seraph-graph-types";
 import "../../connectors";
 
@@ -362,6 +363,20 @@ export function createMcpServer(): McpServer {
       };
       try {
         const result = await ingestEvents([event], canvasId);
+        void publishFeedEvent({
+          kind: "batch",
+          id: `mcp:propose:${canvasId}:${Date.now().toString(36)}`,
+          ts: new Date().toISOString(),
+          source: "mcp",
+          canvasId,
+          action: "proposed",
+          summary: {
+            cardsCreated: result.cardsCreated,
+            cardsUpdated: result.cardsUpdated,
+            cardsSkipped: result.cardsSkipped,
+            edgesProposed: result.edgesProposed,
+          },
+        });
         return {
           content: [
             {

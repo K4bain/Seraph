@@ -28,6 +28,7 @@ const sections: { label: string; links: NavLink[] }[] = [
     label: "Platform",
     links: [
       { href: "/connectors", label: "Connectors" },
+      { href: "/feed", label: "Live Feed" },
       { href: "/health", label: "System" },
       { href: "/settings", label: "Settings" },
     ],

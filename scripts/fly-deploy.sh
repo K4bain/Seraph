@@ -36,8 +36,8 @@ echo "==> Region: $REGION (set FLY_REGION to override)"
 # App 2 — seraph-age (Apache AGE Postgres, private + persistent)
 # ---------------------------------------------------------------
 echo "==> [1/7] seraph-age (AGE Postgres)"
-if ! fly apps show seraph-age >/dev/null 2>&1; then
-  fly apps create seraph-age --machines --name seraph-age
+if ! fly apps list 2>/dev/null | grep -qx seraph-age; then
+  fly apps create seraph-age
 fi
 if ! fly volumes list -a seraph-age | grep -q age_data; then
   echo "    creating age_data volume (1GB)..."
@@ -65,8 +65,8 @@ fly ssh console -a seraph-age -C "psql -U postgres -d meridian -c \"CREATE EXTEN
 # App 4 (addition) — seraph-worker (BullMQ connector worker)
 # ---------------------------------------------------------------
 echo "==> [3/7] seraph-worker (BullMQ connector worker)"
-if ! fly apps show seraph-worker >/dev/null 2>&1; then
-  fly apps create seraph-worker --machines --name seraph-worker
+if ! fly apps list 2>/dev/null | grep -qx seraph-worker; then
+  fly apps create seraph-worker
 fi
 fly secrets set -a seraph-worker \
   "DATABASE_URL=$DATABASE_URL" \
@@ -79,8 +79,8 @@ fly deploy -c fly.worker.toml -a seraph-worker --region "$REGION" --yes
 # App 3 — seraph-collab (Yjs WebSocket server)
 # ---------------------------------------------------------------
 echo "==> [4/7] seraph-collab (Yjs WebSocket server)"
-if ! fly apps show seraph-collab >/dev/null 2>&1; then
-  fly apps create seraph-collab --machines --name seraph-collab
+if ! fly apps list 2>/dev/null | grep -qx seraph-collab; then
+  fly apps create seraph-collab
 fi
 fly deploy -c fly.collab.toml -a seraph-collab --region "$REGION" --yes
 
@@ -88,8 +88,8 @@ fly deploy -c fly.collab.toml -a seraph-collab --region "$REGION" --yes
 # App 1 — seraph-app (main Next.js app) + secrets
 # ---------------------------------------------------------------
 echo "==> [5/7] seraph-app (main app)"
-if ! fly apps show seraph-app >/dev/null 2>&1; then
-  fly apps create seraph-app --machines --name seraph-app
+if ! fly apps list 2>/dev/null | grep -qx seraph-app; then
+  fly apps create seraph-app
 fi
 
 # Real secrets from .env; everything from .env.example is covered.

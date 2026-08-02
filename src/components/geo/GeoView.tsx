@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import L from "leaflet";
+import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import styles from "./GeoView.module.css";
+
+type LeafletModule = typeof import("leaflet");
 
 export interface GeoMarkerData {
   id: string;
@@ -20,7 +21,7 @@ const DARK_TILES = {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
 };
 
-function markerIcon(approximate: boolean): L.DivIcon {
+function markerIcon(L: LeafletModule, approximate: boolean): L.DivIcon {
   return L.divIcon({
     className: "",
     html: `<div class="${approximate ? "geo-dot geo-dot--approx" : "geo-dot"}"><span class="geo-dot__core"></span></div>`,
@@ -33,37 +34,51 @@ export default function GeoView({ markers }: { markers: GeoMarkerData[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const LRef = useRef<LeafletModule | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, {
-      zoomControl: false,
-      attributionControl: true,
+    let disposed = false;
+
+    // Leaflet touches `window` at import time, so it must never load during SSR.
+    void import("leaflet").then((L) => {
+      if (disposed || !containerRef.current) return;
+      LRef.current = L;
+      const map = L.map(containerRef.current, {
+        zoomControl: false,
+        attributionControl: true,
+      });
+      map.attributionControl.setPrefix(false);
+      L.control.zoom({ position: "bottomright" }).addTo(map);
+      L.tileLayer(DARK_TILES.url, {
+        attribution: DARK_TILES.attribution,
+        maxZoom: 19,
+      }).addTo(map);
+      layerRef.current = L.layerGroup().addTo(map);
+      map.setView([25, 10], 2);
+      mapRef.current = map;
+      setReady(true);
     });
-    map.attributionControl.setPrefix(false);
-    L.control.zoom({ position: "bottomright" }).addTo(map);
-    L.tileLayer(DARK_TILES.url, {
-      attribution: DARK_TILES.attribution,
-      maxZoom: 19,
-    }).addTo(map);
-    layerRef.current = L.layerGroup().addTo(map);
-    map.setView([25, 10], 2);
-    mapRef.current = map;
+
     return () => {
-      map.remove();
+      disposed = true;
+      mapRef.current?.remove();
       mapRef.current = null;
       layerRef.current = null;
+      LRef.current = null;
     };
   }, []);
 
   useEffect(() => {
     const layer = layerRef.current;
     const map = mapRef.current;
-    if (!layer || !map) return;
+    const L = LRef.current;
+    if (!layer || !map || !L) return;
     layer.clearLayers();
     const bounds = L.latLngBounds([]);
     for (const marker of markers) {
-      const icon = markerIcon(marker.approximate);
+      const icon = markerIcon(L, marker.approximate);
       const popup = L.popup({
         closeButton: false,
         offset: [0, -8],
@@ -80,7 +95,7 @@ export default function GeoView({ markers }: { markers: GeoMarkerData[] }) {
     }
     if (markers.length > 0) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 6 });
     else map.setView([25, 10], 2);
-  }, [markers]);
+  }, [markers, ready]);
 
   return <div ref={containerRef} className={styles.map} />;
 }

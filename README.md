@@ -9,12 +9,16 @@ narratives, and build shareable investigation canvases where every entity is a
 node, every relationship is an edge, and every insight is a version-controlled
 object.
 
-**Status:** v0.1 — Phases 1–3. Canvas persistence (snapshot autosave, edge
-inspector, inline card editing), realtime presence (Yjs cursors/selection), and
-the Phase 3 connector runtime: OpenSanctions, GDELT DOC API, and SEC EDGAR
-connectors with a canvas ingestion engine (dedup + proposed edges), a no-Redis
+**Status:** v0.1 — Phases 1–3 + 5 complete. Canvas persistence (snapshot
+autosave, edge inspector, inline card editing), realtime presence (Yjs
+cursors/selection), the Phase 3 connector runtime (OpenSanctions, GDELT DOC API,
+SEC EDGAR) with a canvas ingestion engine (dedup + proposed edges), a no-Redis
 run CLI (`pnpm tsx scripts/run-connector.ts`), a BullMQ worker path, and a
-`/api/connectors` HTTP API.
+`/api/connectors` HTTP API. The AGE graph import bridge mirrors confirmed
+canvas records into the Apache AGE property graph (`POST /api/graph/import`,
+gated by `ENABLE_GRAPH_IMPORT=true`). Phase 5 adds the timeline + geo lenses
+(Leaflet, `?canvas=` parameterized), client-side PDF export (jsPDF intelligence
+report), JSON snapshot export, and token-based shareable read-only links.
 
 ## Quickstart
 

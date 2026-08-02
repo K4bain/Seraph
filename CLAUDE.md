@@ -6,7 +6,7 @@
 investigation canvases for OSINT researchers, journalists, and analysts.
 
 - License: Apache 2.0
-- Status: v0.1 (Phase 1 foundation scaffold)
+- Status: v0.1 (Phases 1–3 + 5 complete; Phase 4 AI layer parked)
 - Full product brief: the repository README + `docs/`
 
 ## Stack (do not swap without a design discussion)
@@ -89,12 +89,18 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   → live connectors + canvas ingestion engine + `/api/connectors` + run CLI +
   status dashboard (live queue/job/canvas stats) + run-from-UI page.
   Verified against Upstash Redis (`rediss://` URL in REDIS_URL) — queue,
-  worker, job logs, dedup all confirmed. Remaining: AGE graph import.
+  worker, job logs, dedup all confirmed. AGE graph import bridge shipped:
+  `importCanvasToGraph()` writes confirmed entities/edges into the AGE
+  property graph via idempotent MERGE, gated by `ENABLE_GRAPH_IMPORT=true`,
+  with a `POST /api/graph/import` route for manual triggering.
 - Phase 4 (parked): AI layer — extraction + edge inference code exists
   (`src/core/ai/tasks/analyze.ts`, /api/ai/analyze + /api/ai/apply, canvas
   "AI" panel) but is idle: ANTHROPIC_API_KEY is unset and the user chose to
   defer AI work. Do not spend effort here unless asked.
-- Phase 5 (in progress): timeline, geo (Leaflet), PDF/JSON export, shareable links
+- Phase 5 (done): timeline, geo (Leaflet), PDF + JSON export, shareable links.
+  Timeline + geo pages accept `?canvas=` query param (default: demo). PDF
+  export is client-side via jsPDF (reads live canvas store state). Share
+  links are token-capability read-only views at `/share/[token]`.
 
 ## Milestone checklist for new work
 

@@ -28,6 +28,8 @@ RUN mkdir -p /app/public
 ARG NEXT_PUBLIC_WS_SERVER_URL
 ENV NEXT_PUBLIC_WS_SERVER_URL=${NEXT_PUBLIC_WS_SERVER_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
+# CesiumJS static assets land in public/cesium for the runner stage.
+RUN node scripts/copy-cesium.mjs
 RUN pnpm db:generate && pnpm build
 
 FROM node:24-alpine AS runner

@@ -22,6 +22,7 @@ const sections: { label: string; links: NavLink[] }[] = [
     links: [
       { href: "/timeline", label: "Timeline" },
       { href: "/geo", label: "Geo View" },
+      { href: "/globe", label: "Globe 3D" },
     ],
   },
   {

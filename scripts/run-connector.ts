@@ -43,6 +43,7 @@ async function main(): Promise<void> {
     ["hoursBack", process.argv.indexOf("--hours")],
     ["forms", process.argv.indexOf("--forms")],
     ["dateRange", process.argv.indexOf("--daterange")],
+    ["baseUrl", process.argv.indexOf("--base-url")],
     ["userAgent", process.argv.indexOf("--user-agent")],
   ] as const) {
     if (index >= 0) {

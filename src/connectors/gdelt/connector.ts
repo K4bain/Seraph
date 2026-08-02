@@ -14,12 +14,21 @@ import type { EntityStreamEvent } from "meridian-graph-types";
 const API_BASE = "https://api.gdeltproject.org/api/v2/doc/doc";
 const FETCH_TIMEOUT_MS = 20_000;
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 function hoursAgo(hours: number): string {
   const d = new Date(Date.now() - hours * 3_600_000);
   return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(
     d.getUTCDate(),
   ).padStart(2, "0")}${String(d.getUTCHours()).padStart(2, "0")}0000`;
 }
+
+interface GdelArticles {
+  articles?: { url?: string; title?: string; seendate?: string; domain?: string; language?: string }[];
+}
+
+/** Rate-limit signal — the mirror won't help, the server itself is throttling. */
+class RateLimitedError extends Error {}
 
 export const gdeltConnector = defineConnector({
   manifest: {
@@ -34,7 +43,7 @@ export const gdeltConnector = defineConnector({
   },
 
   config: {
-    query: '"sanctions" OR "oligarch"',
+    query: '("sanctions" OR "oligarch")',
     maxRecords: "25",
     hoursBack: "48",
     /** API host — override to point at a mirror/proxy when the default is blocked. */
@@ -43,6 +52,41 @@ export const gdeltConnector = defineConnector({
 
   async configure(config) {
     this.config = { ...this.config, ...config };
+  },
+
+  /** One URL, up to 3 attempts with backoff; 429s surface as RateLimitedError. */
+  async fetchWithRetry(url: string): Promise<GdelArticles> {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await sleep(5_000 * 2 ** (attempt - 1));
+      const res = await fetch(url, {
+        headers: { "User-Agent": "meridian-connector/0.1 (OSINT research)" },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+
+      if (res.status === 429) {
+        if (attempt === 2) throw new RateLimitedError("gdelt: rate limited by API after retries (429)");
+        continue;
+      }
+      if (!res.ok) {
+        throw new Error(`gdelt: API returned ${res.status} ${res.statusText}`);
+      }
+
+      const text = await res.text();
+      try {
+        return JSON.parse(text) as GdelArticles;
+      } catch {
+        // GDELT serves its rate-limit / error page with a 200 and a
+        // plain-text body ("Queries cannot be processed…", "limit
+        // requests to one every 5 seconds…"). Recognize it instead of
+        // dying on a JSON parse error.
+        const snippet = text.slice(0, 160).replace(/\s+/g, " ").trim();
+        if (/queries|limit requests|please try again/i.test(snippet)) {
+          throw new RateLimitedError(`gdelt: API throttled — ${snippet}`);
+        }
+        throw new Error(`gdelt: unexpected response — ${snippet}`);
+      }
+    }
+    throw new RateLimitedError("gdelt: rate limited by API after retries (429)");
   },
 
   async *poll() {
@@ -62,17 +106,28 @@ export const gdeltConnector = defineConnector({
       startdatetime: hoursAgo(hoursBack),
     });
 
-    const res = await fetch(`${this.config.baseUrl ?? API_BASE}?${params}`, {
-      headers: { "User-Agent": "meridian-connector/0.1 (OSINT research)" },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!res.ok) {
-      throw new Error(`gdelt: API returned ${res.status} ${res.statusText}`);
-    }
+    // Some networks block HTTPS to GDELT (TLS filtered) but allow plain
+    // HTTP. Prefer the configured base; fall back to the http:// mirror
+    // on transport-level failures only — a 429/4xx/5xx from the server
+    // means the mirror is pointless, so those propagate.
+    const base = (this.config.baseUrl ?? API_BASE).replace(/\/+$/, "");
+    const candidates = [
+      base,
+      ...(base.startsWith("https://") ? [base.replace(/^https:/, "http:")] : []),
+    ];
 
-    const data = (await res.json()) as {
-      articles?: { url?: string; title?: string; seendate?: string; domain?: string; language?: string }[];
-    };
+    let data: GdelArticles | undefined;
+    let lastError: unknown;
+    for (const candidate of candidates) {
+      try {
+        data = await this.fetchWithRetry(`${candidate}?${params}`);
+        break;
+      } catch (error) {
+        lastError = error;
+        if (error instanceof RateLimitedError) throw error;
+      }
+    }
+    if (!data) throw lastError;
 
     for (const article of data.articles ?? []) {
       const url = article.url ?? "";

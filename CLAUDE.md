@@ -89,7 +89,11 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   → live connectors + canvas ingestion engine + `/api/connectors` + run CLI +
   status dashboard (live queue/job/canvas stats) + run-from-UI page.
   Verified against Upstash Redis (`rediss://` URL in REDIS_URL) — queue,
-  worker, job logs, dedup all confirmed. AGE graph import bridge shipped:
+  worker, job logs, dedup all confirmed. GDELT verified live: HTTPS to
+  `api.gdeltproject.org` is TLS-filtered on this network, so the connector
+  auto-falls back to plain HTTP and retries with backoff on the API's
+  per-IP rate limit (1 req / 5 s); OR'd terms in queries must be wrapped in
+  parens: `("a" OR "b")`. AGE graph import bridge shipped:
   `importCanvasToGraph()` writes confirmed entities/edges into the AGE
   property graph via idempotent MERGE, gated by `ENABLE_GRAPH_IMPORT=true`,
   with a `POST /api/graph/import` route for manual triggering.

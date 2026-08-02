@@ -120,16 +120,17 @@ fly deploy -c fly.toml -a seraph-app --region "$REGION" --yes
 # Cron jobs (keep-warm x2, connector polling, graph import)
 # ---------------------------------------------------------------
 if [ "${1:-}" != "--skip-cron" ]; then
-  echo "==> [6/7] Fly machine cron jobs"
-  create_cron() {
-    if ! fly cron create "$1" "$2" --app seraph-app --image alpine:3.20 --region "$REGION" --name "$3"; then
-      echo "    cron '$3' failed (may already exist) — check: fly cron list -a seraph-app"
+  echo "==> [6/7] Fly scheduled machines (cron)"
+  create_cron() { # $1=name $2=schedule $3=command
+    if ! fly machine run alpine:3.20 --app seraph-app --region "$REGION" \
+      --schedule "$2" --command "$3" --name "$1" --restart never; then
+      echo "    scheduled machine '$1' failed (may already exist) — check: fly machine list -a seraph-app"
     fi
   }
-  create_cron "*/5 * * * *" "wget -qO- --spider https://seraph-app.fly.dev/api/health" keep-warm-app
-  create_cron "*/5 * * * *" "wget -qO- --spider https://seraph-collab.fly.dev" keep-warm-collab
-  create_cron "*/30 * * * *" "wget -qO- --post-data='{\"connectorId\":\"gdelt\",\"canvasId\":\"demo\"}' --header='Content-Type: application/json' https://seraph-app.fly.dev/api/connectors; wget -qO- --post-data='{\"connectorId\":\"opensanctions\",\"canvasId\":\"demo\"}' --header='Content-Type: application/json' https://seraph-app.fly.dev/api/connectors; wget -qO- --post-data='{\"connectorId\":\"edgar\",\"canvasId\":\"demo\"}' --header='Content-Type: application/json' https://seraph-app.fly.dev/api/connectors" poll-connectors
-  create_cron "0 * * * *" "wget -qO- --post-data='{\"canvasId\":\"demo\"}' --header='Content-Type: application/json' https://seraph-app.fly.dev/api/graph/import" graph-import
+  create_cron keep-warm-app "*/5 * * * *" "wget -qO- --spider https://seraph-app.fly.dev/api/health"
+  create_cron keep-warm-collab "*/5 * * * *" "wget -qO- --spider https://seraph-collab.fly.dev"
+  create_cron poll-connectors "*/30 * * * *" "wget -qO- --post-data='{\"connectorId\":\"gdelt\",\"canvasId\":\"demo\"}' --header='Content-Type: application/json' https://seraph-app.fly.dev/api/connectors; wget -qO- --post-data='{\"connectorId\":\"opensanctions\",\"canvasId\":\"demo\"}' --header='Content-Type: application/json' https://seraph-app.fly.dev/api/connectors; wget -qO- --post-data='{\"connectorId\":\"edgar\",\"canvasId\":\"demo\"}' --header='Content-Type: application/json' https://seraph-app.fly.dev/api/connectors"
+  create_cron graph-import "0 * * * *" "wget -qO- --post-data='{\"canvasId\":\"demo\"}' --header='Content-Type: application/json' https://seraph-app.fly.dev/api/graph/import"
 else
   echo "==> [6/7] cron skipped (--skip-cron)"
 fi

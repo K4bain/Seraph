@@ -1,7 +1,8 @@
 # ================================================================
-# Fly.io machine cron jobs for Meridian (seraph-app).
+# Fly.io scheduled machines for Meridian (seraph-app).
 # This file is the canonical spec; scripts/fly-deploy.sh applies it
-# via `fly cron create` (alpine image with busybox wget).
+# via `fly machine run --schedule` (alpine image with busybox wget,
+# --restart never so machines stop after each run).
 # ================================================================
 
 jobs:

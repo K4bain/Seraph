@@ -20,6 +20,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
 COPY . .
+# public/ must exist for the runner stage; keep it even if the repo
+# drops the directory (Next.js tolerates an empty one).
+RUN mkdir -p /app/public
 # NEXT_PUBLIC_* vars are inlined into the client bundle at build time —
 # supplied via fly.toml [build.args] (e.g. the collab WebSocket URL).
 ARG NEXT_PUBLIC_WS_SERVER_URL

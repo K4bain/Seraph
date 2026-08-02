@@ -19,7 +19,7 @@ const worker = new Worker<AiJobData>(
 
     const ai = getAiClient();
     if (!ai.isConfigured()) {
-      job.log("ANTHROPIC_API_KEY not set — skipping AI task");
+      job.log("OPENROUTER_API_KEY not set — skipping AI task");
       return;
     }
 

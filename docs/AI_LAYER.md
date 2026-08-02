@@ -50,19 +50,20 @@ Input (URL / document / canvas selection / NL query)
 ## Client surface
 
 `src/core/ai/client.ts` ships the typed `complete()` surface plus
-`completeStructured()` (tool_use). Extraction + edge inference run
+`completeStructured()` (function calling). Extraction + edge inference run
 interactively via `src/core/ai/tasks/analyze.ts` behind `POST /api/ai/analyze`
 (preview only) and `POST /api/ai/apply` (analyst-confirmed write through the
 connector ingest pipeline). Anomaly flags, narrative briefing, and NL query
 stay behind `AiJobData.task` in `workers/queues.ts` for the AI worker / later
 subphases.
 
-## Structured output via tool_use
+## Structured output via function calling
 
-Extraction uses Anthropic function calling to force a stable JSON shape
-matching `RawEntity` / `RawRelationship` from `meridian-graph-types` —
-freeform text is never written to the graph. Schema drift is caught by the
-worker against the canonical types before anything is proposed.
+Extraction uses OpenRouter function calling (OpenAI-compatible) to force a
+stable JSON shape matching `RawEntity` / `RawRelationship` from
+`meridian-graph-types` — freeform text is never written to the graph. Schema
+drift is caught by the worker against the canonical types before anything is
+proposed.
 
 ## Embeddings & semantic dedup
 

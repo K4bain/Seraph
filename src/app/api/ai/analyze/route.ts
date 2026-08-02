@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   } catch (error) {
     if (error instanceof AiNotConfiguredError) {
       return Response.json(
-        { error: "ai_not_configured", hint: "Set ANTHROPIC_API_KEY in .env to enable the AI layer." },
+        { error: "ai_not_configured", hint: "Set OPENROUTER_API_KEY in .env to enable the AI layer." },
         { status: 503 },
       );
     }

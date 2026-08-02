@@ -75,8 +75,9 @@ relational tables coexist in the same database.
   topic convention (`stream:<connectorId>`).
 
 ### src/core/ai (Phase 4 surface, skeleton now)
-- `client.ts` — server-only Anthropic client (`complete()`), request-id
-  logging for auditability. `AiNotConfiguredError` when the key is missing.
+- `client.ts` — server-only OpenRouter client (`complete()`,
+  `completeStructured()` via function calling), request-id logging for
+  auditability. `AiNotConfiguredError` when the key is missing.
 
 ### src/core/collab
 - `presence.ts` — Phase 2 target shapes (Yjs + y-websocket); no-op channel

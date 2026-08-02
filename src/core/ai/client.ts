@@ -1,18 +1,20 @@
 /**
  * AI reasoning layer — server-only.
  *
- * Phase 1 ships the typed client surface only (no provider key is
- * required to boot). Phase 4 fills in entity extraction, edge
- * inference, anomaly flagging, and narrative generation on top of
- * `complete()`.
+ * Provider: OpenRouter (OpenAI-compatible chat completions + function
+ * calling). No provider key is required to boot; the layer activates
+ * when OPENROUTER_API_KEY is set.
  *
  * Every call is logged with a request id so AI output stays
  * attributable (design principle #1: provenance is non-negotiable).
  */
 
-const API_URL = "https://api.anthropic.com/v1/messages";
+const API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-export type AiModel = "claude-sonnet-4-6";
+/** OpenRouter model id, e.g. "anthropic/claude-sonnet-4.6". Override via OPENROUTER_MODEL. */
+const DEFAULT_MODEL = "anthropic/claude-sonnet-4.6";
+
+export type AiModel = string;
 
 export interface AiMessage {
   role: "user" | "assistant";
@@ -29,6 +31,7 @@ export interface AiRequest {
 export interface AiToolDefinition {
   name: string;
   description?: string;
+  /** JSON schema of the tool input (OpenAI "parameters" shape). */
   inputSchema: Record<string, unknown>;
 }
 
@@ -56,15 +59,19 @@ export interface AiStructuredResponse {
 
 export class AiNotConfiguredError extends Error {
   constructor() {
-    super("ANTHROPIC_API_KEY is not set. Add it to .env to enable the AI layer.");
+    super("OPENROUTER_API_KEY is not set. Add it to .env to enable the AI layer.");
     this.name = "AiNotConfiguredError";
   }
+}
+
+function resolveModel(request: AiRequest): string {
+  return request.model ?? process.env.OPENROUTER_MODEL ?? DEFAULT_MODEL;
 }
 
 export class AiClient {
   private readonly apiKey: string | undefined;
 
-  constructor(apiKey = process.env.ANTHROPIC_API_KEY) {
+  constructor(apiKey = process.env.OPENROUTER_API_KEY) {
     this.apiKey = apiKey;
   }
 
@@ -75,119 +82,130 @@ export class AiClient {
   async complete(request: AiRequest): Promise<AiResponse> {
     if (!this.apiKey) throw new AiNotConfiguredError();
     const requestId = crypto.randomUUID();
+    const model = resolveModel(request);
 
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": this.apiKey,
-        "anthropic-version": "2023-06-01",
+        authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
-        model: request.model ?? "claude-sonnet-4-6",
-        system: request.system,
-        messages: request.messages,
+        model,
+        messages: [
+          ...(request.system ? [{ role: "system", content: request.system }] : []),
+          ...request.messages,
+        ],
         max_tokens: request.maxTokens ?? 4096,
       }),
     });
 
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Anthropic API ${response.status}: ${body.slice(0, 300)}`);
-    }
-
-    const data = (await response.json()) as {
-      id: string;
-      model: string;
-      content: Array<{ type: string; text?: string }>;
-      usage: { input_tokens: number; output_tokens: number };
-    };
-
-    const text = data.content
-      .filter((block) => block.type === "text")
-      .map((block) => block.text ?? "")
-      .join("");
+    const data = await parseCompletion(response);
+    const text = data.choices[0]?.message?.content ?? "";
 
     console.log(
-      `[ai] request ${requestId} ok — model=${data.model} in=${data.usage.input_tokens} out=${data.usage.output_tokens}`,
+      `[ai] request ${requestId} ok — model=${data.model} in=${data.usage?.prompt_tokens ?? "?"} out=${data.usage?.completion_tokens ?? "?"}`,
     );
 
     return {
       requestId,
       text,
       model: data.model as AiModel,
-      usage: { inputTokens: data.usage.input_tokens, outputTokens: data.usage.output_tokens },
+      usage: {
+        inputTokens: data.usage?.prompt_tokens ?? 0,
+        outputTokens: data.usage?.completion_tokens ?? 0,
+      },
     };
   }
 
   /**
-   * Structured completion via Anthropic tool_use. The model must call the
-   * given tool; its parsed input is returned alongside any text. Freeform
-   * prose is never written to the graph — callers validate the tool input
-   * against canonical types before proposing anything.
+   * Structured completion via OpenAI-style function calling. The model
+   * must call the given tool; its parsed input is returned alongside any
+   * text. Freeform prose is never written to the graph — callers validate
+   * the tool input against canonical types before proposing anything.
    */
   async completeStructured(request: AiRequest & { tools: AiToolDefinition[] }): Promise<AiStructuredResponse> {
     if (!this.apiKey) throw new AiNotConfiguredError();
     const requestId = crypto.randomUUID();
+    const model = resolveModel(request);
 
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": this.apiKey,
-        "anthropic-version": "2023-06-01",
+        authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
-        model: request.model ?? "claude-sonnet-4-6",
-        system: request.system,
-        messages: request.messages,
+        model,
+        messages: [
+          ...(request.system ? [{ role: "system", content: request.system }] : []),
+          ...request.messages,
+        ],
         max_tokens: request.maxTokens ?? 4096,
         tools: request.tools.map((tool) => ({
-          name: tool.name,
-          description: tool.description,
-          input_schema: tool.inputSchema,
+          type: "function",
+          function: {
+            name: tool.name,
+            description: tool.description,
+            parameters: tool.inputSchema,
+          },
         })),
-        tool_choice: { type: "tool", name: request.tools[0]?.name },
+        tool_choice: { type: "function", function: { name: request.tools[0]?.name } },
       }),
     });
 
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Anthropic API ${response.status}: ${body.slice(0, 300)}`);
+    const data = await parseCompletion(response);
+    const toolUses: AiToolUse[] = [];
+    for (const call of data.choices[0]?.message?.tool_calls ?? []) {
+      let input: Record<string, unknown> = {};
+      try {
+        input = call.function?.arguments ? (JSON.parse(call.function.arguments) as Record<string, unknown>) : {};
+      } catch {
+        input = {}; // malformed arguments — treat as empty rather than crashing the flow
+      }
+      toolUses.push({ id: call.id ?? "", name: call.function?.name ?? "", input });
     }
 
-    const data = (await response.json()) as {
-      id: string;
-      model: string;
-      content: Array<{ type: string; text?: string; id?: string; name?: string; input?: Record<string, unknown> }>;
-      usage: { input_tokens: number; output_tokens: number };
-    };
-
-    const toolUses: AiToolUse[] = data.content
-      .filter((block) => block.type === "tool_use")
-      .map((block) => ({
-        id: block.id ?? "",
-        name: block.name ?? "",
-        input: block.input ?? {},
-      }));
-
-    const text = data.content
-      .filter((block) => block.type === "text")
-      .map((block) => block.text ?? "")
-      .join("");
-
+    const text = data.choices[0]?.message?.content ?? "";
     console.log(
-      `[ai] request ${requestId} ok — model=${data.model} in=${data.usage.input_tokens} out=${data.usage.output_tokens} tools=${toolUses.length}`,
+      `[ai] request ${requestId} ok — model=${data.model} in=${data.usage?.prompt_tokens ?? "?"} out=${data.usage?.completion_tokens ?? "?"} tools=${toolUses.length}`,
     );
 
     return {
       requestId,
       text,
       model: data.model as AiModel,
-      usage: { inputTokens: data.usage.input_tokens, outputTokens: data.usage.output_tokens },
+      usage: {
+        inputTokens: data.usage?.prompt_tokens ?? 0,
+        outputTokens: data.usage?.completion_tokens ?? 0,
+      },
       toolUses,
     };
   }
+}
+
+interface OpenRouterChoice {
+  message?: {
+    content?: string | null;
+    tool_calls?: Array<{
+      id?: string;
+      function?: { name?: string; arguments?: string };
+    }>;
+  };
+}
+
+interface OpenRouterResponse {
+  model: string;
+  choices: OpenRouterChoice[];
+  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+}
+
+async function parseCompletion(response: Response): Promise<OpenRouterResponse> {
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`OpenRouter API ${response.status}: ${body.slice(0, 300)}`);
+  }
+  return (await response.json()) as OpenRouterResponse;
 }
 
 let _ai: AiClient | undefined;

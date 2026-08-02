@@ -18,7 +18,7 @@ investigation canvases for OSINT researchers, journalists, and analysts.
 - **Relational**: Prisma 7 (`prisma-client` generator → `src/generated/prisma`), `prisma.config.ts`
 - **Queues**: BullMQ + Redis (`workers/`)
 - **Realtime**: Yjs collab lands in Phase 2 (`src/core/collab/`)
-- **AI**: Anthropic API via `src/core/ai/client.ts` (server-only)
+- **AI**: OpenRouter API via `src/core/ai/client.ts` (server-only)
 - **Package manager**: pnpm workspaces (`packages/*`)
 
 ## Commands
@@ -47,7 +47,7 @@ src/core/                 platform internals — server-only unless marked other
   db.ts                   Prisma singleton (NEVER import in client components)
   stream/                 EventBus + EntityStream types
   graph/                  AGE client (age.ts), dedup fingerprints (dedup.ts)
-  ai/                     Anthropic client (client.ts), tasks land in Phase 4
+  ai/                     OpenRouter client (client.ts), tasks land in Phase 4
   collab/                 presence/collab stubs (Phase 2)
 src/store/canvas.ts       Zustand canvas store (nodes, edges, actions)
 packages/
@@ -68,7 +68,7 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
    carry source attribution (`SourceRef` / `Provenance`). Never drop it.
 4. **AI proposes, analysts decide.** Never auto-merge entities or auto-commit
    AI edges — write them as `proposed: true` and require confirmation.
-5. **Server-only discipline.** `pg`, `@anthropic-ai`, Prisma client, and the AGE
+5. **Server-only discipline.** `pg`, Prisma client, and the AGE
    client must never be imported from a client component. If a module uses
    `process.env` at import time it is server-only.
 6. **Shared types come from packages**, never duplicated in `src/`.
@@ -93,10 +93,11 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   `importCanvasToGraph()` writes confirmed entities/edges into the AGE
   property graph via idempotent MERGE, gated by `ENABLE_GRAPH_IMPORT=true`,
   with a `POST /api/graph/import` route for manual triggering.
-- Phase 4 (parked): AI layer — extraction + edge inference code exists
-  (`src/core/ai/tasks/analyze.ts`, /api/ai/analyze + /api/ai/apply, canvas
-  "AI" panel) but is idle: ANTHROPIC_API_KEY is unset and the user chose to
-  defer AI work. Do not spend effort here unless asked.
+- Phase 4 (in progress): AI layer — extraction + edge inference runs through
+  OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`) via
+  `src/core/ai/client.ts` (OpenAI-compatible function calling),
+  `src/core/ai/tasks/analyze.ts`, /api/ai/analyze + /api/ai/apply, canvas
+  "AI" panel. End-to-end verification pending a live key.
 - Phase 5 (done): timeline, geo (Leaflet), PDF + JSON export, shareable links.
   Timeline + geo pages accept `?canvas=` query param (default: demo). PDF
   export is client-side via jsPDF (reads live canvas store state). Share

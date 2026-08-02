@@ -19,7 +19,7 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "postinstall": "prisma generate && node scripts/copy-cesium.mjs",
+    "postinstall": "prisma generate && node -e \"if (require('fs').existsSync('scripts/copy-cesium.mjs')) require('child_process').execSync('node scripts/copy-cesium.mjs', { stdio: 'inherit' })\"",
     "copy:cesium": "node scripts/copy-cesium.mjs",
     "worker:connectors": "tsx workers/connector-runner.ts",
     "worker:ai": "tsx workers/ai-processor.ts",

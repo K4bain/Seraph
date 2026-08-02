@@ -105,10 +105,22 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   analyze → apply → 13 cards created, 4 proposed edges (8 duplicate edges
   skipped by the ingest dedup). Client falls back to instruction-only
   structured output when a provider can't enforce `tool_choice`.
-- Phase 5 (done): timeline, geo (Leaflet), PDF + JSON export, shareable links.
+- Phase 5 (done): timeline, geo (Leaflet), globe (CesiumJS — see below),
+  PDF + JSON export, shareable links.
   Timeline + geo pages accept `?canvas=` query param (default: demo). PDF
   export is client-side via jsPDF (reads live canvas store state). Share
   links are token-capability read-only views at `/share/[token]`.
+- Phase 5b (done): CesiumJS 3D globe lens at `/globe` (sidebar "Globe 3D").
+  `cesium@1.143` ships its own TS types (do not install `@types/cesium`);
+  static assets are copied from `node_modules/cesium/Build/Cesium` into
+  `public/cesium` by `scripts/copy-cesium.mjs` (also run in the Dockerfile
+  builder stage; `pnpm postinstall` runs it too). `GlobeView` uses a dark
+  CARTO basemap, pins + labels for every geolocated entity (via
+  `src/core/geo/gazetteer`), click-to-inspect card, camera fly-to bounds.
+  Terrain + Ion imagery activate when `NEXT_PUBLIC_CESIUM_ION_TOKEN` is set.
+  `eslint.config.mjs` ignores `public/cesium/**` (minified vendored JS).
+  Assets are committed to the repo (~7 MB) so builds never need Cesium at
+  build time beyond the npm dep.
 - Phase 6 (done): MCP endpoint. `/api/mcp` is a Streamable HTTP MCP server
   (Bearer `seraph_<id>.<secret>` keys from Settings → API Keys; only HMAC
   hashes stored, `API_KEY_HMAC_SECRET` or `AUTH_SECRET` as signing key).
@@ -119,6 +131,18 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   server compiles — `instrumentation.ts` compiles without
   `serverExternalPackages`, so optional deps (pg-native, valkey-glide)
   and `node:` imports must never be bundled (dev fails otherwise).
+- Phase 6b (done): live SSE feed at `/feed` + `/api/events` (hello → replay
+  of last 100 events from Redis list `seraph:feed:recent` → live subscribe
+  to channel `seraph:feed` → 15 s keepalive). Publishers: connector worker
+  (per-event "emitted", batch "applied"), AI apply, MCP propose_entity.
+  `src/core/stream/publish.ts` is best-effort (never throws). Redis clients
+  here must use `retryStrategy: () => null` + `connectTimeout` — the ioredis
+  default retry loop hangs forever against this network's Upstash endpoint.
+- Phase 6c (done): marketplace catalog at `/marketplace` — gallery of the
+  built-in connectors (manifest metadata: author, version, entity types,
+  poll interval, webhook support) with a target-canvas picker
+  (`GET /api/canvases`) and run buttons enqueuing via the same
+  `POST /api/connectors` path as the Connectors page.
 
 ## Deployment (Railway)
 
@@ -130,10 +154,10 @@ step-by-step: `scripts/railway-deploy.md`.
 | Service | Build | Config | Port | Notes |
 | --- | --- | --- | --- | --- |
 | `seraph-app` | repo `Dockerfile` (standalone) | `railway.toml` (root) | 3000 | public, healthcheck `/api/health`, start `node server.js` |
-| `seraph-age` | `Dockerfile.age` (apache/age:latest) | `services/age/railway.toml` | 5432 | private-only; volume `/var/lib/postgresql/data`; AGE auto-inited via initdb.d on first boot |
+| `seraph-age` | `Dockerfile.age` (apache/age:latest) | `services/age/railway.toml` | 5432 | private-only; volume `/var/lib/postgresql` (PG18 convention — NOT `/data`); AGE auto-inited via initdb.d on first boot |
 | `seraph-collab` | `Dockerfile.collab` | `services/collab/railway.toml` | 3001 | public, healthcheck `/`, start `pnpm collab:server` |
 | `seraph-worker` | `Dockerfile.worker` | `services/worker/railway.toml` | — | BullMQ consumer, start `pnpm worker:connectors` |
-| Redis | Railway plugin (free) | — | 6379 | `REDIS_URL` auto-injected into all services |
+| Redis | Railway plugin (free) | — | 6379 | `REDIS_URL` is injected into the plugin's own service only — set it explicitly on app + worker |
 | `cron-poll` | `Dockerfile.cron` (alpine+curl) | `services/cron-poll/railway.toml` | — | `*/30 * * * *`, `sh scripts/railway-cron-poll.sh` (POSTs 3 connectors) |
 | `cron-import` | `Dockerfile.cron` | `services/cron-import/railway.toml` | — | hourly, `sh scripts/railway-cron-import.sh` (POST /api/graph/import) |
 

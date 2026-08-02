@@ -8,6 +8,7 @@
  * Run with: pnpm worker:ai
  */
 
+import "dotenv/config";
 import { Worker } from "bullmq";
 import { connection, aiQueue, type AiJobData } from "./queues";
 import { getAiClient } from "../src/core/ai/client";

@@ -131,6 +131,22 @@ model CanvasSnapshot {
   @@unique([canvasId, version])
 }
 
+// ---------- API keys (MCP / programmatic access) ----------
+
+/// Machine credential for the MCP endpoint and future API surface.
+/// Only an HMAC hash of the key is stored; the plaintext `seraph_...`
+/// key is shown exactly once at creation.
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  keyHash    String    @unique
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  @@index([revokedAt])
+}
+
 // ---------- Share links ----------
 
 /// Read-only share token for a canvas (Phase 5). The token is the

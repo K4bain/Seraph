@@ -29,6 +29,7 @@ const sections: { label: string; links: NavLink[] }[] = [
     links: [
       { href: "/connectors", label: "Connectors" },
       { href: "/health", label: "System" },
+      { href: "/settings", label: "Settings" },
     ],
   },
 ] as const satisfies { label: string; links: NavLink[] }[];
@@ -39,7 +40,7 @@ export default function AppSidebar() {
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="brand-mark">M</div>
+        <div className="brand-mark">S</div>
         <div className="brand-name">Seraph</div>
       </div>
 

@@ -26,6 +26,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@neondatabase/serverless": "^1.1.0",
     "@prisma/adapter-neon": "7",
     "@prisma/adapter-pg": "7",
@@ -37,15 +38,16 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "leaflet": "^1.9.4",
-    "seraph-connector-sdk": "workspace:^",
-    "seraph-graph-types": "workspace:^",
     "next": "15",
     "next-auth": "5.0.0-beta.32",
     "pg": "^8.22.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "seraph-connector-sdk": "workspace:^",
+    "seraph-graph-types": "workspace:^",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.31",
+    "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

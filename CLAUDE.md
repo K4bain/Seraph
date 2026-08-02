@@ -109,6 +109,16 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   Timeline + geo pages accept `?canvas=` query param (default: demo). PDF
   export is client-side via jsPDF (reads live canvas store state). Share
   links are token-capability read-only views at `/share/[token]`.
+- Phase 6 (done): MCP endpoint. `/api/mcp` is a Streamable HTTP MCP server
+  (Bearer `seraph_<id>.<secret>` keys from Settings → API Keys; only HMAC
+  hashes stored, `API_KEY_HMAC_SECRET` or `AUTH_SECRET` as signing key).
+  Tools: list_connectors, run_connector, list_canvases, get_canvas,
+  search_entities, query_graph (read-only AGE), propose_entity (same
+  ingest pipeline as connectors/AI). `/api/keys` manages keys.
+  `next.config.ts` externalizes pg/bullmq/ioredis/dotenv/@prisma/* for
+  server compiles — `instrumentation.ts` compiles without
+  `serverExternalPackages`, so optional deps (pg-native, valkey-glide)
+  and `node:` imports must never be bundled (dev fails otherwise).
 
 ## Deployment (Railway)
 

@@ -10,6 +10,7 @@
  * Run with: pnpm worker:connectors  (needs Redis up)
  */
 
+import "dotenv/config";
 import { Worker } from "bullmq";
 import { connection, connectorQueue, type ConnectorJobData } from "./queues";
 import { getConnector } from "seraph-connector-sdk/runtime";

@@ -8,7 +8,6 @@
  * actual connector processors into connectorQueue.
  */
 
-import "dotenv/config";
 import { Queue, type ConnectionOptions } from "bullmq";
 
 function redisConnection(): ConnectionOptions {
@@ -26,8 +25,8 @@ function redisConnection(): ConnectionOptions {
 
 export interface ConnectorJobData {
   connectorId: string;
-  trigger: "schedule" | "webhook";
-  /** Target canvas for ingestion — events land here as cards + proposed edges. */
+  trigger: "schedule" | "webhook" | "mcp" | "manual";
+  /** Target canvas for ingestion �?" events land here as cards + proposed edges. */
   canvasId?: string;
   /** Raw connector config (query, limits, dataset, ...). Secrets stay server-side. */
   config?: Record<string, string>;

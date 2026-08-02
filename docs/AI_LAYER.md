@@ -17,7 +17,7 @@ all outputs land as *proposals* that require analyst confirmation
 4. **Auditable.** Every request gets a `requestId`, logged with model, token
    usage, and task. The prompt that produced a claim must be reproducible.
 
-## Pipeline (Phase 4)
+## Pipeline
 
 ```
 Input (URL / document / canvas selection / NL query)
@@ -53,9 +53,14 @@ Input (URL / document / canvas selection / NL query)
 `completeStructured()` (function calling). Extraction + edge inference run
 interactively via `src/core/ai/tasks/analyze.ts` behind `POST /api/ai/analyze`
 (preview only) and `POST /api/ai/apply` (analyst-confirmed write through the
-connector ingest pipeline). Anomaly flags, narrative briefing, and NL query
-stay behind `AiJobData.task` in `workers/queues.ts` for the AI worker / later
-subphases.
+connector ingest pipeline).
+
+**Implemented:** stages 1 (extraction) + 3 (edge inference), the analyze/apply
+API pair, and the canvas AI panel. Verified end-to-end with OpenRouter models.
+
+**Not yet wired (future subphases):** stage 2 (dedup + merge proposals
+surface), stage 4 (anomaly flagging, narrative briefing), and NL → Cypher
+query translation. These stay behind `AiJobData.task` in `workers/queues.ts`.
 
 ## Structured output via function calling
 
@@ -73,9 +78,9 @@ Exact-name matches always win; embeddings back the *proposal* tier.
 
 ## Natural language query
 
-Phase 4: NL → graph query translation. The translated Cypher is previewed to
-the analyst before execution — the AI never runs queries unseen (defense in
-depth: it *proposes* queries, analysts run them).
+Future subphase: NL → graph query translation. The translated Cypher will be
+previewed to the analyst before execution — the AI never runs queries unseen
+(defense in depth: it *proposes* queries, analysts run them).
 
 ## Safety
 

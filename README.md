@@ -9,16 +9,14 @@ narratives, and build shareable investigation canvases where every entity is a
 node, every relationship is an edge, and every insight is a version-controlled
 object.
 
-**Status:** v0.1 — Phases 1–3 + 5 complete. Canvas persistence (snapshot
+**Status:** v0.1 — all core phases complete. Canvas persistence (snapshot
 autosave, edge inspector, inline card editing), realtime presence (Yjs
-cursors/selection), the Phase 3 connector runtime (OpenSanctions, GDELT DOC API,
-SEC EDGAR) with a canvas ingestion engine (dedup + proposed edges), a no-Redis
-run CLI (`pnpm tsx scripts/run-connector.ts`), a BullMQ worker path, and a
-`/api/connectors` HTTP API. The AGE graph import bridge mirrors confirmed
-canvas records into the Apache AGE property graph (`POST /api/graph/import`,
-gated by `ENABLE_GRAPH_IMPORT=true`). Phase 5 adds the timeline + geo lenses
-(Leaflet, `?canvas=` parameterized), client-side PDF export (jsPDF intelligence
-report), JSON snapshot export, and token-based shareable read-only links.
+cursors/selection), connector runtime (OpenSanctions, GDELT DOC API, SEC EDGAR)
+with BullMQ workers, AGE graph import bridge, AI extraction/inference via
+OpenRouter (function calling, proposed edges), timeline + geo lenses (Leaflet),
+3D globe (CesiumJS), client-side PDF export (jsPDF), JSON snapshot export,
+token-based shareable links, MCP endpoint (`/api/mcp`), live SSE feed, and a
+connector marketplace gallery. Deployed to Railway with Docker Compose fallback.
 
 ## Quickstart
 
@@ -52,15 +50,22 @@ worker:connectors`, `pnpm worker:ai`.
 
 ```
 src/app/                  App Router routes — server components by default
-src/components/canvas/    React Flow nodes/edges + inspector UI
-src/core/                 platform internals (db, graph, stream, ai, collab)
+src/components/canvas/    React Flow nodes/edges + inspector + AI panel + export
+src/components/geo/       Leaflet map view
+src/components/globe/     CesiumJS 3D globe view
+src/components/feed/      Live SSE event feed
+src/components/marketplace/ Connector catalog gallery
+src/components/settings/  API key management
+src/core/                 platform internals (db, graph, stream, ai, collab, mcp, keys)
 src/store/canvas.ts       Zustand canvas store (nodes, edges, persistence)
-src/app/api/canvas/       snapshot persistence API (versioned, optimistic)
+src/app/api/              REST + MCP + SSE endpoints
 packages/
   seraph-graph-types/   shared canonical types
   seraph-connector-sdk/ connector authoring SDK
-workers/                  BullMQ workers
+workers/                  BullMQ workers (connector-runner, ai-processor)
 prisma/                   relational schema + AGE bootstrap
+scripts/                  run CLI, deploy scripts, Cesium asset copier
+services/                 per-service Railway configs
 docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
 ```
 

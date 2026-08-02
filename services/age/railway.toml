@@ -1,0 +1,17 @@
+# ================================================================
+# Meridian Apache AGE Postgres — custom container.
+# Root directory: services/age (config-as-code discovery).
+# dockerfilePath is resolved relative to the repo root.
+# Volume (attach in dashboard): /var/lib/postgresql/data
+# Port: 5432 (internal only — app/worker reach it via
+# <service>.railway.internal; enable TCP Proxy only for one-off
+# local psql bootstrap runs).
+# ================================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.age"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

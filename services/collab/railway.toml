@@ -1,0 +1,16 @@
+# ================================================================
+# Meridian collab server — Yjs WebSocket presence daemon.
+# Root directory: services/collab (config-as-code discovery).
+# dockerfilePath is resolved relative to the repo root.
+# ================================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.collab"
+
+[deploy]
+startCommand = "pnpm collab:server"
+healthcheckPath = "/"
+healthcheckTimeout = 100
+restartPolicyType = "ALWAYS"
+restartPolicyMaxRetries = 10

@@ -1,0 +1,14 @@
+# ================================================================
+# Meridian BullMQ worker — connector + AI queue consumer.
+# Root directory: services/worker (config-as-code discovery).
+# dockerfilePath is resolved relative to the repo root.
+# ================================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.worker"
+
+[deploy]
+startCommand = "pnpm worker:connectors"
+restartPolicyType = "ALWAYS"
+restartPolicyMaxRetries = 10

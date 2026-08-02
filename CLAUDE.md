@@ -110,25 +110,44 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   export is client-side via jsPDF (reads live canvas store state). Share
   links are token-capability read-only views at `/share/[token]`.
 
-## Deployment (Fly.io)
+## Deployment (Railway)
 
-Four Fly apps + managed Redis; everything on the free tier, region `del`
-(Delhi — closest to Peshawar, PK; `fra` is the fallback):
+Railway free tier (no card). One project, services deployed from the same
+GitHub repo; config-as-code per service (root dir picks up the matching
+`railway.toml`; `dockerfilePath` resolves relative to the repo root). Full
+step-by-step: `scripts/railway-deploy.md`.
 
-| App | Role | Config | Port |
-| --- | --- | --- | --- |
-| `seraph-app` | Next.js standalone server (Dockerfile, `output: "standalone"`) | `fly.toml` | 3000 (public, `/api/health` check) |
-| `seraph-age` | Apache AGE Postgres, persistent 1 GB volume `age_data`, **internal-only** | `fly.age.toml` | 5432 (`seraph-age.internal`) |
-| `seraph-worker` | BullMQ connector worker (`pnpm worker:connectors`) — POST /api/connectors only enqueues; without this app cron jobs would never execute | `fly.worker.toml` + `Dockerfile.worker` | none (private) |
-| `seraph-collab` | Yjs WebSocket presence server (`pnpm collab:server`); sleeps on idle | `fly.collab.toml` + `Dockerfile.collab` | 3001 (public wss) |
-| Upstash Redis | BullMQ queues (`REDIS_URL`, free tier) | — | external |
+| Service | Build | Config | Port | Notes |
+| --- | --- | --- | --- | --- |
+| `seraph-app` | repo `Dockerfile` (standalone) | `railway.toml` (root) | 3000 | public, healthcheck `/api/health`, start `node server.js` |
+| `seraph-age` | `Dockerfile.age` (apache/age:latest) | `services/age/railway.toml` | 5432 | private-only; volume `/var/lib/postgresql/data`; AGE auto-inited via initdb.d on first boot |
+| `seraph-collab` | `Dockerfile.collab` | `services/collab/railway.toml` | 3001 | public, healthcheck `/`, start `pnpm collab:server` |
+| `seraph-worker` | `Dockerfile.worker` | `services/worker/railway.toml` | — | BullMQ consumer, start `pnpm worker:connectors` |
+| Redis | Railway plugin (free) | — | 6379 | `REDIS_URL` auto-injected into all services |
+| `cron-poll` | `Dockerfile.cron` (alpine+curl) | `services/cron-poll/railway.toml` | — | `*/30 * * * *`, `sh scripts/railway-cron-poll.sh` (POSTs 3 connectors) |
+| `cron-import` | `Dockerfile.cron` | `services/cron-import/railway.toml` | — | hourly, `sh scripts/railway-cron-import.sh` (POST /api/graph/import) |
 
 Key wiring:
-- `GRAPH_DATABASE_URL=postgresql://postgres:<pw>@seraph-age.internal:5432/meridian` — only the app and worker hold it as a secret; `ENABLE_GRAPH_IMPORT=true`.
-- `NEXT_PUBLIC_WS_SERVER_URL` is **build-time** (inlined into the client bundle) — set in `fly.toml [build.args]`; changing it requires a rebuild. `WS_SERVER_URL` (runtime, server-side) is a Fly secret.
-- Cron (`.fly/cron.yml`, applied by `scripts/fly-deploy.sh` via `fly cron create`, alpine + busybox wget): keep-warm app every 5 min, keep-warm collab every 5 min, poll all 3 connectors every 30 min, graph import hourly.
-- Deploy everything in order with `bash scripts/fly-deploy.sh` — creates apps/volume, deploys age → init AGE graph (idempotent DO-block wrapper; `prisma/graph/age-init.sql` stays authoritative) → worker → collab → app, sets secrets, installs cron, verifies endpoints.
-- GDELT note: HTTPS to `api.gdeltproject.org` is TLS-filtered on the home network; the connector falls back to plain HTTP automatically (works fine from Fly — but keep the default `baseUrl`).
+- Private inter-service DNS: `<service>.railway.internal` — used for
+  `GRAPH_DATABASE_URL=postgresql://postgres:<pw>@<hash>.railway.internal:5432/meridian`
+  on app + worker. TCP Proxy only for local psql one-offs
+  (`scripts/railway-init-age.sh` is the AGE bootstrap fallback; the
+  `Dockerfile.age` initdb.d hook handles fresh volumes automatically).
+- `NEXT_PUBLIC_WS_SERVER_URL` is inlined into the client bundle at build
+  time; Railway injects service variables into Docker builds and the
+  Dockerfile declares it as `ARG` — set it (plus `WS_SERVER_URL` with
+  `https`→`wss`) before the app's first build; changing it requires a
+  redeploy. Deploy collab before the app.
+- Railway cron = service with `deploy.cronSchedule`; its start command must
+  exit when done (min interval 5 min, UTC). No keep-warm crons — Railway
+  services don't auto-sleep.
+- Free tier ~500 h/month execution across all services: keep app+age
+  always-on, sleep collab/worker when unused; BullMQ queues are durable so
+  a sleeping worker just drains late.
+- Fallback if config-as-code isn't picked up: service variable
+  `RAILWAY_DOCKERFILE_PATH=Dockerfile.<name>` with root directory `.`.
+- Fly.io configs (`fly*.toml`, `scripts/fly-deploy.sh`, `.fly/cron.yml`)
+  are retained dormant in case we switch back — do not run the Fly script.
 
 ## Milestone checklist for new work
 

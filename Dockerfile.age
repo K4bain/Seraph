@@ -1,0 +1,29 @@
+# ================================================================
+# Meridian AGE Postgres — custom container for Railway (no native
+# Apache AGE plugin). Self-contained: nothing is COPYed from the
+# repo, so it builds under any Railway root directory / context.
+# Mirrors the canonical bootstrap in prisma/graph/age-init.sql.
+# ================================================================
+
+FROM apache/age:latest
+
+# Auto-bootstrap AGE on first boot of an empty volume via the
+# postgres docker-entrypoint initdb.d hook. Runs only when the data
+# directory is empty (idempotent by construction); for volumes that
+# predate this file use scripts/railway-init-age.sh.
+RUN cat > /docker-entrypoint-initdb.d/10-age-init.sql <<'SQL'
+CREATE EXTENSION IF NOT EXISTS age;
+
+LOAD 'age';
+
+SET search_path = ag_catalog, "$user", public;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = 'meridian') THEN
+    PERFORM ag_catalog.create_graph('meridian');
+  END IF;
+END $$;
+SQL
+
+EXPOSE 5432

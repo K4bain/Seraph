@@ -1,0 +1,13 @@
+# ================================================================
+# Meridian cron job — connector polling every 30 minutes.
+# Railway runs startCommand on cronSchedule; the process must exit.
+# APP_URL variable must point at the main app's public URL.
+# ================================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.cron"
+
+[deploy]
+startCommand = "sh scripts/railway-cron-poll.sh"
+cronSchedule = "*/30 * * * *"

@@ -1,0 +1,9 @@
+# ================================================================
+# Meridian cron job runner — tiny curl image for Railway cron jobs.
+# Railway cron runs the service's start command on a schedule and
+# the process must exit when done. BusyBox wget has no --post-data,
+# so use curl. Actual work is in scripts/railway-cron-*.sh.
+# ================================================================
+
+FROM alpine:3.20
+RUN apk add --no-cache curl ca-certificates

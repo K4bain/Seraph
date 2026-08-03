@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   Boxes,
   Cable,
-  CircleDot,
   Gauge,
   GitBranchPlus,
   Network,
@@ -31,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import ActivityTrend from "@/components/dashboard/ActivityTrend";
+import { JobStateBadge } from "@/components/dashboard/JobStateBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -38,31 +38,6 @@ function fmt(iso?: string): string {
   if (!iso) return "—";
   const d = new Date(iso);
   return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-}
-
-function stateBadge(state: string) {
-  const variant =
-    state === "completed"
-      ? "default"
-      : state === "failed"
-        ? "destructive"
-        : state === "active"
-          ? "outline"
-          : "secondary";
-  const tone =
-    state === "completed"
-      ? "text-emerald-400"
-      : state === "failed"
-        ? ""
-        : state === "active"
-          ? "text-primary"
-          : "";
-  return (
-    <Badge variant={variant} className={`gap-1.5 font-mono text-[10px] uppercase tracking-wider ${tone}`}>
-      <CircleDot className="size-2.5" />
-      {state}
-    </Badge>
-  );
 }
 
 export default async function DashboardPage() {
@@ -346,7 +321,7 @@ export default async function DashboardPage() {
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {job.canvasId ?? "—"}
                     </TableCell>
-                    <TableCell>{stateBadge(job.state)}</TableCell>
+                    <TableCell>{<JobStateBadge state={job.state} />}</TableCell>
                     <TableCell className="hidden sm:table-cell font-mono text-xs text-muted-foreground">
                       {fmt(job.finishedAt)}
                     </TableCell>

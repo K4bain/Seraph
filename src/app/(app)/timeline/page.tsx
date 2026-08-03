@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getLatestDocument } from "@/core/document";
 import type { EventCard } from "seraph-graph-types";
 import styles from "./timeline.module.css";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { ScrollText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -31,17 +33,17 @@ export default async function TimelinePage({
   }
 
   return (
-    <div>
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Timeline</h1>
-          <p className="page-subtitle">
-            {events.length === 0
-              ? "Event cards projected onto a time axis."
-              : `${events.length} event card${events.length === 1 ? "" : "s"} — ${canvasId} · snapshot v${latest?.version ?? 0}`}
-          </p>
-        </div>
-      </header>
+    <div className="space-y-6 p-6 lg:p-8">
+      <PageHeader
+        eyebrow="Lenses"
+        eyebrowIcon={ScrollText}
+        title="Timeline"
+        subtitle={
+          events.length === 0
+            ? "Event cards projected onto a time axis."
+            : `${events.length} event card${events.length === 1 ? "" : "s"} — ${canvasId} · snapshot v${latest?.version ?? 0}`
+        }
+      />
 
       {events.length === 0 ? (
         <div className="empty-state">

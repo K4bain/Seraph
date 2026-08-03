@@ -15,7 +15,7 @@
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
-  --color-border: hsl(var(--border));
+  --color-border: var(--border);
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
@@ -89,6 +89,7 @@
   --foreground: 220 32% 94%;
   --card: 226 26% 7%;
   --card-foreground: 220 32% 94%;
+  --border: hsl(228 26% 18%);
   --card-border: 228 26% 18%;
   --popover: 226 30% 8%;
   --popover-foreground: 220 32% 94%;
@@ -170,7 +171,7 @@
 
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    border-color: var(--border);
   }
 
   body {

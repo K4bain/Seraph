@@ -1,5 +1,5 @@
 .canvasShell {
-  height: 100vh;
+  height: calc(100vh - 48px);
   width: 100%;
   background: var(--bg);
   position: relative;

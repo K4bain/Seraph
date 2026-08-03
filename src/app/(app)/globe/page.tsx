@@ -2,6 +2,8 @@ import { getLatestDocument } from "@/core/document";
 import { entityPoint } from "@/core/geo/gazetteer";
 import GlobeView, { type GlobeMarkerData } from "@/components/globe/GlobeView";
 import type { EntityCard } from "seraph-graph-types";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Satellite } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -33,17 +35,17 @@ export default async function GlobePage({
   }
 
   return (
-    <div>
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Globe</h1>
-          <p className="page-subtitle">
-            {markers.length === 0
-              ? "Geolocated entities render as pins on the 3D globe."
-              : `${markers.length} entities plotted — ${canvasId} · snapshot v${latest?.version ?? 0}`}
-          </p>
-        </div>
-      </header>
+    <div className="space-y-6 p-6 lg:p-8">
+      <PageHeader
+        eyebrow="Lenses"
+        eyebrowIcon={Satellite}
+        title="Globe"
+        subtitle={
+          markers.length === 0
+            ? "Geolocated entities render as pins on the 3D globe."
+            : `${markers.length} entities plotted — ${canvasId} · snapshot v${latest?.version ?? 0}`
+        }
+      />
 
       {markers.length === 0 ? (
         <div className="empty-state">

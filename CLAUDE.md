@@ -13,7 +13,11 @@ investigation canvases for OSINT researchers, journalists, and analysts.
 
 - **App**: Next.js 15 (App Router), TypeScript 5 strict, single app at repo root
 - **Canvas**: React Flow v12 (`@xyflow/react`), custom node types, Zustand + Immer store
-- **Styling**: plain CSS Modules (`.module.css`). **No Tailwind, no CSS-in-JS.**
+- **Styling**: Tailwind v4 + shadcn/ui kit (`src/components/ui/`) for app chrome; legacy
+  pages use CSS Modules (`.module.css`) with the legacy instrument-panel tokens.
+  **No CSS-in-JS.** The `border` CSS var is a full color (`hsl(228 26% 18%)`), NOT an
+  HSL triplet — legacy modules consume it bare while the kit maps it via
+  `--color-border: var(--border)`. Never wrap it in `hsl()` again.
 - **Graph DB**: Apache AGE (property graph) on PostgreSQL, via `src/core/graph/age.ts`
 - **Relational**: Prisma 7 (`prisma-client` generator → `src/generated/prisma`), `prisma.config.ts`
 - **Queues**: BullMQ + Redis (`workers/`)
@@ -38,11 +42,16 @@ pnpm collab:server      # y-websocket in-memory presence server (ws://localhost:
 
 Typecheck **must** pass before considering a change done. Run `pnpm lint` too.
 
+Windows note: the `pnpm.cmd` shim is broken on this machine (space in the username
+path breaks its node resolution) — always invoke pnpm from PowerShell, which resolves
+`pnpm.ps1` correctly. `.npmrc` sets `node-linker=hoisted` (Next standalone builds
+cannot create dir symlinks on Windows; only junctions, which Next doesn't accept).
+
 ## Architecture map
 
 ```
 src/app/                  routes (App Router) — server components by default
-src/components/           canvas/ (React Flow nodes), layout/, panels (later)
+src/components/           canvas/ (React Flow nodes), layout/ (shell), dashboard/, ui/ (shadcn kit)
 src/core/                 platform internals — server-only unless marked otherwise
   db.ts                   Prisma singleton (NEVER import in client components)
   stream/                 EventBus + EntityStream types
@@ -72,9 +81,11 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
    client must never be imported from a client component. If a module uses
    `process.env` at import time it is server-only.
 6. **Shared types come from packages**, never duplicated in `src/`.
-7. **CSS Modules with the global token set** in `src/app/globals.css` (CSS
-   variables: `--bg`, `--panel`, `--border`, `--accent`, ...). Dark, instrument-
-   panel aesthetic; mono for data; hairline borders.
+7. **Styling rules.** New app chrome → Tailwind + shadcn kit components
+   (`src/components/ui/`). The global token set lives in `src/app/globals.css`:
+   shadcn HSL tokens (background/foreground/border/card/popover/primary/…) + legacy
+   instrument-panel vars (`--bg`, `--panel`, `--border`, `--accent`, …). Dark,
+   instrument-panel aesthetic; mono for data; hairline borders.
 8. **pnpm workspaces.** New shared code → a package in `packages/` with
    `main/types` pointing at `src/index.ts`. App consumes via transpilePackages.
 9. **Check skills first — always.** Before starting any task, check the
@@ -143,6 +154,13 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
   poll interval, webhook support) with a target-canvas picker
   (`GET /api/canvases`) and run buttons enqueuing via the same
   `POST /api/connectors` path as the Connectors page.
+- Phase 7 (done): visual redesign. Tailwind v4 + shadcn/ui kit ported into
+  `src/components/ui/` (exported against react-day-picker@9.14,
+  react-resizable-panels@2.1, recharts@2.15 — pin those majors), new shell
+  (kit Sidebar + top bar) in `(app)/layout.tsx` + `AppSidebar.tsx`, marquee
+  dashboard (`/dashboard`) with KPIs/trend/queue/registry/jobs/canvases.
+  Legacy pages still on CSS Modules. Known design constraint: `--border` is a
+  full color for legacy+kit compatibility (see Styling).
 
 ## Deployment (Railway)
 

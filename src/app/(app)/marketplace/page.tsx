@@ -1,6 +1,8 @@
 import { listConnectors } from "seraph-connector-sdk/runtime";
 import "../../../connectors";
 import MarketplacePanel, { type MarketplaceConnector } from "@/components/marketplace/MarketplacePanel";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { ShoppingBag } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -17,15 +19,13 @@ export default function MarketplacePage() {
   }));
 
   return (
-    <div>
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Marketplace</h1>
-          <p className="page-subtitle">
-            Connector catalog — built-in sources, ready to run against any canvas.
-          </p>
-        </div>
-      </header>
+    <div className="space-y-6 p-6 lg:p-8">
+      <PageHeader
+        eyebrow="Platform"
+        eyebrowIcon={ShoppingBag}
+        title="Marketplace"
+        subtitle="Connector catalog — built-in sources, ready to run against any canvas."
+      />
       <MarketplacePanel connectors={connectors} />
     </div>
   );

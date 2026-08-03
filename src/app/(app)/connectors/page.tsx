@@ -1,6 +1,8 @@
 import { listConnectors } from "seraph-connector-sdk/runtime";
 import "../../../connectors";
 import ConnectorRunPanel from "@/components/connectors/ConnectorRunPanel";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Cable } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -14,15 +16,13 @@ export default function ConnectorsPage() {
   }));
 
   return (
-    <div>
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Connectors</h1>
-          <p className="page-subtitle">
-            OpenSanctions, GDELT, SEC EDGAR and the connector SDK.
-          </p>
-        </div>
-      </header>
+    <div className="space-y-6 p-6 lg:p-8">
+      <PageHeader
+        eyebrow="Platform"
+        eyebrowIcon={Cable}
+        title="Connectors"
+        subtitle="OpenSanctions, GDELT, SEC EDGAR and the connector SDK."
+      />
       <ConnectorRunPanel connectors={connectors} />
     </div>
   );

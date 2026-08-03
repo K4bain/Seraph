@@ -3,6 +3,8 @@ import { entityPoint } from "@/core/geo/gazetteer";
 import GeoView, { type GeoMarkerData } from "@/components/geo/GeoView";
 import styles from "./geo.module.css";
 import type { EntityCard } from "seraph-graph-types";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { MapPinned } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -35,17 +37,17 @@ export default async function GeoPage({
   const approximate = markers.length - precise;
 
   return (
-    <div>
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Geo View</h1>
-          <p className="page-subtitle">
-            {markers.length === 0
-              ? "Entities with coordinates or country attribution land on the map."
-              : `${markers.length} of ${entities.length} entities plotted — ${canvasId} · snapshot v${latest?.version ?? 0}`}
-          </p>
-        </div>
-      </header>
+    <div className="space-y-6 p-6 lg:p-8">
+      <PageHeader
+        eyebrow="Lenses"
+        eyebrowIcon={MapPinned}
+        title="Geo View"
+        subtitle={
+          markers.length === 0
+            ? "Entities with coordinates or country attribution land on the map."
+            : `${markers.length} of ${entities.length} entities plotted — ${canvasId} · snapshot v${latest?.version ?? 0}`
+        }
+      />
 
       {markers.length === 0 ? (
         <div className="empty-state">

@@ -1,22 +1,36 @@
 /**
  * AI processor worker.
  *
- * Consumes aiQueue jobs. Phase 1: logs and acknowledges; Phase 4 wires
- * the reasoning layer (src/core/ai) here so heavy LLM calls never run
- * inside the web server request path.
+ * Consumes aiQueue jobs and dispatches to the real reasoning-layer
+ * handlers in src/core/ai/tasks. Heavy LLM calls run here, out of the
+ * web server request path.
  *
- * Run with: pnpm worker:ai
+ * Tasks:
+ *  - extract_entities / infer_edges → analyzeDocument (text in, proposals out)
+ *  - flag_anomalies                  → flagAnomalies (canvas in, flags out)
+ *  - generate_briefing               → generateBriefing (canvas in, briefing out)
+ *
+ * Results are published to the live feed and logged with the AI request id
+ * for auditability. Nothing is auto-committed to the graph — every output
+ * is a proposal awaiting analyst confirmation.
+ *
+ * Run with: pnpm worker:ai  (needs Redis up)
  */
 
 import "dotenv/config";
 import { Worker } from "bullmq";
 import { connection, aiQueue, type AiJobData } from "./queues";
 import { getAiClient } from "../src/core/ai/client";
+import { analyzeDocument } from "../src/core/ai/tasks/analyze";
+import { flagAnomalies } from "../src/core/ai/tasks/anomalies";
+import { generateBriefing } from "../src/core/ai/tasks/briefing";
+import { loadLatestCanvasDoc } from "../src/core/canvas";
+import { publishFeedEvent } from "../src/core/stream/publish";
 
 const worker = new Worker<AiJobData>(
   aiQueue.name,
   async (job) => {
-    const { task } = job.data;
+    const { task, document, canvasId } = job.data;
 
     const ai = getAiClient();
     if (!ai.isConfigured()) {
@@ -25,14 +39,95 @@ const worker = new Worker<AiJobData>(
     }
 
     job.log(`Running AI task "${task}"`);
-    // Phase 4: dispatch to extraction / inference / anomaly handlers.
-    // For now, a smoke call validates connectivity end to end.
-    const result = await ai.complete({
-      system: "You are the Seraph reasoning layer.",
-      messages: [{ role: "user", content: `Run task: ${task}. Reply with OK.` }],
-      maxTokens: 64,
-    });
-    job.log(`AI task "${task}" → ${result.text.slice(0, 120)} (${result.requestId})`);
+
+    switch (task) {
+      case "extract_entities":
+      case "infer_edges": {
+        const text = document?.trim() ?? "";
+        if (text.length < 40) {
+          job.log("document too short — skipping");
+          return;
+        }
+        const result = await analyzeDocument(text);
+        job.log(
+          `analyze → ${result.entities.length} entities, ${result.relationships.length} relationships (request ${result.requestId})`,
+        );
+        void publishFeedEvent({
+          kind: "batch",
+          id: `ai:${task}:${job.id}:${Date.now().toString(36)}`,
+          ts: new Date().toISOString(),
+          source: "ai",
+          canvasId,
+          jobId: String(job.id),
+          action: "proposed",
+          summary: {
+            cardsCreated: result.entities.length,
+            cardsUpdated: 0,
+            cardsSkipped: 0,
+            edgesProposed: result.relationships.length,
+          },
+        });
+        return;
+      }
+
+      case "flag_anomalies": {
+        if (!canvasId) {
+          job.log("canvasId required for flag_anomalies — skipping");
+          return;
+        }
+        const doc = await loadLatestCanvasDoc(canvasId);
+        const result = await flagAnomalies(doc);
+        job.log(`flag_anomalies → ${result.anomalies.length} flags (request ${result.requestId})`);
+        void publishFeedEvent({
+          kind: "batch",
+          id: `ai:flag_anomalies:${job.id}:${Date.now().toString(36)}`,
+          ts: new Date().toISOString(),
+          source: "ai",
+          canvasId,
+          jobId: String(job.id),
+          action: "proposed",
+          summary: {
+            cardsCreated: result.anomalies.length,
+            cardsUpdated: 0,
+            cardsSkipped: 0,
+            edgesProposed: 0,
+          },
+        });
+        return;
+      }
+
+      case "generate_briefing": {
+        if (!canvasId) {
+          job.log("canvasId required for generate_briefing — skipping");
+          return;
+        }
+        const doc = await loadLatestCanvasDoc(canvasId);
+        const result = await generateBriefing(doc);
+        job.log(
+          `generate_briefing → "${result.briefing.title}" (${result.briefing.sections.length} sections, request ${result.requestId})`,
+        );
+        void publishFeedEvent({
+          kind: "batch",
+          id: `ai:generate_briefing:${job.id}:${Date.now().toString(36)}`,
+          ts: new Date().toISOString(),
+          source: "ai",
+          canvasId,
+          jobId: String(job.id),
+          action: "proposed",
+          summary: {
+            cardsCreated: 1,
+            cardsUpdated: 0,
+            cardsSkipped: 0,
+            edgesProposed: 0,
+          },
+        });
+        return;
+      }
+
+      default: {
+        job.log(`Unknown AI task "${task}" — skipping`);
+      }
+    }
   },
   { connection },
 );

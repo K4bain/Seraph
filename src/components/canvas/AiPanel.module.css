@@ -178,3 +178,74 @@
   border-top: 1px solid var(--border);
   padding-top: 8px;
 }
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.tab:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.tabActive {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--bg-raised);
+}
+
+.tabDesc {
+  font-size: 12px;
+  color: var(--text-faint);
+  line-height: 1.5;
+}
+
+.briefingSummary {
+  font-size: 12px;
+  color: var(--text);
+  font-style: italic;
+  padding: 6px 0;
+}
+
+.briefingSection {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+}
+
+.briefingHeading {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.briefingBody {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}

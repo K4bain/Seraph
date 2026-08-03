@@ -1,4 +1,4 @@
-import FeedPanel from "@/components/feed/FeedPanel";
+import FeedTabs from "@/components/feed/FeedTabs";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Radio } from "lucide-react";
 
@@ -11,9 +11,9 @@ export default function FeedPage() {
         eyebrow="Platform"
         eyebrowIcon={Radio}
         title="Live Feed"
-        subtitle="Connector, AI and MCP ingestion activity in real time (SSE)."
+        subtitle="World events, market signals, and the terms you are tracking."
       />
-      <FeedPanel />
+      <FeedTabs />
     </div>
   );
 }

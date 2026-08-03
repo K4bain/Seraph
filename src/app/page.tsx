@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import SearchLanding from "@/components/landing/SearchLanding";
 
 export default function Home() {
-  redirect("/dashboard");
+  return <SearchLanding />;
 }

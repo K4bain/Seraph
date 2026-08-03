@@ -40,6 +40,10 @@ export interface AiJobData {
   canvasId?: string;
 }
 
+export interface WatchlistJobData {
+  task: "poll";
+}
+
 export const connection = redisConnection();
 
 export const connectorQueue = new Queue<ConnectorJobData>("seraph-connectors", {
@@ -47,5 +51,9 @@ export const connectorQueue = new Queue<ConnectorJobData>("seraph-connectors", {
 });
 
 export const aiQueue = new Queue<AiJobData>("seraph-ai", {
+  connection,
+});
+
+export const watchlistQueue = new Queue<WatchlistJobData>("seraph-watchlist", {
   connection,
 });

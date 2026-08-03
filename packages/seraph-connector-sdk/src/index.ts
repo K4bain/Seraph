@@ -35,11 +35,46 @@ export interface ConnectorContext {
   log: (level: "info" | "warn" | "error", message: string, meta?: unknown) => void;
 }
 
+/** One hit from a connector's search(). Fields follow the OSINT search
+ *  result contract: title + url are required, everything else optional
+ *  and source-specific (e.g. EDGAR fills company/date, OpenSanctions
+ *  fills country, WHOIS fills registrar). */
+export interface SearchResultItem {
+  title: string;
+  description?: string;
+  url?: string;
+  /** Source-grouping label, e.g. the schema ("Person") or form type ("8-K"). */
+  category?: string;
+  /** Canonical entity type when the hit maps to one. */
+  entityType?: EntityType;
+  source: string;
+  date?: string;
+  country?: string;
+  company?: string;
+  name?: string;
+  externalId?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface SearchRequest {
+  query: string;
+  /** Requested entity-type filter ("person" | "organization" | ... or empty). */
+  type?: string | null;
+}
+
+export interface SearchResponse {
+  results: SearchResultItem[];
+}
+
 export interface SeraphConnector {
   manifest: ConnectorManifest;
   configure(config: Record<string, string>): Promise<void>;
-  poll(): AsyncGenerator<EntityStreamEvent>;
+  /** Stream entities on a poll schedule. Optional — search-only
+   *  connectors (e.g. WHOIS, GitHub) don't poll anything. */
+  poll?(): AsyncGenerator<EntityStreamEvent>;
   handleWebhook?(payload: unknown): AsyncGenerator<EntityStreamEvent>;
+  /** Ad-hoc point search (search page, MCP, entity links). Optional. */
+  search?(request: SearchRequest): Promise<SearchResponse>;
 }
 
 /**

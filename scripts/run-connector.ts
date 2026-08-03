@@ -59,9 +59,13 @@ async function main(): Promise<void> {
   );
 
   const events: EntityStreamEvent[] = [];
-  for await (const event of connector.poll()) {
-    events.push(event);
-    if (events.length >= max) break;
+  if (!connector.poll) {
+    console.log(`"${connector.manifest.id}" is search-only — nothing to poll.`);
+  } else {
+    for await (const event of connector.poll()) {
+      events.push(event);
+      if (events.length >= max) break;
+    }
   }
   console.log(`Fetched ${events.length} event(s) — first sample:`);
   if (events[0]) {

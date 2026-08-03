@@ -12,7 +12,7 @@
 
 import "dotenv/config";
 import { Worker } from "bullmq";
-import { connection, connectorQueue, type ConnectorJobData } from "./queues";
+import { connection, connectorQueue, watchlistQueue, type ConnectorJobData, type WatchlistJobData } from "./queues";
 import { getConnector } from "seraph-connector-sdk/runtime";
 import type { EntityStreamEvent } from "seraph-graph-types";
 import "../src/connectors";
@@ -20,6 +20,15 @@ import { seraphBus } from "../src/core/stream/bus";
 import { streamTopic } from "../src/core/stream/types";
 import { ingestEvents } from "../src/core/ingest/ingest";
 import { publishFeedEvent } from "../src/core/stream/publish";
+import { pollWatchlist } from "../src/core/feed/watchlist";
+
+// Register the 30-minute watchlist sweep. Fixed scheduler id keeps this
+// idempotent across worker restarts.
+void watchlistQueue.upsertJobScheduler(
+  "watchlist-poll",
+  { every: 30 * 60 * 1000 },
+  { name: "poll", data: { task: "poll" } },
+);
 
 const worker = new Worker<ConnectorJobData>(
   connectorQueue.name,
@@ -35,6 +44,13 @@ const worker = new Worker<ConnectorJobData>(
     job.log(`Running connector "${connectorId}" (${trigger})`);
     if (config && Object.keys(config).length > 0) {
       await connector.configure(config);
+    }
+
+    // Search-only connectors (wikidata/github/whois) implement no
+    // poll() — a scheduled run on them is a no-op.
+    if (!connector.poll) {
+      job.log(`Connector "${connectorId}" is search-only — nothing to poll.`);
+      return;
     }
 
     const source = trigger === "webhook" && connector.handleWebhook
@@ -98,9 +114,38 @@ worker.on("failed", (job, error) => {
   console.error(`[connector-runner] job ${job?.id} failed:`, error);
 });
 
+const watchlistWorker = new Worker<WatchlistJobData>(
+  watchlistQueue.name,
+  async (job) => {
+    const result = await pollWatchlist();
+    job.log(
+      `Watchlist poll: ${result.itemsChecked} item(s) checked, ${result.alertsCreated} alert(s) created, ` +
+        `${result.skippedDuplicates} duplicate(s) skipped, ${result.errors.length} error(s)`,
+    );
+    for (const failure of result.errors) {
+      job.log(`  ! "${failure.term}": ${failure.error}`);
+    }
+  },
+  { connection },
+);
+
+watchlistWorker.on("failed", (job, error) => {
+  console.error(`[watchlist] job ${job?.id} failed:`, error);
+});
+
 worker.on("ready", () => {
   console.log("[connector-runner] listening for connector jobs");
 });
 
-process.on("SIGINT", () => void worker.close());
-process.on("SIGTERM", () => void worker.close());
+watchlistWorker.on("ready", () => {
+  console.log("[watchlist] listening (30-minute poll registered)");
+});
+
+process.on("SIGINT", () => {
+  void worker.close();
+  void watchlistWorker.close();
+});
+process.on("SIGTERM", () => {
+  void worker.close();
+  void watchlistWorker.close();
+});

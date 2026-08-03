@@ -161,3 +161,47 @@ model Share {
 
   @@index([canvasId])
 }
+
+// ---------- Search + watchlist ----------
+
+/// One entry per search run — powers the "recent searches" UX and
+/// lets the platform know which queries are being asked.
+model SearchHistory {
+  id        String   @id @default(cuid())
+  userId    String?
+  query     String
+  type      String?
+  results   Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+/// A term the user wants to monitor for new mentions.
+model WatchlistItem {
+  id        String           @id @default(cuid())
+  userId    String?
+  term      String
+  type      String?
+  lastCheck DateTime?
+  createdAt DateTime         @default(now())
+  alerts    WatchlistAlert[]
+
+  @@index([userId])
+}
+
+/// A new mention of a watchlist term found by the poll worker.
+model WatchlistAlert {
+  id          String        @id @default(cuid())
+  watchlistId String
+  watchlist   WatchlistItem @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+  headline    String
+  source      String
+  url         String?
+  tone        Float?
+  read        Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+
+  @@index([watchlistId, read])
+}

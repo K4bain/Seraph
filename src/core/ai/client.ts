@@ -175,6 +175,66 @@ export class AiClient {
     };
   }
 
+  /**
+   * Streaming completion (SSE). Yields text deltas as they arrive —
+   * used by /api/search/summary so the analyst sees the summary
+   * while the model is still writing. Throws after the response
+   * headers if the upstream errors; mid-stream failures surface as
+   * the stream ending (the route appends an [error] suffix).
+   */
+  async *completeStreaming(request: AiRequest): AsyncGenerator<string> {
+    if (!this.apiKey) throw new AiNotConfiguredError();
+    const model = resolveModel(request);
+
+    const response = await fetch(`${API_URL}${COMPLETIONS_PATH}`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          ...(request.system ? [{ role: "system", content: request.system }] : []),
+          ...request.messages,
+        ],
+        max_tokens: request.maxTokens ?? 4096,
+        stream: true,
+      }),
+    });
+
+    if (!response.ok || !response.body) {
+      const body = await response.text().catch(() => "");
+      throw new Error(`OpenRouter API ${response.status}: ${body.slice(0, 300)}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data:")) continue;
+        const payload = trimmed.slice(5).trim();
+        if (payload === "[DONE]") return;
+        try {
+          const parsed = JSON.parse(payload) as {
+            choices?: { delta?: { content?: string | null } }[];
+          };
+          const delta = parsed.choices?.[0]?.delta?.content;
+          if (delta) yield delta;
+        } catch {
+          // Skip malformed keepalive lines — never crash a live stream.
+        }
+      }
+    }
+  }
+
   private async postCompletion(
     request: AiRequest & { tools: AiToolDefinition[] },
     model: string,

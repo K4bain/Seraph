@@ -2,8 +2,24 @@
   "name": "seraph",
   "version": "0.1.0",
   "private": true,
-  "description": "Seraph — open-source intelligence fusion platform. Graph-first, AI-native investigation canvases for OSINT researchers.",
+  "description": "Seraph — find anyone, map everything, stay informed. Search-first OSINT fusion: one query across OpenSanctions, SEC EDGAR, GDELT, Wikidata, WHOIS and GitHub, then map it on graph canvases.",
   "license": "Apache-2.0",
+  "keywords": [
+    "osint",
+    "open-source-intelligence",
+    "investigation",
+    "graph",
+    "canvas",
+    "sanctions",
+    "gdelt",
+    "sec-edgar",
+    "wikidata",
+    "whois",
+    "opensanctions",
+    "intelligence-platform",
+    "nextjs",
+    "react-flow"
+  ],
   "engines": {
     "node": ">=20"
   },
@@ -95,7 +111,9 @@
     "tailwindcss": "^4.3.3",
     "tw-animate-css": "^1.4.0",
     "vaul": "^1.1.2",
+    "whois-json": "^2.0.4",
     "y-websocket": "^3.0.0",
+    "yahoo-finance2": "^4.0.0",
     "yjs": "^13.6.31",
     "zod": "^3.25.76",
     "zustand": "^5.0.14"

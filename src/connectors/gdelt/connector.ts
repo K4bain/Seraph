@@ -10,6 +10,7 @@
 
 import { defineConnector } from "seraph-connector-sdk";
 import type { EntityStreamEvent } from "seraph-graph-types";
+import type { SearchResponse, SearchResultItem } from "seraph-connector-sdk";
 
 const API_BASE = "https://api.gdeltproject.org/api/v2/doc/doc";
 const FETCH_TIMEOUT_MS = 20_000;
@@ -21,6 +22,14 @@ function hoursAgo(hours: number): string {
   return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(
     d.getUTCDate(),
   ).padStart(2, "0")}${String(d.getUTCHours()).padStart(2, "0")}0000`;
+}
+
+/** GDELT seendate ("20260715T083000Z") → ISO string. */
+function parseSeendate(seendate: string): string {
+  const match = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/.exec(seendate);
+  if (!match) return seendate;
+  const [, year, month, day, hour, minute, second] = match;
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
 }
 
 interface GdelArticles {
@@ -52,6 +61,53 @@ export const gdeltConnector = defineConnector({
 
   async configure(config) {
     this.config = { ...this.config, ...config };
+  },
+
+  /** Point search — last 24h of news mentioning the query. */
+  async search({ query }): Promise<SearchResponse> {
+    const params = new URLSearchParams({
+      query,
+      mode: "artlist",
+      format: "json",
+      maxrecords: "10",
+      startdatetime: hoursAgo(24),
+    });
+
+    const base = (this.config.baseUrl ?? API_BASE).replace(/\/+$/, "");
+    const candidates = [
+      base,
+      ...(base.startsWith("https://") ? [base.replace(/^https:/, "http:")] : []),
+    ];
+
+    let data: GdelArticles | undefined;
+    let lastError: unknown;
+    for (const candidate of candidates) {
+      try {
+        data = await this.fetchWithRetry(`${candidate}?${params}`);
+        break;
+      } catch (error) {
+        lastError = error;
+        if (error instanceof RateLimitedError) throw error;
+      }
+    }
+    if (!data) throw lastError;
+
+    const results: SearchResultItem[] = (data.articles ?? [])
+      .filter((article) => article.url)
+      .slice(0, 10)
+      .map((article) => ({
+        title: article.title ?? "Untitled GDELT article",
+        description: [article.domain ? `Published on ${article.domain}` : undefined, article.language]
+          .filter(Boolean)
+          .join(" · "),
+        url: article.url,
+        category: article.domain ?? "news",
+        source: "GDELT",
+        entityType: "event",
+        date: article.seendate ? parseSeendate(article.seendate) : undefined,
+        metadata: { domain: article.domain, language: article.language },
+      }));
+    return { results };
   },
 
   /** One URL, up to 3 attempts with backoff; 429s surface as RateLimitedError. */

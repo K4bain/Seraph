@@ -12,8 +12,17 @@
 
 import { defineConnector } from "seraph-connector-sdk";
 import type { EntityStreamEvent, EntityType } from "seraph-graph-types";
+import type { SearchResponse, SearchResultItem } from "seraph-connector-sdk";
 
 const INDEX_BASE = "https://data.opensanctions.org/datasets/latest";
+/**
+ * Search host. The official api.opensanctions.org now requires a paid
+ * API key (401 without one); the default here is a public community
+ * yente instance serving the same search endpoints with no auth.
+ * Operators with an official key can point `searchBaseUrl` at
+ * api.opensanctions.org and set `apiKey`.
+ */
+const SEARCH_BASE = "https://yente.kube.magicport.ai";
 const FETCH_TIMEOUT_MS = 60_000;
 
 /** OpenSanctions schema → canonical EntityType. Unknown schemas are skipped. */
@@ -28,6 +37,28 @@ const SCHEMA_TO_TYPE: Record<string, EntityType> = {
   PostalAddress: "location",
   Domain: "domain",
 };
+
+/** Search-side schema filter for the public search API (repeatable param). */
+const TYPE_TO_SCHEMA: Record<string, string[]> = {
+  person: ["Person"],
+  organization: ["Company", "Organization", "LegalEntity"],
+  location: ["Location", "PostalAddress"],
+  vessel: ["Vessel"],
+  aircraft: ["Aircraft"],
+  domain: ["Domain"],
+};
+
+interface OpenSanctionsSearchHit {
+  id?: string;
+  schema?: string;
+  caption?: string;
+  properties?: {
+    name?: string[];
+    aliases?: string[];
+    birthDate?: string[];
+    countries?: Array<{ name?: string } | string>;
+  };
+}
 
 /** Minimal RFC-4180 line parser: quoted fields, "" escapes, commas inside quotes. */
 export function parseCsvLine(line: string): string[] {
@@ -80,10 +111,65 @@ export const opensanctionsConnector = defineConnector({
   config: {
     dataset: "us_ofac_sdn",
     maxRecords: "100",
+    searchBaseUrl: SEARCH_BASE,
+    apiKey: "",
   },
 
   async configure(config) {
     this.config = { ...this.config, ...config };
+  },
+
+  /** Point search over the public API. Name/nationality matter most here. */
+  async search({ query, type }): Promise<SearchResponse> {
+    const params = new URLSearchParams({
+      q: query,
+      limit: "10",
+      ...(type ? {} : { target: "true" }),
+    });
+    // yente rejects a `schema=Domain` filter (400) even though the
+    // dataset contains domains — skip the filter for domains and map
+    // the schema from results instead.
+    if (type && type !== "domain") {
+      for (const schema of TYPE_TO_SCHEMA[type] ?? []) params.append("schema", schema);
+    }
+
+    const base = (this.config.searchBaseUrl || SEARCH_BASE).replace(/\/+$/, "");
+    const apiKey = this.config.apiKey?.trim();
+    const res = await fetch(`${base}/search/default?${params}`, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "seraph-connector/0.1 (OSINT research)",
+        ...(apiKey ? { Authorization: `Apikey ${apiKey}` } : {}),
+      },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) throw new Error(`opensanctions: search API ${res.status}`);
+
+    const data = (await res.json()) as { results?: OpenSanctionsSearchHit[] };
+    const results: SearchResultItem[] = (data.results ?? []).map((hit) => {
+      const schema = hit.schema ?? "Entity";
+      const countries = (hit.properties?.countries ?? [])
+        .map((country) => (typeof country === "string" ? country : country.name))
+        .filter(Boolean);
+      const birthDate = hit.properties?.birthDate?.[0];
+      const name = hit.caption ?? hit.properties?.name?.[0] ?? hit.id ?? query;
+      return {
+        title: name,
+        description: [birthDate ? `Born ${birthDate}` : undefined, countries.join(", ")]
+          .filter(Boolean)
+          .join(" · "),
+        url: hit.id ? `https://www.opensanctions.org/entities/${encodeURIComponent(hit.id)}/` : undefined,
+        category: schema,
+        source: "OpenSanctions",
+        entityType: SCHEMA_TO_TYPE[schema],
+        name,
+        country: countries[0],
+        date: hit.properties?.birthDate?.[0],
+        externalId: hit.id,
+        metadata: { aliases: hit.properties?.aliases },
+      };
+    });
+    return { results };
   },
 
   /** Resolve the dataset's targets CSV URL from its index (robust to layout drift). */
@@ -101,8 +187,7 @@ export const opensanctionsConnector = defineConnector({
     return `${INDEX_BASE}/${dataset}/targets.json`;
   },
 
-  async *poll() {
-    const dataset = this.config.dataset.trim() || "us_ofac_sdn";
+  async *poll() {    const dataset = this.config.dataset.trim() || "us_ofac_sdn";
     const maxRecords = Math.min(Number(this.config.maxRecords) || 100, 500);
     const targetsUrl = await this.resolveTargetsUrl(dataset);
 

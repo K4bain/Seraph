@@ -13,6 +13,7 @@ import {
   Radio,
   Satellite,
   ScrollText,
+  Search,
   Server,
   ShoppingBag,
   SlidersHorizontal,
@@ -49,6 +50,7 @@ const sections: NavSection[] = [
     label: "Workspace",
     links: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/search", label: "Search", icon: Search },
       { href: "/canvas", label: "Canvases", icon: Boxes },
     ],
   },

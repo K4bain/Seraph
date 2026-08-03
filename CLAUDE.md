@@ -156,7 +156,7 @@ step-by-step: `scripts/railway-deploy.md`.
 | `seraph-app` | repo `Dockerfile` (standalone) | `railway.toml` (root) | 3000 | public, healthcheck `/api/health`, start `node server.js` |
 | `seraph-age` | `Dockerfile.age` (apache/age:latest) | `services/age/railway.toml` | 5432 | private-only; volume `/var/lib/postgresql` (PG18 convention — NOT `/data`); AGE auto-inited via initdb.d on first boot |
 | `seraph-collab` | `Dockerfile.collab` | `services/collab/railway.toml` | 3001 | public, healthcheck `/`, start `pnpm collab:server` |
-| `seraph-worker` | `Dockerfile.worker` | `services/worker/railway.toml` | — | BullMQ consumer, start `pnpm worker:connectors` |
+| `seraph-worker` | `Dockerfile.worker` (COPY-based, context = repo root) | `services/worker/railway.toml` | — | BullMQ consumer, start `pnpm worker:connectors` |
 | Redis | Railway plugin (free) | — | 6379 | `REDIS_URL` is injected into the plugin's own service only — set it explicitly on app + worker |
 | `cron-poll` | `Dockerfile.cron` (alpine+curl) | `services/cron-poll/railway.toml` | — | `*/30 * * * *`, `sh scripts/railway-cron-poll.sh` (POSTs 3 connectors) |
 | `cron-import` | `Dockerfile.cron` | `services/cron-import/railway.toml` | — | hourly, `sh scripts/railway-cron-import.sh` (POST /api/graph/import) |
@@ -180,6 +180,23 @@ Key wiring:
   a sleeping worker just drains late.
 - Fallback if config-as-code isn't picked up: service variable
   `RAILWAY_DOCKERFILE_PATH=Dockerfile.<name>` with root directory `.`.
+- **seraph-worker service config (do not regress):** the worker builds
+  with COPY-based `Dockerfile.worker` from context = repo root. The
+  service-instance is set to `rootDirectory: "."` **plus**
+  `railwayConfigFile: "services/worker/railway.toml"` (set via the
+  `serviceInstanceUpdate` GraphQL mutation) — with plain rootDirectory `.`
+  Railway picks up the *root* `railway.toml` (the app's) and the worker
+  deploys the Next.js image; with rootDirectory `services/worker` the old
+  build-time `git clone` returns a **layer-cached stale image** (see below).
+- **Do NOT put build-time `git clone` in a Railway Dockerfile.** Railway's
+  build cache reuses image layers for unchanged `RUN` instructions, so the
+  worker silently ran pre-rename code (consuming the old
+  `meridian-connectors` queue) even after the repo renamed queues to
+  `seraph-connectors`; jobs piled up forever with `ready`/`listening`
+  printed. Any change to the clone `RUN` line *does* bust that one layer.
+- Queue name check after the next repo-wide rename: `workers/queues.ts`
+  queue names MUST match what the deployed worker consumes, or the Railway
+  worker (and any leftover old image) will process an empty queue.
 - Fly.io configs (`fly*.toml`, `scripts/fly-deploy.sh`, `.fly/cron.yml`)
   are retained dormant in case we switch back — do not run the Fly script.
 

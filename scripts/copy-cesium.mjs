@@ -18,6 +18,21 @@ const targetBase = path.join(root, "public/cesium");
 
 const folders = ["Workers", "ThirdParty", "Assets", "Widgets"];
 
+/** Cesium.js is the prebuilt engine (UMD global, window.Cesium). We serve it
+ *  verbatim and let the browser parse it as a plain script: bundling the ESM
+ *  build through webpack+SWC corrupts a WASM payload in @spz-loader into an
+ *  illegal octal-escape template literal, crashing the globe in production. */
+function copyMain() {
+  const src = path.join(cesiumSource, "Cesium.js");
+  const dest = path.join(targetBase, "Cesium.js");
+  if (fs.existsSync(src)) {
+    fs.copyFileSync(src, dest);
+    console.log("Copied Cesium.js (prebuilt engine)");
+  } else {
+    console.warn(`Source file not found: ${src}`);
+  }
+}
+
 function copyDir(src, dest) {
   if (!fs.existsSync(src)) return;
   fs.mkdirSync(dest, { recursive: true });
@@ -33,6 +48,7 @@ function copyDir(src, dest) {
 }
 
 console.log("Copying Cesium assets...");
+copyMain();
 for (const folder of folders) {
   const src = path.join(cesiumSource, folder);
   const dest = path.join(targetBase, folder);

@@ -1,8 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+// The prebuilt engine ships as a static global (/cesium/Cesium.js) — loading
+// it that way keeps Cesium out of the webpack bundle. Bundling the ESM build
+// makes SWC minify a WASM string inside @spz-loader into an illegal
+// octal-escape template literal that crashes the globe page in production.
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import styles from "./GlobeView.module.css";
+
+// Type-only access to the cesium API — erased at build time, no runtime import.
+type CesiumNS = typeof import("cesium");
 
 export interface GlobeMarkerData {
   id: string;
@@ -28,6 +35,27 @@ const PIN_COLORS: Record<string, string> = {
   event: "#e06c75",
 };
 
+declare global {
+  interface Window {
+    Cesium?: CesiumNS;
+    CESIUM_BASE_URL?: string;
+  }
+}
+
+function loadCesium(): Promise<CesiumNS> {
+  if (window.Cesium) return Promise.resolve(window.Cesium);
+  window.CESIUM_BASE_URL = "/cesium";
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "/cesium/Cesium.js";
+    script.async = true;
+    script.onload = () =>
+      window.Cesium ? resolve(window.Cesium) : reject(new Error("Cesium global missing after script load"));
+    script.onerror = () => reject(new Error("Failed to load /cesium/Cesium.js"));
+    document.head.appendChild(script);
+  });
+}
+
 export default function GlobeView({ markers }: { markers: GlobeMarkerData[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<{ destroy: () => void } | null>(null);
@@ -37,7 +65,7 @@ export default function GlobeView({ markers }: { markers: GlobeMarkerData[] }) {
     if (!containerRef.current || viewerRef.current) return;
     let disposed = false;
 
-    void import("cesium").then((Cesium) => {
+    void loadCesium().then((Cesium) => {
       if (disposed || !containerRef.current) return;
 
       const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;

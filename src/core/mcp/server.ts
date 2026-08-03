@@ -24,7 +24,7 @@ import { publishFeedEvent } from "../stream/publish";
 import type { EntityStreamEvent, EntityType, SourceRef } from "seraph-graph-types";
 import "../../connectors";
 
-const ENTITY_TYPES: readonly EntityType[] = [
+const ENTITY_TYPES: [EntityType, ...EntityType[]] = [
   "person",
   "organization",
   "location",
@@ -36,6 +36,8 @@ const ENTITY_TYPES: readonly EntityType[] = [
   "document",
   "event",
 ];
+
+const ENTITY_TYPE_ENUM = z.enum(ENTITY_TYPES);
 
 const MAX_GRAPH_ROWS = 100;
 const MAX_ENTITY_MATCHES = 50;
@@ -219,7 +221,7 @@ export function createMcpServer(): McpServer {
       inputSchema: {
         query: z.string().describe("Case-insensitive substring, e.g. 'acme' or 'sanctioned'"),
         canvasId: z.string().optional().describe("Restrict to one canvas (default: all canvases)"),
-        entityType: z.enum(ENTITY_TYPES).optional().describe("Restrict to an entity type"),
+        entityType: ENTITY_TYPE_ENUM.optional().describe("Restrict to an entity type"),
       },
     },
     async ({ query, canvasId, entityType }) => {
@@ -331,7 +333,7 @@ export function createMcpServer(): McpServer {
       inputSchema: {
         canvasId: z.string().describe("Target canvas id"),
         name: z.string().describe("Canonical entity name"),
-        entityType: z.enum(ENTITY_TYPES).describe("Entity type"),
+        entityType: ENTITY_TYPE_ENUM.describe("Entity type"),
         aliases: z.array(z.string()).optional().describe("Known aliases"),
         attributes: z.record(z.string(), z.any()).optional().describe("Optional structured attributes"),
         sourceUrl: z.string().optional().describe("Source URL for provenance (defaults to the MCP tool id)"),

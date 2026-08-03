@@ -1,29 +1,201 @@
 /* ================================================================
-   Seraph — global stylesheet (vanilla CSS, no Tailwind)
-   Design language: instrument panel. Dark slate, ember accent,
-   hairline borders, mono data labels. The canvas is the product;
-   chrome stays quiet.
+   Seraph — global stylesheet
+   Tailwind v4 + shadcn/ui token set on top of the legacy instrument-
+   panel design language. Dark slate base, ember accent, hairline
+   borders, mono for data. The canvas is the product; chrome stays
+   quiet but visible.
    ================================================================ */
 
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-primary-border: var(--sidebar-primary-border);
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent-border: var(--sidebar-accent-border);
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ----------------------------------------------------------------
+   shadcn/ui token set (dark-only instrument panel)
+   ---------------------------------------------------------------- */
+:root {
+  --button-outline: rgba(255, 255, 255, 0.1);
+  --badge-outline: rgba(255, 255, 255, 0.05);
+  --elevate-1: rgba(255, 255, 255, 0.04);
+  --elevate-2: rgba(255, 255, 255, 0.09);
+  --opaque-button-border-intensity: 9;
+
+  /* surfaces */
+  --background: 224 30% 4%;
+  --foreground: 220 32% 94%;
+  --card: 226 26% 7%;
+  --card-foreground: 220 32% 94%;
+  --card-border: 228 26% 18%;
+  --popover: 226 30% 8%;
+  --popover-foreground: 220 32% 94%;
+  --popover-border: 228 22% 18%;
+  --input: 228 26% 21%;
+  --ring: 217 78% 57%;
+
+  /* brand + semantics */
+  --primary: 217 78% 57%;
+  --primary-foreground: 222 45% 6%;
+  --secondary: 228 30% 13%;
+  --secondary-foreground: 220 32% 94%;
+  --muted: 228 30% 13%;
+  --muted-foreground: 220 14% 60%;
+  --accent: 228 30% 15%;
+  --accent-foreground: 220 32% 94%;
+  --destructive: 355 70% 62%;
+  --destructive-foreground: 355 90% 97%;
+
+  /* charts — ember, mint, cyan, violet, rose */
+  --chart-1: 217 78% 57%;
+  --chart-2: 158 72% 52%;
+  --chart-3: 189 70% 55%;
+  --chart-4: 262 72% 66%;
+  --chart-5: 330 66% 64%;
+
+  /* sidebar */
+  --sidebar: 226 34% 5%;
+  --sidebar-foreground: 220 30% 90%;
+  --sidebar-border: 228 22% 13%;
+  --sidebar-primary: 217 78% 57%;
+  --sidebar-primary-foreground: 222 45% 6%;
+  --sidebar-accent: 228 30% 11%;
+  --sidebar-accent-foreground: 220 30% 92%;
+  --sidebar-ring: 217 78% 57%;
+
+  --app-font-sans: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+  --app-font-serif: Georgia, "Times New Roman", serif;
+  --app-font-mono: "Cascadia Code", "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --radius: 6px;
+
+  --shadow-2xs: 0px 2px 0px 0px hsl(217 78% 57% / 0);
+  --shadow-xs: 0px 2px 0px 0px hsl(217 78% 57% / 0);
+  --shadow-sm:
+    0px 2px 0px 0px hsl(217 78% 57% / 0),
+    0px 1px 2px -1px hsl(217 78% 57% / 0);
+  --shadow:
+    0px 2px 0px 0px hsl(217 78% 57% / 0),
+    0px 1px 2px -1px hsl(217 78% 57% / 0);
+  --shadow-md:
+    0px 2px 0px 0px hsl(217 78% 57% / 0),
+    0px 2px 4px -1px hsl(217 78% 57% / 0);
+  --shadow-lg:
+    0px 2px 0px 0px hsl(217 78% 57% / 0),
+    0px 4px 6px -1px hsl(217 78% 57% / 0);
+  --shadow-xl:
+    0px 2px 0px 0px hsl(217 78% 57% / 0),
+    0px 8px 10px -1px hsl(217 78% 57% / 0);
+  --shadow-2xl: 0px 2px 0px 0px hsl(217 78% 57% / 0);
+
+  /* automatically computed button/chip borders */
+  --sidebar-primary-border: hsl(var(--sidebar-primary));
+  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --sidebar-accent-border: hsl(var(--sidebar-accent));
+  --sidebar-accent-border: hsl(
+    from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
+  --primary-border: hsl(var(--primary));
+  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --secondary-border: hsl(var(--secondary));
+  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --muted-border: hsl(var(--muted));
+  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --accent-border: hsl(var(--accent));
+  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --destructive-border: hsl(var(--destructive));
+  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    margin: 0;
+  }
+}
+
+/* ----------------------------------------------------------------
+   Legacy instrument-panel tokens (kept for existing CSS-module pages)
+   ---------------------------------------------------------------- */
 :root {
   --bg: #0b0e13;
   --bg-raised: #10141c;
-  --panel: #131924;
+  --panel: hsl(226 32% 7%);
   --panel-2: #182030;
-  --border: #232c3d;
   --border-strong: #33405a;
   --text: #dce3ee;
   --text-muted: #8b95a8;
   --text-faint: #5b6577;
-  --accent: #e8a33d;
   --accent-strong: #f5b84d;
   --accent-dim: rgba(232, 163, 61, 0.12);
   --ok: #3ddc97;
   --warn: #e8a33d;
   --danger: #e05656;
-  --radius: 6px;
-  --font-sans: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "Cascadia Code", "JetBrains Mono", ui-monospace, Consolas, monospace;
 }
 
 * {
@@ -36,10 +208,6 @@ body {
 }
 
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -52,7 +220,7 @@ a {
 
 code,
 .mono {
-  font-family: var(--font-mono);
+  font-family: var(--app-font-mono);
   font-size: 0.9em;
 }
 
@@ -114,11 +282,11 @@ code,
   width: 26px;
   height: 26px;
   border-radius: 4px;
-  border: 1px solid var(--accent);
-  color: var(--accent);
+  border: 1px solid #e8a33d;
+  color: #e8a33d;
   display: grid;
   place-items: center;
-  font-family: var(--font-mono);
+  font-family: var(--app-font-mono);
   font-size: 12px;
   font-weight: 700;
 }
@@ -145,7 +313,7 @@ code,
   justify-content: space-between;
   gap: 8px;
   padding: 7px 8px;
-  border-radius: var(--radius);
+  border-radius: 6px;
   color: var(--text-muted);
   font-size: 13px;
   transition: background 120ms ease, color 120ms ease;
@@ -157,13 +325,13 @@ code,
 }
 
 .nav-link.active {
-  background: var(--accent-dim);
-  color: var(--accent-strong);
+  background: rgba(232, 163, 61, 0.12);
+  color: #f5b84d;
 }
 
 .nav-tag {
   font-size: 9px;
-  font-family: var(--font-mono);
+  font-family: var(--app-font-mono);
   color: var(--text-faint);
   border: 1px solid var(--border);
   border-radius: 3px;
@@ -182,7 +350,7 @@ code,
 .stat-tile {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 6px;
   padding: 16px;
 }
 
@@ -197,7 +365,7 @@ code,
   margin-top: 6px;
   font-size: 26px;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--app-font-mono);
   color: var(--text);
 }
 
@@ -210,7 +378,7 @@ code,
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 6px;
   padding: 18px;
 }
 
@@ -225,7 +393,7 @@ code,
   font-size: 13px;
   padding: 24px 0;
   border: 1px dashed var(--border-strong);
-  border-radius: var(--radius);
+  border-radius: 6px;
   text-align: center;
 }
 
@@ -236,7 +404,7 @@ code,
   gap: 12px;
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 6px;
   margin-bottom: 8px;
   background: var(--bg-raised);
   transition: border-color 120ms ease;
@@ -254,7 +422,7 @@ code,
 .canvas-row-meta {
   font-size: 11px;
   color: var(--text-faint);
-  font-family: var(--font-mono);
+  font-family: var(--app-font-mono);
 }
 
 /* ---------- dashboard tables ---------- */
@@ -272,7 +440,7 @@ code,
   gap: 12px;
   padding: 8px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 6px;
   background: var(--bg-raised);
   font-size: 12px;
 }
@@ -285,7 +453,7 @@ code,
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-family: var(--font-mono);
+  font-family: var(--app-font-mono);
 }
 
 .dash-sub {
@@ -300,7 +468,7 @@ code,
   border-radius: 999px;
   border: 1px solid var(--border-strong);
   font-size: 10px;
-  font-family: var(--font-mono);
+  font-family: var(--app-font-mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -318,9 +486,9 @@ code,
 }
 
 .badge-active {
-  color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: #e8a33d;
+  border-color: rgba(232, 163, 61, 0.4);
+  background: rgba(232, 163, 61, 0.08);
 }
 
 /* ---------- connector cards ---------- */
@@ -337,7 +505,7 @@ code,
   gap: 6px;
   padding: 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 6px;
   background: var(--bg-raised);
 }
 
@@ -374,8 +542,8 @@ code,
   margin-top: 14px;
   padding: 10px 12px;
   border: 1px solid var(--border-strong);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
+  border-left: 3px solid #e8a33d;
+  border-radius: 6px;
   font-size: 12px;
   color: var(--text);
 }
@@ -396,23 +564,47 @@ code,
   font: inherit;
   font-size: 13px;
   padding: 7px 12px;
-  border-radius: var(--radius);
+  border-radius: 6px;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease;
 }
 
 .btn:hover {
   background: var(--panel);
-  border-color: var(--accent);
+  border-color: #e8a33d;
 }
 
 .btn-accent {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: #e8a33d;
+  border-color: #e8a33d;
   color: #1a1407;
   font-weight: 650;
 }
 
 .btn-accent:hover {
-  background: var(--accent-strong);
+  background: #f5b84d;
+}
+
+/* ---------- shadcn kit utilities (elevate system from the source export) ---------- */
+
+@utility toggle-elevate {
+  &::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0px;
+    border-radius: inherit;
+    z-index: -1;
+  }
+}
+
+@utility hover-elevate {
+  &::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0px;
+    border-radius: inherit;
+    z-index: 999;
+  }
 }

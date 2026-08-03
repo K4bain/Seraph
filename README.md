@@ -1,7 +1,9 @@
 # Seraph
 
-Open-source intelligence fusion platform. Graph-first, AI-native investigation
-canvases for OSINT researchers, journalists, and analysts.
+Search-first OSINT workspace. Ask one question, get answers from six opensource
+databases at once — OpenSanctions watchlists, SEC EDGAR filings, GDELT news,
+Wikidata, WHOIS, and GitHub — then pull anything interesting into a graph canvas
+of intelligence cards and relationships.
 
 Palantir sells you a black box. **Seraph** gives you the engine room: ingest
 heterogeneous public data streams, surface relationships, anomalies, and

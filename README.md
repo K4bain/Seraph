@@ -79,6 +79,45 @@ docs/                     ARCHITECTURE, CONNECTOR_GUIDE, CANVAS_SCHEMA, AI_LAYER
 4. **Open graph schema** — documented canvas export format, no lock-in.
 5. **Self-hostable with one command** — Docker Compose is the entire stack.
 
+## Current status + next steps (live handoff doc)
+
+> Keep this section updated before you start, while you work, and when you
+> stop — it is how the next AI session picks up where you left off.
+
+**Live deployment (Railway `observant-determination`, env `production`):**
+- App `seraph-production-ab66.up.railway.app`, AGE `seraph-age` (AGE graph DB
+  `seraph`, AGE 1.7.0, 115 entities imported), collab WS, connector worker.
+- Verified this session: `POST /api/graph/import` (115 entities → AGE),
+  MCP `/api/mcp` with an API key (initialize, list_canvases, get_canvas,
+  query_graph returning real AGtype rows), SSE `/api/events` (hello +
+  `redis:true`), connector queue drained by the rebuilt worker.
+- **Worker bug fixed this session:** the old worker image was a build-time
+  `git clone` layer-cached at pre-rename code → consumed the dead
+  `meridian-connectors` queue forever. `Dockerfile.worker` is now COPY-based
+  (context = repo root); the service instance is `rootDirectory:"."` +
+  `railwayConfigFile:"services/worker/railway.toml"` (set via
+  `serviceInstanceUpdate`). Do NOT reintroduce build-time `git clone` in any
+  Railway Dockerfile (see ops notes in CLAUDE.md / `scripts/railway-deploy.md`).
+
+**Next steps (in order):**
+1. Browser E2E of the live site below (chrome-devtools: `/`, `/canvas/demo`,
+   `/feed`, `/marketplace`, `/timeline`, `/geo`, `/globe` (WebGL), `/share/*`,
+   `/settings` API-key flow) — catch console errors / blank panels.
+2. GDELT 429 mitigation (optional, ~low value): stagger cron-poll bursts so
+   `api.gdeltproject.org` 1-req/5s per-IP limit isn't hit (jobs fail
+   `RateLimitedError` under back-to-back runs; retry w/ backoff already in the
+   connector).
+3. AI worker WIP (currently UNCOMMITTED in the working tree, do not revert):
+   `workers/ai-processor.ts`, `src/core/ai/tasks/{anomalies.ts,briefing.ts}`,
+   `src/app/api/ai/{anomalies,briefing}/`, `src/core/canvas.ts` — finish,
+   `pnpm typecheck` + `pnpm lint`, commit, deploy (worker image auto-rebuilds,
+   then `pnpm worker:ai` consumes `seraph-ai`).
+4. Any new work landed by the next agent — append to this list before starting.
+
+**Verification one-liners (after any deploy):** see CLAUDE.md "Commands" +
+`scripts/railway-deploy.md`; queue drain check via BullMQ against the Upstash
+`REDIS_URL` (blocking-commands work; keep `maxRetriesPerRequest: null`).
+
 ## License
 
 Apache 2.0 — fork, redistribute, deploy without legal ambiguity.

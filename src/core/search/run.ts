@@ -34,6 +34,8 @@ export function isSourceEnabled(connectorId: string, type: string | null): boole
       return type === "domain";
     case "github":
       return type === null || type === "person";
+    case "whatsmyname":
+      return type === null || type === "person";
     default:
       return true;
   }

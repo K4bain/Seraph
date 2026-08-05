@@ -7,12 +7,12 @@ import {
   Boxes,
   Cable,
   ChevronRight,
+  Globe,
   Hexagon,
   LayoutDashboard,
   MapPin,
   MapPinned,
   Radio,
-  Satellite,
   ScrollText,
   Search,
   Server,
@@ -20,6 +20,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
@@ -60,7 +61,7 @@ const sections: NavSection[] = [
     links: [
       { href: "/timeline", label: "Timeline", icon: ScrollText },
       { href: "/geo", label: "Geo View", icon: MapPinned },
-      { href: "/globe", label: "Globe 3D", icon: Satellite },
+      { href: "/globe", label: "World View", icon: Globe },
       { href: "/geolocate", label: "Geolocate", icon: MapPin },
     ],
   },
@@ -81,18 +82,18 @@ export default function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild className="data-[active=true]:bg-transparent">
               <Link href="/dashboard">
-                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                   <Hexagon className="size-5" strokeWidth={1.5} />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="font-semibold tracking-[0.22em]">SERAPH</span>
-                  <span className="text-xs text-muted-foreground tracking-[0.14em]">
-                    INTELLIGENCE FUSION
+                <div className="grid flex-1 text-left leading-tight">
+                  <span className="font-mono text-sm font-semibold tracking-[0.22em]">SERAPH</span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Intelligence Fusion
                   </span>
                 </div>
               </Link>
@@ -102,9 +103,17 @@ export default function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {sections.map((section) => (
-          <SidebarGroup key={section.label}>
-            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+        {sections.map((section, index) => (
+          <SidebarGroup
+            key={section.label}
+            className={cn(
+              index > 0 && "border-t border-sidebar-border",
+              index > 0 && "pt-4",
+            )}
+          >
+            <SidebarGroupLabel className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground!">
+              {section.label}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.links.map((link) => {
@@ -113,19 +122,34 @@ export default function AppSidebar() {
                     pathname === link.href || pathname.startsWith(`${link.href}/`);
                   return (
                     <SidebarMenuItem key={link.href}>
+                      <span
+                        className={cn(
+                          "absolute left-0 top-1/2 z-10 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary transition-opacity duration-150",
+                          active ? "opacity-100" : "opacity-0",
+                          "group-data-[collapsible=icon]:hidden",
+                        )}
+                        aria-hidden
+                      />
                       <SidebarMenuButton asChild isActive={active} tooltip={link.label}>
                         <Link href={link.href}>
-                          <Icon className={active ? "text-primary" : undefined} strokeWidth={1.75} />
+                          <Icon
+                            className={cn(
+                              "text-muted-foreground transition-colors",
+                              active && "text-primary!",
+                            )}
+                            strokeWidth={1.75}
+                          />
                           <span>{link.label}</span>
                           {link.soon ? (
-                            <span className="ml-auto rounded border px-1 py-0.5 font-mono text-[9px] text-muted-foreground">
+                            <span className="ml-auto rounded border border-border px-1 py-0.5 font-mono text-[9px] text-muted-foreground">
                               soon
                             </span>
                           ) : (
                             <ChevronRight
-                              className={`ml-auto size-3.5 text-muted-foreground/50 transition-transform ${
-                                active ? "translate-x-0 text-primary" : "-translate-x-1"
-                              }`}
+                              className={cn(
+                                "ml-auto size-3.5 text-muted-foreground/50 transition-transform",
+                                active ? "translate-x-0 text-primary!" : "-translate-x-1",
+                              )}
                               strokeWidth={1.75}
                             />
                           )}
@@ -140,17 +164,16 @@ export default function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="sm" asChild>
               <Link href="/health">
-                <Server className="size-4" strokeWidth={1.75} />
-                <span className="flex items-center gap-2">
-                  <span className="relative flex size-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-                  </span>
+                <span className="relative flex size-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                   All systems nominal
                 </span>
               </Link>

@@ -27,7 +27,7 @@ export default function TopSearch() {
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder="Search people, companies, domains…"
-        className="h-8 w-full rounded-md border bg-transparent pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="h-8 w-full rounded-md border border-input bg-transparent pl-8 pr-3 font-mono text-xs text-foreground placeholder:text-muted-foreground/80 transition-colors focus-visible:border-ring/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
         aria-label="Search across all sources"
       />
     </form>

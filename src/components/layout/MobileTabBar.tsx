@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Boxes, MapPin, Radio, Search, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Tab {
   href: string;
@@ -25,7 +26,7 @@ export default function MobileTabBar() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden"
       aria-label="Primary"
     >
       <div className="grid grid-cols-5">
@@ -36,10 +37,23 @@ export default function MobileTabBar() {
             <Link
               key={tab.href}
               href={tab.href}
-              className="flex flex-col items-center gap-1 py-2.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors aria-[current=true]:text-primary"
+              className={cn(
+                "relative flex flex-col items-center gap-1 py-2 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors",
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+              )}
               aria-current={active ? "page" : undefined}
             >
-              <Icon className="size-5" strokeWidth={1.75} />
+              {active ? (
+                <span className="absolute inset-x-5 top-0 h-px bg-primary" aria-hidden />
+              ) : null}
+              <span
+                className={cn(
+                  "flex items-center justify-center rounded-full px-3 py-1 transition-colors",
+                  active && "bg-primary/10",
+                )}
+              >
+                <Icon className="size-5" strokeWidth={1.75} />
+              </span>
               {tab.label}
             </Link>
           );

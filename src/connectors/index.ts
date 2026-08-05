@@ -13,6 +13,7 @@ import { edgarConnector } from "./edgar/connector";
 import { wikidataConnector } from "./wikidata/connector";
 import { githubConnector } from "./github/connector";
 import { whoisConnector } from "./whois/connector";
+import { whatsmynameConnector } from "./whatsmyname/connector";
 
 registerConnector(gdeltConnector);
 registerConnector(opensanctionsConnector);
@@ -20,6 +21,7 @@ registerConnector(edgarConnector);
 registerConnector(wikidataConnector);
 registerConnector(githubConnector);
 registerConnector(whoisConnector);
+registerConnector(whatsmynameConnector);
 
 export {
   gdeltConnector,
@@ -28,4 +30,5 @@ export {
   wikidataConnector,
   githubConnector,
   whoisConnector,
+  whatsmynameConnector,
 };

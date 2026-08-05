@@ -33,6 +33,7 @@ const SOURCE_STYLES: Record<string, string> = {
   wikidata: "border-purple-500/40 bg-purple-500/10 text-purple-300",
   whois: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
   github: "border-gray-500/40 bg-gray-500/10 text-gray-300",
+  whatsmyname: "border-cyan-500/40 bg-cyan-500/10 text-cyan-300",
 };
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -42,6 +43,7 @@ const SOURCE_LABELS: Record<string, string> = {
   wikidata: "Wikidata",
   whois: "WHOIS",
   github: "GitHub",
+  whatsmyname: "Whatsmyname",
 };
 
 const TYPE_LABELS: Record<string, string> = {

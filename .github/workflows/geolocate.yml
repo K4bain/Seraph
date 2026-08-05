@@ -1,0 +1,29 @@
+name: geolocate
+on:
+  push:
+    paths:
+      - 'services/geolocate/**'
+  pull_request:
+    paths:
+      - 'services/geolocate/**'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+      - name: Install dependencies
+        run: pip install -r services/geolocate/requirements.txt
+      - name: Run tests
+        run: pytest services/geolocate/tests -x -q
+        working-directory: services/geolocate
+        # torch is CPU-only in CI: pip installs CPU wheels by default on ubuntu.
+        # If a GPU build is ever required, set the torch CPU index via
+        # --extra-index-url https://download.pytorch.org/whl/cpu (kept simple here).

@@ -196,64 +196,73 @@ export default function SearchResults() {
   const anyError = (data?.results ?? []).some((entry) => entry.status === "error");
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-foreground">
-      {/* Query bar */}
-      <div className="border-b border-border px-6 py-4">
-        <form
-          className="mx-auto flex w-full max-w-5xl items-center gap-3 rounded-lg border border-border bg-card px-4 py-2.5"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const input = new FormData(event.currentTarget).get("q")?.toString().trim();
-            if (!input) return;
-            window.location.href = `/search?q=${encodeURIComponent(input)}${type ? `&type=${type}` : ""}`;
-          }}
-        >
-          <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-          <input
-            key={`${query}-${type}`}
-            name="q"
-            defaultValue={query}
-            placeholder="Search people, companies, domains…"
-            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            aria-label="Search"
-          />
-          {type ? (
-            <Badge variant="secondary" className="shrink-0 font-mono uppercase">
-              {type}
-            </Badge>
-          ) : null}
-        </form>
+    <div className="mx-auto w-full max-w-5xl space-y-6 p-6 lg:p-8">
+      <div>
+        <div className="mb-1 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <SearchIcon className="size-3.5 text-[#f0883e]" aria-hidden />
+          Search
+        </div>
+        <h1 className="text-[28px] font-semibold tracking-tight">Source Search</h1>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          One query across OpenSanctions, SEC EDGAR, GDELT, Wikidata, WHOIS and GitHub.
+        </p>
       </div>
 
-      <div className="mx-auto grid w-full max-w-5xl flex-1 gap-6 px-6 py-6 lg:grid-cols-[1fr_320px]">
+      {/* Query bar */}
+      <form
+        className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-2.5 transition-colors focus-within:border-[#f0883e]/50"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const input = new FormData(event.currentTarget).get("q")?.toString().trim();
+          if (!input) return;
+          window.location.href = `/search?q=${encodeURIComponent(input)}${type ? `&type=${type}` : ""}`;
+        }}
+      >
+        <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+        <input
+          key={`${query}-${type}`}
+          name="q"
+          defaultValue={query}
+          placeholder="Search people, companies, domains…"
+          className="min-w-0 flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-muted-foreground"
+          aria-label="Search"
+        />
+        {type ? (
+          <span className="shrink-0 rounded-md border border-[#f0883e]/40 bg-[#f0883e]/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-[#f0883e]">
+            {type}
+          </span>
+        ) : null}
+      </form>
+
+      <div className="grid w-full flex-1 gap-6 lg:grid-cols-[1fr_300px]">
         {/* Results column */}
         <div className="min-w-0">
           {!query ? (
-            <div className="flex flex-col items-center gap-3 py-24 text-center text-muted-foreground">
-              <SearchIcon className="h-8 w-8" aria-hidden />
-              <p>Enter a query to search across open sources.</p>
+            <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border/70 py-24 text-center">
+              <SearchIcon className="h-8 w-8 text-muted-foreground/50" aria-hidden />
+              <p className="font-mono text-sm text-muted-foreground">enter a query to probe open sources</p>
             </div>
           ) : loading ? (
-            <div className="flex items-center gap-2 py-24 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 py-24 font-mono text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              Searching {data ? "again" : "open sources"}…
+              probing {data ? "sources again" : "open sources"}…
             </div>
           ) : error ? (
-            <div className="flex items-center gap-2 py-24 text-sm text-destructive">
+            <div className="flex items-center gap-2 py-24 font-mono text-sm text-destructive">
               <AlertCircle className="h-4 w-4" aria-hidden />
               {error}
             </div>
           ) : (
             <>
               {/* Meta row */}
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-                <span>
-                  <span className="text-foreground">{totalHits}</span> results for{" "}
-                  <span className="font-medium text-foreground">&quot;{query}&quot;</span>
-                  {type ? <span className="ml-1 font-mono text-xs uppercase">{type}</span> : null}
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted-foreground">
+                <span className="tabular-nums">
+                  <span className="text-foreground">{totalHits}</span> results · query{" "}
+                  <span className="text-foreground">&quot;{query}&quot;</span>
+                  {type ? <span className="ml-1 text-[#f0883e]">[{type}]</span> : null}
                 </span>
                 {anyError ? (
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5 text-amber-400">
                     <AlertCircle className="h-3 w-3" aria-hidden />
                     some sources unavailable
                   </span>
@@ -261,7 +270,9 @@ export default function SearchResults() {
               </div>
 
               {visible.length === 0 ? (
-                <p className="py-16 text-center text-sm text-muted-foreground">No results.</p>
+                <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border/70 py-16 text-center">
+                  <p className="font-mono text-sm text-muted-foreground">no hits across configured sources</p>
+                </div>
               ) : (
                 <div className="space-y-6">
                   {visible.map((entry) => (
@@ -272,8 +283,10 @@ export default function SearchResults() {
                           <Badge className={`font-mono text-[11px] uppercase ${sourceStyle(entry.source)}`}>
                             {SOURCE_LABELS[entry.source] ?? entry.source}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {entry.status === "error" ? "unavailable" : `${entry.count} hit${entry.count === 1 ? "" : "s"}`}
+                          <span className="font-mono text-[11px] text-muted-foreground">
+                            {entry.status === "error"
+                              ? "unavailable"
+                              : `${entry.count} hit${entry.count === 1 ? "" : "s"}`}
                           </span>
                         </div>
                         <button
@@ -285,26 +298,26 @@ export default function SearchResults() {
                               return next;
                             })
                           }
-                          className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                          className="font-mono text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
                         >
                           {hidden.has(entry.source) ? "show" : "hide"}
                         </button>
                       </div>
 
                       {hidden.has(entry.source) ? null : entry.status === "error" ? (
-                        <p className="rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
+                        <p className="rounded-md border border-border bg-card px-3 py-2 font-mono text-xs text-muted-foreground">
                           {entry.error}
                         </p>
                       ) : entry.status === "empty" ? (
-                        <p className="rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
-                          No matches.
+                        <p className="rounded-md border border-border bg-card px-3 py-2 font-mono text-xs text-muted-foreground">
+                          no matches.
                         </p>
                       ) : (
-                        <ul className="divide-y divide-border rounded-md border border-border bg-card">
+                        <ul className="divide-y divide-border rounded-lg border border-border bg-card">
                           {entry.data.map((item) => {
                             const itemKey = `${entry.source}:${item.title}:${item.url ?? ""}`;
                             return (
-                              <li key={itemKey} className="flex items-start gap-3 px-4 py-3">
+                              <li key={itemKey} className="flex items-start gap-4 px-4 py-3">
                                 <div className="min-w-0 flex-1">
                                   <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                                     {item.url ? (
@@ -325,7 +338,9 @@ export default function SearchResults() {
                                       </Badge>
                                     ) : null}
                                     {item.date ? (
-                                      <span className="text-xs text-muted-foreground">{formatDate(item.date)}</span>
+                                      <span className="font-mono text-[11px] text-muted-foreground">
+                                        {formatDate(item.date)}
+                                      </span>
                                     ) : null}
                                   </div>
                                   {item.description ? (
@@ -336,16 +351,16 @@ export default function SearchResults() {
                                       href={item.url}
                                       target="_blank"
                                       rel="noreferrer"
-                                      className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
+                                      className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground/80 underline-offset-2 hover:text-[#f0883e] hover:underline"
                                     >
                                       <ExternalLink className="h-3 w-3" aria-hidden />
                                       {item.url.replace(/^https?:\/\//, "").slice(0, 60)}
                                     </a>
                                   ) : null}
                                 </div>
-                                <div className="flex shrink-0 flex-col items-end gap-1">
+                                <div className="flex shrink-0 flex-col items-end gap-1.5">
                                   {added.has(itemKey) ? (
-                                    <span className="flex items-center gap-1 text-xs text-emerald-400">
+                                    <span className="flex items-center gap-1 font-mono text-xs text-emerald-400">
                                       <Check className="h-3 w-3" aria-hidden />
                                       added
                                     </span>
@@ -365,7 +380,7 @@ export default function SearchResults() {
                                       <select
                                         value={pickTarget}
                                         onChange={(event) => setPickTarget(event.target.value)}
-                                        className="h-7 max-w-[140px] rounded-md border border-border bg-background px-1.5 text-xs outline-none"
+                                        className="h-7 max-w-[140px] rounded-md border border-border bg-background px-1.5 font-mono text-xs outline-none"
                                         aria-label="Target canvas"
                                       >
                                         <option value="">Canvas…</option>
@@ -377,7 +392,7 @@ export default function SearchResults() {
                                       </select>
                                       <Button
                                         size="sm"
-                                        className="h-7 text-xs"
+                                        className="h-7 bg-[#f0883e] text-[#0b0f17] hover:bg-[#f0883e]/90 text-xs"
                                         disabled={!pickTarget}
                                         onClick={() => void addToCanvas(item, itemKey)}
                                       >
@@ -401,7 +416,7 @@ export default function SearchResults() {
 
         {/* Summary column */}
         <aside className="hidden lg:block">
-          <div className="sticky top-6">
+          <div className="sticky top-6 space-y-3">
             <Button
               variant={summaryOpen ? "default" : "outline"}
               className="w-full gap-2"
@@ -411,17 +426,17 @@ export default function SearchResults() {
               {summaryOpen ? "Hide AI Summary" : "AI Summary"}
             </Button>
             {summaryOpen ? (
-              <div className="mt-3 rounded-md border border-border bg-card p-4">
+              <div className="rounded-lg border border-border bg-card p-4">
                 {summarizing && !summary ? (
-                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <p className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-                    Analyzing sources…
+                    analyzing sources…
                   </p>
                 ) : summary ? (
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{summary}</p>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    <Copy className="mr-1 inline h-3 w-3" aria-hidden />
+                  <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Copy className="h-3 w-3" aria-hidden />
                     Nothing to summarize yet.
                   </p>
                 )}

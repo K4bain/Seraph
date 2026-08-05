@@ -155,6 +155,23 @@ smoke test of https://seraph-production-ab66.up.railway.app:
 | Navigation restructure | DONE | `AppSidebar` + `MobileTabBar` in `src/components/layout/`; search-first shell in `(app)/layout.tsx` |
 | README rewrite | DONE | Seraph search-first OSINT pitch (this file); no Meridian branding left |
 
+### Geolocation (IMINT)
+
+`services/geolocate` is a CLIP image-embedding + FAISS nearest-neighbor search
+microservice over geo-tagged images. `POST /geolocate` returns candidate
+lat/lon + confidence score + provenance for a submitted image; `/health`
+reports service liveness.
+
+| Item | State | Evidence |
+| --- | --- | --- |
+| Geolocation service | IN PROGRESS | skeleton merged via Copilot PR #4 (`services/geolocate/app`) |
+| Index build scripts | IN PROGRESS | `app/index_build.py` + `notebooks/BUILD_INDEX_COLAB.md` |
+| App UI wiring | IN PROGRESS | `/geolocate` integration landing; `GEOLOCATE_URL` env var |
+
+**Integration:** set `GEOLOCATE_URL` in app/worker env to point at the deployed
+service. Note: the FAISS index must be seeded with a geo-tagged image dataset
+before searches return meaningful results.
+
 **Production smoke test** (2026-08-05): `/` 200 · `/search` 200 · `/feed` 200 ·
 `/api/health` 200 · `/api/feed/events` 200 · `/api/feed/markets` 200 ·
 `/api/watchlist` 200 · `/entity/1` 200.

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, Radio, Search, User } from "lucide-react";
+import { Boxes, MapPin, Radio, Search, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface Tab {
@@ -13,6 +13,7 @@ interface Tab {
 
 const tabs: Tab[] = [
   { href: "/search", label: "Search", icon: Search },
+  { href: "/geolocate", label: "Geolocate", icon: MapPin },
   { href: "/feed", label: "Feed", icon: Radio },
   { href: "/canvas", label: "Canvases", icon: Boxes },
   { href: "/settings", label: "Profile", icon: User },
@@ -27,7 +28,7 @@ export default function MobileTabBar() {
       className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur lg:hidden"
       aria-label="Primary"
     >
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);

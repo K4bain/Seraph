@@ -34,7 +34,6 @@ export default async function GeoPage({
   }
 
   const precise = markers.filter((m) => !m.approximate).length;
-  const approximate = markers.length - precise;
 
   return (
     <div className="space-y-6 p-6 lg:p-8">
@@ -55,7 +54,7 @@ export default async function GeoPage({
           point, or a country attribution from a connector, will appear here.
         </div>
       ) : (
-        <>
+        <div className="space-y-3">
           <div className={styles.legend}>
             <span className={styles.legendItem}>
               <span className={styles.swatch} /> precise
@@ -65,11 +64,11 @@ export default async function GeoPage({
               centroid)
             </span>
             <span className={styles.counts}>
-              {precise} precise · {approximate} approximate
+              {precise} precise · {markers.length - precise} approximate
             </span>
           </div>
           <GeoView markers={markers} />
-        </>
+        </div>
       )}
     </div>
   );

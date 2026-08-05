@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getLatestDocument } from "@/core/document";
 import type { EventCard } from "seraph-graph-types";
 import styles from "./timeline.module.css";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { ScrollText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -34,28 +33,36 @@ export default async function TimelinePage({
 
   return (
     <div className="space-y-6 p-6 lg:p-8">
-      <PageHeader
-        eyebrow="Lenses"
-        eyebrowIcon={ScrollText}
-        title="Timeline"
-        subtitle={
-          events.length === 0
-            ? "Event cards projected onto a time axis."
-            : `${events.length} event card${events.length === 1 ? "" : "s"} — ${canvasId} · snapshot v${latest?.version ?? 0}`
-        }
-      />
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="mb-1 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <ScrollText className="size-3.5 text-[#f0883e]" aria-hidden />
+            Lenses
+          </div>
+          <h1 className="text-[28px] font-semibold tracking-tight">Timeline</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            {events.length === 0
+              ? "Event cards projected onto a time axis."
+              : `${events.length} event card${events.length === 1 ? "" : "s"} — ${canvasId} · snapshot v${latest?.version ?? 0}`}
+          </p>
+        </div>
+      </div>
 
       {events.length === 0 ? (
-        <div className="empty-state">
-          No event cards yet. Run a connector from the{" "}
-          <Link className="empty-link" href="/connectors">
-            connectors page
-          </Link>{" "}
-          or add events on the{" "}
-          <Link className="empty-link" href={`/canvas/${canvasId}`}>
-            canvas
-          </Link>
-          .
+        <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border/70 py-16 text-center">
+          <ScrollText className="h-8 w-8 text-muted-foreground/50" aria-hidden />
+          <p className="text-sm text-muted-foreground">No event cards yet.</p>
+          <p className="text-xs text-muted-foreground">
+            Run a connector from the{" "}
+            <Link className="text-[#f0883e] underline-offset-2 hover:underline" href="/connectors">
+              connectors page
+            </Link>{" "}
+            or add events on the{" "}
+            <Link className="text-[#f0883e] underline-offset-2 hover:underline" href={`/canvas/${canvasId}`}>
+              canvas
+            </Link>
+            .
+          </p>
         </div>
       ) : (
         <div className={styles.rail}>

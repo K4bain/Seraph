@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScanSearch } from "lucide-react";
 
 const SOURCE_STYLES: Record<string, string> = {
   opensanctions: "border-red-500/40 bg-red-500/10 text-red-300",
@@ -203,17 +204,24 @@ export default function EntityProfile() {
 
   if (loading) {
     return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-8 w-1/3" />
-        <Skeleton className="h-4 w-2/3" />
+      <div className="mx-auto max-w-4xl space-y-6 p-6 lg:p-8">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-9 w-1/2" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
         <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-40 w-full" />
       </div>
     );
   }
   if (error || !profile) {
     return (
-      <div className="p-6 text-sm text-red-300">
-        {error ?? "Entity not found."}
+      <div className="mx-auto max-w-4xl space-y-6 p-6 lg:p-8">
+        <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border/70 py-16 text-center">
+          <ScanSearch className="h-8 w-8 text-muted-foreground/50" aria-hidden />
+          <p className="font-mono text-sm text-destructive">{error ?? "Entity not found."}</p>
+        </div>
       </div>
     );
   }
@@ -221,23 +229,27 @@ export default function EntityProfile() {
   const attributeEntries = Object.entries(profile.attributes).slice(0, 12);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-6">
-      <header className="space-y-2">
-        <div className="flex items-center gap-3">
-          <h1 className="font-mono text-2xl font-semibold tracking-tight text-foreground">{profile.name}</h1>
+    <div className="mx-auto max-w-4xl space-y-6 p-6 lg:p-8">
+      <header className="space-y-3">
+        <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <ScanSearch className="size-3.5 text-[#f0883e]" aria-hidden />
+          Entity
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-mono text-[28px] font-semibold tracking-tight text-foreground">{profile.name}</h1>
           {profile.type && (
-            <Badge variant="outline" className="border-border text-muted-foreground">
+            <Badge variant="outline" className="border-border font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
               {TYPE_LABELS[profile.type] ?? profile.type}
             </Badge>
           )}
         </div>
         {profile.aliases.length > 0 && (
-          <p className="text-xs text-muted-foreground">
-            Also known as: <span className="text-foreground">{profile.aliases.join(", ")}</span>
+          <p className="text-sm text-muted-foreground">
+            also known as: <span className="text-foreground">{profile.aliases.join(", ")}</span>
           </p>
         )}
         {profile.summary && (
-          <p className="border-l-2 border-accent pl-3 text-sm leading-relaxed text-muted-foreground">
+          <p className="border-l border-[#f0883e]/60 pl-3 text-sm leading-relaxed text-muted-foreground">
             {profile.summary}
           </p>
         )}
@@ -282,7 +294,7 @@ export default function EntityProfile() {
                   </Badge>
                   <div className="min-w-0 flex-1 text-xs leading-relaxed text-muted-foreground">
                     {entry.status === "error" ? (
-                      <span className="text-red-300">Source unavailable</span>
+                      <span className="text-destructive">Source unavailable</span>
                     ) : entry.samples.length === 0 ? (
                       "No matches"
                     ) : (
@@ -308,7 +320,7 @@ export default function EntityProfile() {
             <ol className="relative space-y-4 border-l border-border pl-5">
               {timeline.events.map((event, index) => (
                 <li key={`${event.date}-${index}`} className="relative">
-                  <span className="absolute -left-[25px] top-1.5 h-2 w-2 rounded-full border border-border bg-accent" />
+                  <span className="absolute -left-[25px] top-1.5 h-2 w-2 rounded-full border border-[#f0883e] bg-[#f0883e]" />
                   <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                     {formatDate(event.date)}
                   </p>
@@ -376,7 +388,7 @@ export default function EntityProfile() {
                   zoomOnScroll={false}
                   proOptions={{ hideAttribution: true }}
                 >
-                  <Background gap={24} color="#1e293b" />
+                  <Background gap={24} color="#0b0f17" />
                   <Controls showInteractive={false} />
                 </ReactFlow>
               </div>

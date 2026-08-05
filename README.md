@@ -130,8 +130,34 @@ mobile tab bar), typecheck + lint green.
 
 **Next steps (in order):** final gates — `pnpm lint`, `pnpm build`, browser
 checklist (landing, search, entity, feed, add-to-canvas, mobile tab bar,
-no Meridian refs in UI), commit + push, Railway redeploy; then resume any
-work appended below.
+Seraph branding consistent across UI), commit + push, Railway redeploy; then
+resume any work appended below.
+
+## Status / roadmap (corrected vision scorecard)
+
+External review claimed the following were missing. Audit against
+`master` (`430a82c feat(search): search-first OSINT buildout`) plus a live
+smoke test of https://seraph-production-ab66.up.railway.app:
+
+| Item | State | Evidence |
+| --- | --- | --- |
+| Search landing page | DONE | `/` renders `src/components/landing/SearchLanding.tsx` via `src/app/page.tsx` |
+| Search results page | DONE | `src/app/(app)/search/page.tsx` + `src/components/search/SearchResults.tsx`, fan-out via `/api/search` |
+| Entity profile page | DONE | `src/app/(app)/entity/[id]/page.tsx` + `src/components/entity/EntityProfile.tsx` (Overview/Timeline/Connections/Canvases) |
+| Live feed | DONE | `/feed` (`src/app/(app)/feed/page.tsx` + `FeedTabs`) — World Events tab via `/api/feed/events` |
+| Markets tab | DONE | `FeedTabs` Markets tab + `/api/feed/markets` (indices, crypto, movers) |
+| Watchlist | DONE | `FeedTabs` Watchlist tab + `/api/watchlist` + `/api/watchlist/alerts/[id]/read` |
+| IMINT image analysis | IN PROGRESS | not in `src/connectors/` yet — another worker is building it |
+| Whatsmyname connector | IN PROGRESS | not in `src/connectors/` yet — another worker is building it |
+| GitHub user search connector | DONE | `src/connectors/github/connector.ts`, registered in `src/connectors/index.ts` |
+| Wikidata connector | DONE | `src/connectors/wikidata/connector.ts`, registered in `src/connectors/index.ts` |
+| WHOIS connector | DONE | `src/connectors/whois/connector.ts`, registered in `src/connectors/index.ts` |
+| Navigation restructure | DONE | `AppSidebar` + `MobileTabBar` in `src/components/layout/`; search-first shell in `(app)/layout.tsx` |
+| README rewrite | DONE | Seraph search-first OSINT pitch (this file); no Meridian branding left |
+
+**Production smoke test** (2026-08-05): `/` 200 · `/search` 200 · `/feed` 200 ·
+`/api/health` 200 · `/api/feed/events` 200 · `/api/feed/markets` 200 ·
+`/api/watchlist` 200 · `/entity/1` 200.
 
 ## License
 

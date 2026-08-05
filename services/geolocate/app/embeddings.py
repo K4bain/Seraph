@@ -1,13 +1,42 @@
 import numpy as np
-import torch
 from PIL import Image
-from transformers import CLIPProcessor, CLIPModel
+
+
+class LazyLoader:
+    """Proxy that imports a module only on first attribute access.
+
+    Importing this module does NOT import torch/transformers, so the FastAPI
+    app can boot and serve /health without pulling in the heavy ML stack.
+    """
+    def __init__(self, local_name, parent_module_globals, name):
+        self._local_name = local_name
+        self._parent_module_globals = parent_module_globals
+        self._name = name
+        self._module = None
+
+    def _load(self):
+        import importlib
+        self._module = importlib.import_module(self._name)
+        self._parent_module_globals[self._local_name] = self._module
+        return self._module
+
+    def __getattr__(self, item):
+        module = self._module
+        if module is None:
+            module = self._load()
+        return getattr(module, item)
+
+
+_torch = LazyLoader("torch", globals(), "torch")
 
 _model = None
 _processor = None
 
+
 def load_clip_model():
     global _model, _processor
+    import torch
+    from transformers import CLIPProcessor, CLIPModel
     if _model is None or _processor is None:
         _model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
         _processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
@@ -17,6 +46,7 @@ def load_clip_model():
 
 def embed_image(image, model, processor):
     # image: PIL Image
+    import torch
     device = "cpu"
     inputs = processor(images=image, return_tensors="pt")
     with torch.no_grad():

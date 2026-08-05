@@ -1,14 +1,20 @@
-torch>=2.0.0
-transformers>=4.30.0
+# Core ML stack — CPU-only is fine (torch==2.0 cpu wheels are small); do not
+# install a GPU build in this slim service image.
+torch>=2.0
+transformers>=4.30
 pillow
 faiss-cpu
 numpy
 fastapi
 uvicorn
-easyocr
-pytesseract
-scikit-learn
+python-multipart
 python-dotenv
-pytest
 imagehash
 requests
+pytest
+opencv-python-headless
+
+# OCR is optional. Prefer pytesseract (light) over easyocr (torch-heavy);
+# easyocr is commented out intentionally to keep the image lean.
+# easyocr
+pytesseract

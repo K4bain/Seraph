@@ -1,3 +1,8 @@
+import pytest
+
+torch = pytest.importorskip("torch")
+transformers = pytest.importorskip("transformers")
+
 from PIL import Image
 from app.embeddings import load_clip_model, embed_image
 

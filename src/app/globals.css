@@ -1,9 +1,9 @@
 /* ================================================================
    Seraph — global stylesheet
    Tailwind v4 + shadcn/ui token set on top of the legacy instrument-
-   panel design language. Dark slate base, ember accent, hairline
-   borders, mono for data. The canvas is the product; chrome stays
-   quiet but visible.
+   panel design language. One dark instrument panel: near-black canvas,
+   muted panels, hairline borders, single ember accent, mono for data.
+   The canvas is the product; chrome stays quiet but visible.
    ================================================================ */
 
 @import "tailwindcss";
@@ -16,16 +16,16 @@
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-border: var(--border);
-  --color-input: hsl(var(--input));
+  --color-input: var(--input);
   --color-ring: hsl(var(--ring));
 
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
-  --color-card-border: hsl(var(--card-border));
+  --color-card-border: var(--card-border);
 
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-popover-border: hsl(var(--popover-border));
+  --color-popover-border: var(--popover-border);
 
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
@@ -46,6 +46,11 @@
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
   --color-destructive-border: var(--destructive-border);
+
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-info: hsl(var(--info));
+  --color-gold: hsl(var(--gold));
 
   --color-chart-1: hsl(var(--chart-1));
   --color-chart-2: hsl(var(--chart-2));
@@ -68,105 +73,111 @@
   --font-serif: var(--app-font-serif);
   --font-mono: var(--app-font-mono);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* radii — card 8px, button 6px, control 4px, pill 999px */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
+  --radius-3xl: 10px;
+  --radius-4xl: 12px;
+
+  --shadow-hover-elevation: var(--hover-elevation);
 }
 
 /* ----------------------------------------------------------------
-   shadcn/ui token set (dark-only instrument panel)
+   shadcn/ui token set — the ONLY shipped scheme. html carries
+   class="dark" from the root layout (with suppressHydrationWarning),
+   so this applies by default with no flash of any light scheme.
    ---------------------------------------------------------------- */
-:root {
-  --button-outline: rgba(255, 255, 255, 0.1);
-  --badge-outline: rgba(255, 255, 255, 0.05);
-  --elevate-1: rgba(255, 255, 255, 0.04);
-  --elevate-2: rgba(255, 255, 255, 0.09);
-  --opaque-button-border-intensity: 9;
+.dark {
+  --button-outline: rgba(255, 255, 255, 0.14);
+  --badge-outline: rgba(255, 255, 255, 0.1);
 
-  /* surfaces */
+  /* surfaces — near-black canvas, muted panels, hairline borders */
   --background: 224 30% 4%;
   --foreground: 220 32% 94%;
   --card: 226 26% 7%;
   --card-foreground: 220 32% 94%;
-  --border: hsl(228 26% 18%);
-  --card-border: 228 26% 18%;
-  --popover: 226 30% 8%;
+  --border: hsl(0 0% 100% / 0.08);
+  --card-border: hsl(0 0% 100% / 0.08);
+  --popover: 226 30% 7%;
   --popover-foreground: 220 32% 94%;
-  --popover-border: 228 22% 18%;
-  --input: 228 26% 21%;
-  --ring: 217 78% 57%;
+  --popover-border: hsl(0 0% 100% / 0.08);
+  --input: hsl(0 0% 100% / 0.14);
+  --ring: 25 86% 62%;
 
-  /* brand + semantics */
-  --primary: 217 78% 57%;
-  --primary-foreground: 222 45% 6%;
-  --secondary: 228 30% 13%;
+  /* brand + semantics — single ember accent (#f0883e) */
+  --primary: 25 86% 59%;
+  --primary-foreground: 25 60% 8%;
+  --secondary: 228 30% 12%;
   --secondary-foreground: 220 32% 94%;
-  --muted: 228 30% 13%;
-  --muted-foreground: 220 14% 60%;
-  --accent: 228 30% 15%;
+  --muted: 228 30% 11%;
+  --muted-foreground: 220 14% 62%;
+  --accent: 228 30% 13%;
   --accent-foreground: 220 32% 94%;
-  --destructive: 355 70% 62%;
+  --destructive: 355 70% 60%;
   --destructive-foreground: 355 90% 97%;
 
-  /* charts — ember, mint, cyan, violet, rose */
-  --chart-1: 217 78% 57%;
-  --chart-2: 158 72% 52%;
+  /* status accents — green / amber / cyan / gold */
+  --success: 159 71% 55%;
+  --warning: 37 78% 58%;
+  --info: 189 70% 55%;
+  --gold: 43 74% 59%;
+
+  /* charts — ember, green, cyan, amber, gold */
+  --chart-1: 25 86% 59%;
+  --chart-2: 159 71% 55%;
   --chart-3: 189 70% 55%;
-  --chart-4: 262 72% 66%;
-  --chart-5: 330 66% 64%;
+  --chart-4: 37 78% 58%;
+  --chart-5: 43 74% 59%;
 
   /* sidebar */
   --sidebar: 226 34% 5%;
   --sidebar-foreground: 220 30% 90%;
-  --sidebar-border: 228 22% 13%;
-  --sidebar-primary: 217 78% 57%;
-  --sidebar-primary-foreground: 222 45% 6%;
+  --sidebar-border: 228 22% 14%;
+  --sidebar-primary: 25 86% 59%;
+  --sidebar-primary-foreground: 25 60% 8%;
   --sidebar-accent: 228 30% 11%;
-  --sidebar-accent-foreground: 220 30% 92%;
-  --sidebar-ring: 217 78% 57%;
+  --sidebar-accent-foreground: 220 30% 94%;
+  --sidebar-ring: 25 86% 62%;
 
+  /* computed button/chip borders — crisp 1px hairlines */
+  --primary-border: hsl(25 86% 68%);
+  --secondary-border: hsl(0 0% 100% / 0.12);
+  --muted-border: hsl(0 0% 100% / 0.12);
+  --accent-border: hsl(0 0% 100% / 0.12);
+  --destructive-border: hsl(355 70% 68% / 0.6);
+  --sidebar-primary-border: hsl(25 86% 68%);
+  --sidebar-accent-border: hsl(0 0% 100% / 0.12);
+}
+
+/* ----------------------------------------------------------------
+   Base tokens that never change: fonts, radius, elevation shadows
+   (subtle, dark-neutral — no glow blobs).
+   ---------------------------------------------------------------- */
+:root {
   --app-font-sans: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
   --app-font-serif: Georgia, "Times New Roman", serif;
   --app-font-mono: "Cascadia Code", "JetBrains Mono", ui-monospace, Consolas, monospace;
   --radius: 6px;
 
-  --shadow-2xs: 0px 2px 0px 0px hsl(217 78% 57% / 0);
-  --shadow-xs: 0px 2px 0px 0px hsl(217 78% 57% / 0);
-  --shadow-sm:
-    0px 2px 0px 0px hsl(217 78% 57% / 0),
-    0px 1px 2px -1px hsl(217 78% 57% / 0);
-  --shadow:
-    0px 2px 0px 0px hsl(217 78% 57% / 0),
-    0px 1px 2px -1px hsl(217 78% 57% / 0);
-  --shadow-md:
-    0px 2px 0px 0px hsl(217 78% 57% / 0),
-    0px 2px 4px -1px hsl(217 78% 57% / 0);
-  --shadow-lg:
-    0px 2px 0px 0px hsl(217 78% 57% / 0),
-    0px 4px 6px -1px hsl(217 78% 57% / 0);
-  --shadow-xl:
-    0px 2px 0px 0px hsl(217 78% 57% / 0),
-    0px 8px 10px -1px hsl(217 78% 57% / 0);
-  --shadow-2xl: 0px 2px 0px 0px hsl(217 78% 57% / 0);
+  --elevate-1: rgba(255, 255, 255, 0.04);
+  --elevate-2: rgba(255, 255, 255, 0.09);
 
-  /* automatically computed button/chip borders */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(
-    from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --hover-elevation: 0 1px 0 0 hsl(0 0% 100% / 0.04), 0 6px 20px -6px rgb(0 0 0 / 0.6);
+
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.45);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
+  --shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.5),
+    0 1px 2px -1px rgb(0 0 0 / 0.5);
+  --shadow-md: 0 2px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 4px 12px -2px rgb(0 0 0 / 0.6), 0 3px 6px -4px rgb(0 0 0 / 0.6);
+  --shadow-xl: 0 8px 24px -4px rgb(0 0 0 / 0.7), 0 4px 8px -6px rgb(0 0 0 / 0.6);
+  --shadow-2xl: 0 12px 32px -4px rgb(0 0 0 / 0.8);
 }
 
 @layer base {
@@ -174,26 +185,75 @@
     border-color: var(--border);
   }
 
+  html {
+    color-scheme: dark;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     margin: 0;
   }
+
+  /* focused ember accents — shadcn widgets keep their own ring, bare
+     controls inherit the ember outline */
+  :where(a, button, input, select, textarea, summary, [role="button"]):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: hsl(25 86% 59% / 0.25);
+    color: hsl(220 32% 96%);
+  }
+}
+
+/* ----------------------------------------------------------------
+   Scrollbars — quiet, matched to the canvas
+   ---------------------------------------------------------------- */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(0 0% 100% / 0.14) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(0 0% 100% / 0.1);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(0 0% 100% / 0.2);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* ----------------------------------------------------------------
    Legacy instrument-panel tokens (kept for existing CSS-module pages)
+   — harmonized onto the same near-black canvas + ember accent.
    ---------------------------------------------------------------- */
 :root {
-  --bg: #0b0e13;
-  --bg-raised: #10141c;
-  --panel: hsl(226 32% 7%);
-  --panel-2: #182030;
-  --border-strong: #33405a;
+  --bg: #07090e;
+  --bg-raised: #0b0f17;
+  --panel: #0b0f17;
+  --panel-2: #111722;
+  --border-strong: rgba(255, 255, 255, 0.14);
   --text: #dce3ee;
   --text-muted: #8b95a8;
   --text-faint: #5b6577;
-  --accent-strong: #f5b84d;
-  --accent-dim: rgba(232, 163, 61, 0.12);
+  --accent-strong: #f0883e;
+  --accent-dim: rgba(240, 136, 62, 0.12);
   --ok: #3ddc97;
   --warn: #e8a33d;
   --danger: #e05656;
@@ -248,9 +308,9 @@ code,
 
 .page-title {
   margin: 0;
-  font-size: 20px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .page-subtitle {
@@ -283,8 +343,8 @@ code,
   width: 26px;
   height: 26px;
   border-radius: 4px;
-  border: 1px solid #e8a33d;
-  color: #e8a33d;
+  border: 1px solid #f0883e;
+  color: #f0883e;
   display: grid;
   place-items: center;
   font-family: var(--app-font-mono);
@@ -303,7 +363,7 @@ code,
   padding: 10px 8px 4px;
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-faint);
 }
@@ -326,8 +386,8 @@ code,
 }
 
 .nav-link.active {
-  background: rgba(232, 163, 61, 0.12);
-  color: #f5b84d;
+  background: rgba(240, 136, 62, 0.12);
+  color: #f0883e;
 }
 
 .nav-tag {
@@ -351,7 +411,7 @@ code,
 .stat-tile {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 16px;
 }
 
@@ -379,7 +439,7 @@ code,
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 18px;
 }
 
@@ -394,7 +454,7 @@ code,
   font-size: 13px;
   padding: 24px 0;
   border: 1px dashed var(--border-strong);
-  border-radius: 6px;
+  border-radius: 8px;
   text-align: center;
 }
 
@@ -405,7 +465,7 @@ code,
   gap: 12px;
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   margin-bottom: 8px;
   background: var(--bg-raised);
   transition: border-color 120ms ease;
@@ -441,7 +501,7 @@ code,
   gap: 12px;
   padding: 8px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--bg-raised);
   font-size: 12px;
 }
@@ -487,9 +547,9 @@ code,
 }
 
 .badge-active {
-  color: #e8a33d;
-  border-color: rgba(232, 163, 61, 0.4);
-  background: rgba(232, 163, 61, 0.08);
+  color: #f0883e;
+  border-color: rgba(240, 136, 62, 0.4);
+  background: rgba(240, 136, 62, 0.08);
 }
 
 /* ---------- connector cards ---------- */
@@ -506,7 +566,7 @@ code,
   gap: 6px;
   padding: 14px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--bg-raised);
 }
 
@@ -543,8 +603,8 @@ code,
   margin-top: 14px;
   padding: 10px 12px;
   border: 1px solid var(--border-strong);
-  border-left: 3px solid #e8a33d;
-  border-radius: 6px;
+  border-left: 3px solid #f0883e;
+  border-radius: 8px;
   font-size: 12px;
   color: var(--text);
 }
@@ -572,18 +632,18 @@ code,
 
 .btn:hover {
   background: var(--panel);
-  border-color: #e8a33d;
+  border-color: #f0883e;
 }
 
 .btn-accent {
-  background: #e8a33d;
-  border-color: #e8a33d;
+  background: #f0883e;
+  border-color: #f0883e;
   color: #1a1407;
   font-weight: 650;
 }
 
 .btn-accent:hover {
-  background: #f5b84d;
+  background: #fb9c54;
 }
 
 /* ---------- shadcn kit utilities (elevate system from the source export) ---------- */
@@ -607,5 +667,15 @@ code,
     inset: 0px;
     border-radius: inherit;
     z-index: 999;
+    background: transparent;
+    transition: background-color 120ms ease;
+  }
+
+  &:hover::after {
+    background: var(--elevate-1);
+  }
+
+  &:active::after {
+    background: var(--elevate-2);
   }
 }

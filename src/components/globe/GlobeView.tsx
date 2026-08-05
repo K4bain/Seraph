@@ -1,15 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-// The prebuilt engine ships as a static global (/cesium/Cesium.js) — loading
-// it that way keeps Cesium out of the webpack bundle. Bundling the ESM build
-// makes SWC minify a WASM string inside @spz-loader into an illegal
-// octal-escape template literal that crashes the globe page in production.
-import "cesium/Build/Cesium/Widgets/widgets.css";
-import styles from "./GlobeView.module.css";
+/**
+ * GlobeView — Seraph's /globe lens, powered by WorldWideView.
+ *
+ * Embeds the WWV globe engine (CesiumJS, loaded from the vendored static
+ * build at /cesium/Cesium.js) full-bleed under Seraph's instrument chrome:
+ * layered data view (satellites + trails, country borders, day/night,
+ * Seraph canvas entities), imagery picker, camera presets, a scrubbable
+ * simulation timeline, and a live HUD readout.
+ */
 
-// Type-only access to the cesium API — erased at build time, no runtime import.
-type CesiumNS = typeof import("cesium");
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Layers3, RotateCcw, Satellite, X } from "lucide-react";
+import { entityPoint } from "@/core/geo/gazetteer";
+import { injectWidgetsCss, loadCesium, type CesiumNS } from "./wwv/cesiumLoader";
+import { useWwvViewer } from "./wwv/useWwvViewer";
+import { DEFAULT_LAYERS, type LayerKey, type WwvLayers } from "./wwv/layers";
+import LayerPanel from "./wwv/LayerPanel";
+import Timeline from "./wwv/Timeline";
+import styles from "./GlobeView.module.css";
 
 export interface GlobeMarkerData {
   id: string;
@@ -21,169 +30,286 @@ export interface GlobeMarkerData {
   detail?: string;
 }
 
-const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-const PIN_COLORS: Record<string, string> = {
-  person: "#e06c75",
-  organization: "#61afef",
-  location: "#98c379",
-  vessel: "#56b6c2",
-  aircraft: "#c678dd",
-  domain: "#e5c07b",
-  ip_address: "#d19a66",
-  financial_account: "#f0c674",
-  document: "#abb2bf",
-  event: "#e06c75",
-};
+type GlobeStatus = "booting" | "ready" | "error";
 
-declare global {
-  interface Window {
-    Cesium?: CesiumNS;
-    CESIUM_BASE_URL?: string;
-  }
+interface SnapshotCard {
+  id?: string;
+  kind?: string;
+  entity?: {
+    name?: string;
+    type?: string;
+    geo?: { lat: number; lon: number } | null;
+    attributes?: { description?: unknown; countries?: unknown } | null;
+  };
 }
 
-function loadCesium(): Promise<CesiumNS> {
-  if (window.Cesium) return Promise.resolve(window.Cesium);
-  window.CESIUM_BASE_URL = "/cesium";
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "/cesium/Cesium.js";
-    script.async = true;
-    script.onload = () =>
-      window.Cesium ? resolve(window.Cesium) : reject(new Error("Cesium global missing after script load"));
-    script.onerror = () => reject(new Error("Failed to load /cesium/Cesium.js"));
-    document.head.appendChild(script);
-  });
+interface SnapshotDocument {
+  nodes?: Array<{ data?: { card?: SnapshotCard } }>;
 }
 
-export default function GlobeView({ markers }: { markers: GlobeMarkerData[] }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const viewerRef = useRef<{ destroy: () => void } | null>(null);
-  const [selected, setSelected] = useState<GlobeMarkerData | null>(null);
+function useClock() {
+  const end = useMemo(() => new Date(), []);
+  const start = useMemo(() => new Date(end.getTime() - 24 * 60 * 60 * 1000), [end]);
+  const [simTime, setSimTimeState] = useState<Date>(() => new Date());
+  const simTimeRef = useRef<Date>(simTime);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const playingRef = useRef(isPlaying);
+  const speedRef = useRef(playbackSpeed);
+  playingRef.current = isPlaying;
+  speedRef.current = playbackSpeed;
+
+  const clamp = useCallback(
+    (date: Date) => {
+      const t = Math.min(Math.max(date.getTime(), start.getTime()), end.getTime());
+      return new Date(t);
+    },
+    [start, end],
+  );
 
   useEffect(() => {
-    if (!containerRef.current || viewerRef.current) return;
-    let disposed = false;
-
-    void loadCesium().then((Cesium) => {
-      if (disposed || !containerRef.current) return;
-
-      const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
-      if (token) Cesium.Ion.defaultAccessToken = token;
-
-      const viewer = new Cesium.Viewer(containerRef.current, {
-        baseLayer: new Cesium.ImageryLayer(
-          new Cesium.UrlTemplateImageryProvider({
-            url: DARK_TILES,
-            credit: "© OpenStreetMap · © CARTO",
-            maximumLevel: 18,
-          }),
-        ),
-        baseLayerPicker: false,
-        geocoder: false,
-        homeButton: false,
-        sceneModePicker: false,
-        navigationHelpButton: false,
-        animation: false,
-        timeline: false,
-        fullscreenButton: false,
-        infoBox: false,
-        selectionIndicator: false,
-      });
-
-      if (token) {
-        try {
-          viewer.scene.setTerrain(Cesium.Terrain.fromWorldTerrain({ requestVertexNormals: true }));
-        } catch {
-          /* imagery-only fallback */
-        }
+    if (!playingRef.current) return;
+    let raf = 0;
+    let last = performance.now();
+    let lastPush = 0;
+    const tick = (now: number) => {
+      const dt = Math.min(now - last, 500);
+      last = now;
+      simTimeRef.current = clamp(new Date(simTimeRef.current.getTime() + dt * speedRef.current));
+      if (now - lastPush > 250) {
+        lastPush = now;
+        setSimTimeState(new Date(simTimeRef.current));
       }
-
-      viewer.scene.backgroundColor = Cesium.Color.fromCssColorString("#0b0f14");
-      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString("#10161d");
-      (viewer.cesiumWidget.creditContainer as HTMLElement).style.display = "none";
-
-      const pinSvg = (color: string) =>
-        `data:image/svg+xml,${encodeURIComponent(
-          `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">` +
-            `<path fill="${color}" d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/>` +
-            `<circle cx="12" cy="9" r="3" fill="#0b0f14"/></svg>`,
-        )}`;
-
-      const byId = new Map(markers.map((m) => [m.id, m]));
-      const positions: number[] = [];
-      for (const marker of markers) {
-        const color = PIN_COLORS[marker.subtype ?? ""] ?? "#abb2bf";
-        viewer.entities.add({
-          id: `globe-${marker.id}`,
-          position: Cesium.Cartesian3.fromDegrees(marker.lon, marker.lat),
-          billboard: {
-            image: pinSvg(color),
-            width: 20,
-            height: 20,
-            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          },
-          label: {
-            text: marker.label,
-            font: "11px 'JetBrains Mono', monospace",
-            fillColor: Cesium.Color.fromCssColorString("#d8dee9"),
-            outlineColor: Cesium.Color.fromCssColorString("#0b0f14"),
-            outlineWidth: 3,
-            pixelOffset: new Cesium.Cartesian2(0, -22),
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
-            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 8_000_000),
-          },
-        });
-        positions.push(marker.lon, marker.lat);
-      }
-
-      if (positions.length > 0) {
-        const carto = Cesium.Cartographic.fromCartesian(
-          Cesium.BoundingSphere.fromPoints(
-            markers.map((m) => Cesium.Cartesian3.fromDegrees(m.lon, m.lat)),
-          ).center,
-        );
-        viewer.camera.flyTo({
-          destination: Cesium.Cartesian3.fromDegrees(
-            Cesium.Math.toDegrees(carto.longitude),
-            Cesium.Math.toDegrees(carto.latitude),
-            3_000_000,
-          ),
-          duration: 0,
-        });
-      }
-
-      viewer.screenSpaceEventHandler.setInputAction(
-        (movement: { position: { x: number; y: number } }) => {
-          const picked = viewer.scene.pick(new Cesium.Cartesian2(movement.position.x, movement.position.y));
-          const entity = Cesium.defined(picked) ? (picked as { id?: { id?: string } }).id : undefined;
-          const globeId = entity?.id;
-          const marker = typeof globeId === "string" ? byId.get(globeId.replace(/^globe-/, "")) : undefined;
-          setSelected(marker ?? null);
-        },
-        Cesium.ScreenSpaceEventType.LEFT_CLICK,
-      );
-
-      viewerRef.current = viewer;
-    });
-
-    return () => {
-      disposed = true;
-      viewerRef.current?.destroy();
-      viewerRef.current = null;
+      raf = requestAnimationFrame(tick);
     };
-  }, [markers]);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [clamp, isPlaying]);
+
+  const setSimTime = useCallback(
+    (date: Date) => {
+      simTimeRef.current = clamp(date);
+      setSimTimeState(new Date(simTimeRef.current));
+    },
+    [clamp],
+  );
+
+  const setPlaying = useCallback((playing: boolean) => setIsPlaying(playing), []);
+
+  return {
+    simTime,
+    simTimeRef,
+    setSimTime,
+    isPlaying,
+    setPlaying,
+    playbackSpeed,
+    setPlaybackSpeed,
+    start,
+    end,
+  };
+}
+
+export default function GlobeView({ canvasId }: { canvasId?: string }) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const viewerRef = useRef<unknown>(null);
+
+  const [cesium, setCesium] = useState<CesiumNS | null>(null);
+  const [status, setStatus] = useState<GlobeStatus>("booting");
+  const [bootStep, setBootStep] = useState("loading engine");
+  const [error, setError] = useState<string | null>(null);
+
+  const [layers, setLayers] = useState<WwvLayers>(DEFAULT_LAYERS);
+  const [imageryId, setImageryId] = useState("carto-dark");
+  const [markers, setMarkers] = useState<GlobeMarkerData[]>([]);
+  const [selected, setSelected] = useState<GlobeMarkerData | null>(null);
+  const [fps, setFps] = useState<number | null>(null);
+  const [cameraText, setCameraText] = useState("—");
+
+  const [panelOpen, setPanelOpen] = useState(true);
+
+  const clock = useClock();
+
+  // ----- Load the vendored engine -----------------------------------------
+  useEffect(() => {
+    let cancelled = false;
+    injectWidgetsCss();
+    loadCesium()
+      .then((c) => {
+        if (!cancelled) setCesium(c);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Cesium failed to load");
+        setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // ----- Boot watchdog -----------------------------------------------------
+  useEffect(() => {
+    if (status !== "booting") return;
+    const t = setTimeout(() => {
+      setStatus((s) => (s === "booting" ? "error" : s));
+      setError((e) => e ?? "Globe initialisation timed out");
+    }, 20_000);
+    return () => clearTimeout(t);
+  }, [status]);
+
+  // ----- Fetch Seraph canvas entities for the pin layer --------------------
+  useEffect(() => {
+    if (!canvasId) return;
+    let cancelled = false;
+    fetch(`/api/canvas/${encodeURIComponent(canvasId)}/snapshot`)
+      .then((r) => (r.ok ? (r.json() as Promise<{ document: SnapshotDocument | null }>) : null))
+      .then((data) => {
+        if (cancelled || !data?.document?.nodes) return;
+        const cards = data.document.nodes
+          .map((n) => n.data?.card)
+          .filter((card): card is SnapshotCard => Boolean(card));
+        const entities = cards.filter((card) => card.kind === "entity");
+        const pinned: GlobeMarkerData[] = [];
+        for (const card of entities) {
+          if (!card.entity) continue;
+          const point = entityPoint(card.entity);
+          if (!point) continue;
+          pinned.push({
+            id: card.id ?? `card-${pinned.length}`,
+            lat: point.lat,
+            lon: point.lon,
+            label: card.entity.name ?? "Entity",
+            subtype: card.entity.type,
+            approximate: point.approximate,
+            detail:
+              typeof card.entity.attributes?.description === "string"
+                ? card.entity.attributes.description
+                : undefined,
+          });
+        }
+        setMarkers(pinned);
+      })
+      .catch(() => {
+        /* canvas unreachable — pins simply stay empty */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [canvasId]);
+
+  // ----- Viewer callbacks --------------------------------------------------
+  const handleReady = useCallback(() => setStatus("ready"), []);
+  const handleError = useCallback((message: string) => {
+    setError(message);
+    setStatus("error");
+  }, []);
+  const handleFps = useCallback((f: number) => setFps(f), []);
+  const handleCamera = useCallback((text: string) => setCameraText(text), []);
+  const handlePick = useCallback((marker: GlobeMarkerData | null) => setSelected(marker), []);
+  const handleBootStep = useCallback((step: string) => setBootStep(step), []);
+  const handleViewer = useCallback((viewer: unknown) => {
+    viewerRef.current = viewer;
+  }, []);
+
+  const callbacks = useMemo(
+    () => ({
+      onReady: handleReady,
+      onError: handleError,
+      onFps: handleFps,
+      onCamera: handleCamera,
+      onPick: handlePick,
+      onBootStep: handleBootStep,
+      onViewer: handleViewer,
+    }),
+    [handleReady, handleError, handleFps, handleCamera, handlePick, handleBootStep, handleViewer],
+  );
+
+  useWwvViewer({
+    cesium,
+    containerRef,
+    layers,
+    imageryId,
+    simTimeRef: clock.simTimeRef,
+    markers,
+    callbacks,
+  });
+
+  const toggleLayer = useCallback((key: LayerKey) => {
+    setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  const handleScrub = useCallback(
+    (progress: number) => {
+      const t = new Date(clock.start.getTime() + progress * (clock.end.getTime() - clock.start.getTime()));
+      clock.setSimTime(t);
+    },
+    [clock],
+  );
+
+  const satellitesCount = layers.satellites ? 10 : 0;
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.root}>
       <div ref={containerRef} className={styles.viewer} />
+
+      {/* HUD header */}
+      <header className={styles.hud}>
+        <div className={styles.hudLeft}>
+          <div className={styles.eyebrow}>
+            <Satellite className={styles.eyebrowIcon} />
+            Lenses · WorldwideView
+          </div>
+          <h1 className={styles.title}>Global View</h1>
+          <div className={styles.statusLine}>
+            <span className={styles.statusDot} />
+            {status === "ready" ? "live" : status} · {cameraText}
+          </div>
+        </div>
+        <div className={styles.hudRight}>
+          <div className={styles.readout}>
+            <span className={styles.readoutLabel}>fps</span>
+            <span className={styles.readoutValue}>{fps ?? "—"}</span>
+          </div>
+          <div className={styles.readout}>
+            <span className={styles.readoutLabel}>sats</span>
+            <span className={styles.readoutValue}>{satellitesCount}</span>
+          </div>
+          <div className={styles.readout}>
+            <span className={styles.readoutLabel}>pins</span>
+            <span className={styles.readoutValue}>{markers.length}</span>
+          </div>
+          <button
+            type="button"
+            className={`${styles.hudBtn} ${panelOpen ? styles.hudBtnActive : ""}`}
+            onClick={() => setPanelOpen((open) => !open)}
+            aria-pressed={panelOpen}
+          >
+            <Layers3 className={styles.hudBtnIcon} />
+            Layers
+          </button>
+        </div>
+      </header>
+
+      {panelOpen && (
+        <LayerPanel
+          cesium={cesium}
+          viewer={viewerRef.current}
+          layers={layers}
+          imageryId={imageryId}
+          markers={markers.length}
+          satellites={satellitesCount}
+          onToggle={toggleLayer}
+          onImagery={setImageryId}
+          onClose={() => setPanelOpen(false)}
+        />
+      )}
+
       {selected && (
         <div className={styles.infoCard}>
           <div className={styles.infoHead}>
             <span className={styles.infoName}>{selected.label}</span>
-            <button className={styles.closeBtn} onClick={() => setSelected(null)}>
-              ×
+            <button className={styles.iconBtn} onClick={() => setSelected(null)} aria-label="Close details">
+              <X className={styles.iconBtnIcon} />
             </button>
           </div>
           <div className={styles.infoMeta}>
@@ -194,6 +320,44 @@ export default function GlobeView({ markers }: { markers: GlobeMarkerData[] }) {
             {selected.lat.toFixed(4)}, {selected.lon.toFixed(4)}
           </div>
           {selected.detail && <div className={styles.infoDetail}>{selected.detail}</div>}
+        </div>
+      )}
+
+      <Timeline
+        simTime={clock.simTime}
+        start={clock.start}
+        end={clock.end}
+        isPlaying={clock.isPlaying}
+        playbackSpeed={clock.playbackSpeed}
+        onPlayPause={() => clock.setPlaying(!clock.isPlaying)}
+        onSpeed={clock.setPlaybackSpeed}
+        onScrub={handleScrub}
+      />
+
+      {status === "booting" && (
+        <div className={styles.bootOverlay}>
+          <div className={styles.bootPanel}>
+            <div className={styles.bootMark}>WWV</div>
+            <div className={styles.bootEyebrow}>WorldWideView globe</div>
+            <div className={styles.bootTitle}>Initialising lens</div>
+            <div className={styles.bootBar}>
+              <div className={styles.bootBarFill} />
+            </div>
+            <div className={styles.bootStep}>{bootStep}…</div>
+          </div>
+        </div>
+      )}
+
+      {status === "error" && (
+        <div className={styles.errorOverlay}>
+          <div className={styles.errorPanel}>
+            <div className={styles.errorTitle}>Globe unavailable</div>
+            <div className={styles.errorBody}>{error ?? "The WebGL globe failed to start."}</div>
+            <button type="button" className={styles.retryBtn} onClick={() => window.location.reload()}>
+              <RotateCcw className={styles.retryIcon} />
+              Retry
+            </button>
+          </div>
         </div>
       )}
     </div>

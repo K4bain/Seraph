@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Hexagon,
   LayoutDashboard,
+  MapPin,
   MapPinned,
   Radio,
   Satellite,
@@ -60,6 +61,7 @@ const sections: NavSection[] = [
       { href: "/timeline", label: "Timeline", icon: ScrollText },
       { href: "/geo", label: "Geo View", icon: MapPinned },
       { href: "/globe", label: "Globe 3D", icon: Satellite },
+      { href: "/geolocate", label: "Geolocate", icon: MapPin },
     ],
   },
   {

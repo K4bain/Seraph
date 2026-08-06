@@ -1,6 +1,6 @@
 import { getLatestDocument } from "@/core/document";
 import { entityPoint } from "@/core/geo/gazetteer";
-import GeoView, { type GeoMarkerData } from "@/components/geo/GeoView";
+import GlobeView from "@/components/globe/GlobeView";
 import styles from "./geo.module.css";
 import type { EntityCard } from "seraph-graph-types";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -19,7 +19,7 @@ export default async function GeoPage({
   const cards = (latest?.document?.nodes ?? []).map((node) => node.data.card);
   const entities: EntityCard[] = cards.filter((card): card is EntityCard => card.kind === "entity");
 
-  const markers: GeoMarkerData[] = [];
+  const markers = [] as { id?: string; lat: number; lon: number; label?: string; subtype?: string; approximate?: boolean }[];
   for (const card of entities) {
     const point = entityPoint(card.entity);
     if (!point) continue;
@@ -50,8 +50,7 @@ export default async function GeoPage({
 
       {markers.length === 0 ? (
         <div className="empty-state">
-          No geolocated entities yet. Entities with a <code className="code-inline">geo</code>{" "}
-          point, or a country attribution from a connector, will appear here.
+          No geolocated entities yet. Entities with a <code className="code-inline">geo</code> point, or a country attribution from a connector, will appear here.
         </div>
       ) : (
         <div className="space-y-3">
@@ -67,7 +66,13 @@ export default async function GeoPage({
               {precise} precise · {markers.length - precise} approximate
             </span>
           </div>
-          <GeoView markers={markers} />
+
+          {/* Replace Leaflet GeoView with the 3D Globe lens (WorldWideView/Cesium) */}
+          <div className="h-[calc(100dvh-12rem)] w-full overflow-hidden bg-background rounded-md">
+            {/* GlobeView accepts an optional canvasId prop; we pass the same canvas snapshot id */}
+            {/* Client component — will hydrate on the client */}
+            <GlobeView canvasId={canvasId} />
+          </div>
         </div>
       )}
     </div>

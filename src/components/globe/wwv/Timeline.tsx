@@ -14,7 +14,7 @@
 
 import { useEffect, useState } from "react";
 import { Pause, Play } from "lucide-react";
-import styles from "./Timeline.module.css";
+import styles from "../GlobeView.module.css";
 
 export interface TimelineProps {
   simTime: Date;

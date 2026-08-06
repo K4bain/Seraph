@@ -67,6 +67,11 @@ function degToRad(deg: number): number {
   return (deg * Math.PI) / 180;
 }
 
+/** Wrap a longitude into [-180, 180). */
+function wrapDeg(deg: number): number {
+  return ((((deg + 180) % 360) + 360) % 360) - 180;
+}
+
 function solveEccentricAnomaly(meanAnomalyRad: number, ecc: number): number {
   let e = meanAnomalyRad;
   for (let i = 0; i < 4; i++) {
@@ -102,9 +107,7 @@ export function propagateSatellite(def: SatelliteDef, date: Date): GroundTrack {
   // ECI -> ECEF via GMST rotation, then lat/lon.
   const gmst = gmstRad(date);
   const lonRad = Math.atan2(y, x) - gmst;
-  let lon = (lonRad * 180) / Math.PI;
-  if (lon > 180) lon -= 360;
-  if (lon < -180) lon += 360;
+  const lon = wrapDeg((lonRad * 180) / Math.PI);
   const lat = (Math.asin(z / r) * 180) / Math.PI;
   const altKm = r - EARTH_RADIUS_KM;
 

@@ -51,3 +51,32 @@ export function injectWidgetsCss(): void {
   link.href = "/cesium/Widgets/widgets.css";
   document.head.appendChild(link);
 }
+
+// ---------------------------------------------------------------------------
+// Loose typed views over the vendored engine's namespaces. These mirror the
+// runtime surface the WWV engine touches (scene modes, screen transforms,
+// imagery layers) without pulling in a full Cesium type package.
+// ---------------------------------------------------------------------------
+
+/** SceneMode enum (numeric ids on the runtime SceneMode object). */
+export interface CesiumSceneMode {
+  SCENE2D: number;
+  SCENE3D: number;
+  COLUMBUS_VIEW: number;
+  MORPHING: number;
+}
+
+/** SceneTransforms.worldToWindowCoordinates — 3D position to window pixels. */
+export interface CesiumSceneTransforms {
+  worldToWindowCoordinates: (
+    scene: unknown,
+    position: unknown,
+    result?: unknown,
+  ) => { x: number; y: number } | undefined;
+}
+
+/** Minimal ImageryLayer surface the engine touches. */
+export interface CesiumImageryLayerLike {
+  alpha: number;
+  show: boolean;
+}

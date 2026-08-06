@@ -58,6 +58,38 @@ export const IMAGERY_LAYERS: ImageryOption[] = [
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer",
     dark: true,
   },
+  {
+    id: "opentopomap",
+    name: "OpenTopoMap",
+    description: "Topographic relief overlay",
+    kind: "url",
+    url: "https://tile.opentopomap.org/{z}/{x}/{y}.png",
+    dark: false,
+  },
+  {
+    id: "esri-terrain",
+    name: "Esri World Terrain",
+    description: "ArcGIS terrain basemap",
+    kind: "arcgis",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer",
+    dark: false,
+  },
+  {
+    id: "esri-ocean",
+    name: "Esri Ocean",
+    description: "ArcGIS world ocean basemap",
+    kind: "arcgis",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer",
+    dark: false,
+  },
+  {
+    id: "carto-dark-matter",
+    name: "Carto Dark Matter",
+    description: "Dark, labels-free basemap",
+    kind: "url",
+    url: "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+    dark: true,
+  },
 ];
 
 export function getImageryOption(id: string): ImageryOption {
@@ -84,4 +116,13 @@ export function createImageryProvider(cesium: CesiumNS, id: string): unknown {
     credit: "© OpenStreetMap · © CARTO · © Esri",
     maximumLevel: 18,
   });
+}
+
+/**
+ * Fade any Cesium ImageryLayer via its `alpha` property (0–1).
+ * Used by the graphics settings handle to dim overlays over the base map.
+ */
+export function setImageryOpacity(layer: unknown, alpha: number): void {
+  if (!layer) return;
+  (layer as { alpha: number }).alpha = Math.max(0, Math.min(1, alpha));
 }

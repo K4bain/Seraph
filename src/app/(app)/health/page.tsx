@@ -24,6 +24,7 @@ export default async function SystemPage() {
       icon: Database,
       value: status.db.ok ? "ok" : "down",
       ok: status.db.ok,
+      tone: status.db.ok ? "ok" : "critical",
       note: status.db.ok
         ? `${status.db.latencyMs ?? "?"} ms probe latency`
         : status.db.error ?? "unreachable",
@@ -33,6 +34,7 @@ export default async function SystemPage() {
       icon: Cable,
       value: status.redis.available ? "ok" : "down",
       ok: status.redis.available,
+      tone: status.redis.available ? "ok" : "critical",
       note: redis
         ? `${redis.waiting} waiting · ${redis.active} active · ${redis.delayed} delayed · ${redis.completed} completed · ${redis.failed} failed`
         : "queue unavailable (REDIS_URL not reachable)",
@@ -42,6 +44,7 @@ export default async function SystemPage() {
       icon: Boxes,
       value: status.age.enabled ? "on" : "off",
       ok: status.age.enabled,
+      tone: status.age.enabled ? "ok" : "warn",
       note: status.age.enabled
         ? `import enabled · ${status.age.labels.join(", ")}`
         : "ENABLE_GRAPH_IMPORT not set — canvas store is the source of truth",
@@ -51,6 +54,7 @@ export default async function SystemPage() {
       icon: Server,
       value: String(status.connectors.length),
       ok: status.connectors.length > 0,
+      tone: status.connectors.length > 0 ? "ok" : "info",
       note: status.connectors.map((c) => c.id).join(" · "),
     },
   ];
@@ -79,7 +83,13 @@ export default async function SystemPage() {
                   </div>
                   <CircleDot
                     className={`size-3 ${
-                      tile.ok ? "text-emerald-500" : "text-destructive"
+                      tile.tone === "critical"
+                        ? "text-destructive"
+                        : tile.tone === "warn"
+                          ? "text-amber-500"
+                          : tile.tone === "info"
+                            ? "text-cyan-400"
+                            : "text-emerald-500"
                     }`}
                   />
                 </div>

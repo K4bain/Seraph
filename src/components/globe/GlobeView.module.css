@@ -611,6 +611,57 @@
   text-align: right;
 }
 
+.windowGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: none;
+}
+
+.windowLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  margin-right: 0.15rem;
+}
+
+.windowBtn,
+.liveBtn {
+  padding: 0.15rem 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 100ms ease, color 100ms ease, background 100ms ease;
+}
+
+.windowBtn:hover,
+.liveBtn:hover {
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
+}
+
+.windowBtnActive {
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
+  background: var(--accent-dim);
+}
+
+.liveBtn {
+  color: var(--ok);
+  border-color: rgba(61, 220, 151, 0.35);
+}
+
+.liveBtn:hover {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
 /* ----------------------------------------------------------------
    Boot overlay
    ---------------------------------------------------------------- */

@@ -15,6 +15,8 @@ export interface InfoPanelProps {
 }
 
 export default function InfoPanel({ marker, onClose }: InfoPanelProps) {
+  const coordLat = Number.isFinite(marker.lat) ? marker.lat.toFixed(4) : "—";
+  const coordLon = Number.isFinite(marker.lon) ? marker.lon.toFixed(4) : "—";
   return (
     <div className={styles.infoCard}>
       <div className={styles.infoHead}>
@@ -28,7 +30,7 @@ export default function InfoPanel({ marker, onClose }: InfoPanelProps) {
         {marker.approximate ? " · approximate (country centroid)" : ""}
       </div>
       <div className={styles.infoCoord}>
-        {marker.lat.toFixed(4)}, {marker.lon.toFixed(4)}
+        {coordLat}, {coordLon}
       </div>
       {marker.detail && <div className={styles.infoDetail}>{marker.detail}</div>}
     </div>

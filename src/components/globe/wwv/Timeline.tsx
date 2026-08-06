@@ -140,6 +140,7 @@ export default function Timeline({
             max={1}
             step={0.001}
             value={progress}
+            suppressHydrationWarning
             onChange={(e) => onScrub(parseFloat(e.target.value))}
             aria-label="Globe simulation time"
           />

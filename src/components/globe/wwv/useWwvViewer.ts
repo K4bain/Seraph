@@ -153,10 +153,17 @@ interface BillboardItemLike {
   disableDepthTestDistance: number;
 }
 
-interface BillboardCollectionLike {
+interface CollectionLike {
   length: number;
-  get: (index: number) => BillboardItemLike;
+  get: (index: number) => unknown;
+  add: (properties?: unknown) => unknown;
+  remove: (item: unknown) => boolean;
+  removeAll: () => void;
   destroy: () => void;
+}
+
+interface BillboardCollectionLike extends CollectionLike {
+  get: (index: number) => BillboardItemLike;
 }
 
 interface LabelItemLike {
@@ -170,10 +177,8 @@ interface LabelItemLike {
   disableDepthTestDistance: number;
 }
 
-interface LabelCollectionLike {
-  length: number;
+interface LabelCollectionLike extends CollectionLike {
   get: (index: number) => LabelItemLike;
-  destroy: () => void;
 }
 
 interface PolylineItemLike {
@@ -182,10 +187,8 @@ interface PolylineItemLike {
   material: unknown;
 }
 
-interface PolylineCollectionLike {
-  length: number;
+interface PolylineCollectionLike extends CollectionLike {
   get: (index: number) => PolylineItemLike;
-  destroy: () => void;
 }
 
 interface ClusterRenderers {
@@ -437,13 +440,23 @@ export function useWwvViewer({
       spokes,
       memberDots,
       clear: () => {
-        badges.length = 0;
-        badgeLabels.length = 0;
-        spokes.length = 0;
-        memberDots.length = 0;
+        badges.removeAll();
+        badgeLabels.removeAll();
+        spokes.removeAll();
+        memberDots.removeAll();
       },
     };
     clusterRenderRef.current = clusterRender;
+
+    /** Resize a Cesium collection to exactly `n` items (length is read-only). */
+    const resizeCollection = (col: CollectionLike, n: number) => {
+      while (col.length > n) {
+        const item = col.get(col.length - 1);
+        if (item === undefined) break;
+        col.remove(item);
+      }
+      while (col.length < n) col.add();
+    };
 
     const cart3Ctor = c.Cartesian3 as unknown as new (x: number, y: number, z: number) => unknown;
     const cart2Ctor = c.Cartesian2;
@@ -557,8 +570,8 @@ export function useWwvViewer({
       const byId = new Map(candidates.map((p) => [p.id, p] as const));
 
       // Cluster badges: ember dot + mono count.
-      render.badges.length = multi.length;
-      render.badgeLabels.length = multi.length;
+      resizeCollection(render.badges, multi.length);
+      resizeCollection(render.badgeLabels, multi.length);
       for (let i = 0; i < multi.length; i++) {
         const g = multi[i]!;
         const center = groupCenter(g.ids, byId);
@@ -599,8 +612,8 @@ export function useWwvViewer({
             dotColors.push(member.color);
           }
         }
-        render.spokes.length = spokePairs.length;
-        render.memberDots.length = dotPositions.length;
+        resizeCollection(render.spokes, spokePairs.length);
+        resizeCollection(render.memberDots, dotPositions.length);
         const spokeMaterial = (c.Color.fromCssColorString("#f0883e") as {
           withAlpha: (a: number) => unknown;
         }).withAlpha(0.35);
@@ -619,8 +632,8 @@ export function useWwvViewer({
           dot.disableDepthTestDistance = Number.POSITIVE_INFINITY;
         }
       } else {
-        render.spokes.length = 0;
-        render.memberDots.length = 0;
+        resizeCollection(render.spokes, 0);
+        resizeCollection(render.memberDots, 0);
       }
     };
 

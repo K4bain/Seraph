@@ -375,7 +375,6 @@ export function useWwvViewer({
     }
 
     bordersHandleRef.current?.setVisible(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layers.borders, cesium]);
 
   // ----- Seraph entity pins (rebuilt when markers arrive / change) ----------

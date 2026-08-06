@@ -306,7 +306,7 @@ export const SATELLITE_CATALOG: SatelliteDef[] = [
     elements: { semiMajorKm: 26560, inclinationDeg: 55, raanDeg: 255, argPerigeeDeg: 0, eccentricity: 0.003, meanAnomalyDeg: 45, epoch: EPOCH },
   },
   {
-    id: "iridium-1",
+    id: "iridium-0",
     name: "IRIDIUM 1",
     color: "#c9a36a",
     elements: { semiMajorKm: 7158, inclinationDeg: 86.4, raanDeg: 190, argPerigeeDeg: 0, eccentricity: 0.001, meanAnomalyDeg: 200, epoch: EPOCH },

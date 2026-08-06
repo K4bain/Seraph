@@ -2,7 +2,7 @@
   "name": "seraph",
   "version": "0.1.0",
   "private": true,
-  "description": "Seraph — find anyone, map everything, stay informed. Search-first OSINT fusion: one query across OpenSanctions, SEC EDGAR, GDELT, Wikidata, WHOIS and GitHub, then map it on graph canvases.",
+  "description": "Seraph — find anyone, map everything, stay informed. Search-first OSINT fusion: one query across OpenSanctions, SEC EDGAR, GDELT, Wikidata, WHOIS and GitHub, then map it on grap...",
   "license": "Apache-2.0",
   "keywords": [
     "osint",
@@ -37,6 +37,7 @@
     "db:studio": "prisma studio",
     "postinstall": "prisma generate && node -e \"if (require('fs').existsSync('scripts/copy-cesium.mjs')) require('child_process').execSync('node scripts/copy-cesium.mjs', { stdio: 'inherit' })\"",
     "copy:cesium": "node scripts/copy-cesium.mjs",
+    "import:worldwideview": "node scripts/import-worldwideview.mjs",
     "worker:connectors": "tsx workers/connector-runner.ts",
     "worker:ai": "tsx workers/ai-processor.ts",
     "collab:server": "node node_modules/@y/websocket-server/src/server.js",

@@ -28,7 +28,7 @@
   width: 7px;
   height: 7px;
   background: var(--bg);
-  border: 1px solid var(--accent);
+  border: 1px solid #f0883e;
   transform: rotate(45deg);
 }
 
@@ -82,7 +82,7 @@
 }
 
 .entities {
-  color: var(--accent);
+  color: #f0883e;
 }
 
 .source {
@@ -92,5 +92,5 @@
 }
 
 .source:hover {
-  color: var(--accent);
+  color: #f0883e;
 }

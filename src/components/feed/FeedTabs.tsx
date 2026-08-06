@@ -95,7 +95,7 @@ function WorldEvents() {
     );
   }
   if (error) {
-    return <p className="text-sm text-red-300">{error}</p>;
+    return <p className="font-mono text-sm text-destructive">{error}</p>;
   }
   if (events.length === 0) {
     return <p className="text-sm text-muted-foreground">No world events in the current window.</p>;
@@ -240,11 +240,11 @@ function Markets() {
               </div>
               <div className="mt-2 flex items-end justify-between gap-3">
                 <div>
-                  <p className="font-mono text-xl text-foreground">
+                  <p className="font-mono text-xl tabular-nums text-foreground">
                     {row.price !== null ? row.price.toLocaleString("en", { maximumFractionDigits: 2 }) : "—"}
                   </p>
                   <p
-                    className={`font-mono text-xs ${up ? "text-emerald-400" : "text-red-400"}`}
+                    className={`font-mono text-xs tabular-nums ${up ? "text-emerald-400" : "text-red-400"}`}
                   >
                     {up ? "▲" : "▼"} {row.changePercent !== null ? `${Math.abs(row.changePercent).toFixed(2)}%` : "—"}
                   </p>
@@ -275,10 +275,10 @@ function Markets() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono text-sm text-foreground">
+                    <p className="font-mono text-sm tabular-nums text-foreground">
                       {mover.price !== null ? mover.price.toLocaleString("en", { maximumFractionDigits: 2 }) : "—"}
                     </p>
-                    <p className={`font-mono text-xs ${up ? "text-emerald-400" : "text-red-400"}`}>
+                    <p className={`font-mono text-xs tabular-nums ${up ? "text-emerald-400" : "text-red-400"}`}>
                       {up ? "▲" : "▼"} {mover.changePercent !== null ? `${Math.abs(mover.changePercent).toFixed(2)}%` : "—"}
                     </p>
                   </div>
@@ -416,7 +416,12 @@ function Watchlist() {
             <SelectItem value="domain">Domain</SelectItem>
           </SelectContent>
         </Select>
-        <Button size="sm" onClick={() => void addItem()} disabled={adding || !term.trim()}>
+        <Button
+          size="sm"
+          onClick={() => void addItem()}
+          disabled={adding || !term.trim()}
+          className="bg-[#f0883e] text-[#0b0f17] hover:bg-[#f0883e]/90"
+        >
           Add to watchlist
         </Button>
       </div>
@@ -444,7 +449,7 @@ function Watchlist() {
                     </Badge>
                   )}
                   {item.alerts.filter((alert) => !alert.read).length > 0 && (
-                    <Badge className="bg-red-500/20 text-red-300">
+                    <Badge variant="outline" className="border-red-500/40 bg-red-500/10 text-red-300">
                       {item.alerts.filter((alert) => !alert.read).length} new
                     </Badge>
                   )}

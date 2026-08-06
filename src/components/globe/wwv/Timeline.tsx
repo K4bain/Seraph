@@ -134,6 +134,7 @@ export default function Timeline({
         <div className={styles.timelineScrubWrap}>
           <input
             type="range"
+            name="wwv-scrubber"
             className={styles.timelineScrubber}
             min={0}
             max={1}
@@ -144,11 +145,13 @@ export default function Timeline({
           />
         </div>
 
-        <div className={styles.timelineLive}>
+        <div className={styles.timelineLive} suppressHydrationWarning>
           {isPlaying ? "REPLAY" : progress >= 0.999 ? "LIVE" : "PAUSED"}
         </div>
 
-        <time className={styles.timelineClock}>{timeLabel(simTime)}</time>
+        <time className={styles.timelineClock} suppressHydrationWarning>
+          {timeLabel(simTime)}
+        </time>
       </div>
 
       <div className={styles.timelineRow}>
@@ -169,9 +172,13 @@ export default function Timeline({
           </button>
         </div>
 
-        <span className={styles.timelineLabel}>start {timeLabel(effStart)}</span>
+        <span className={styles.timelineLabel} suppressHydrationWarning>
+          start {timeLabel(effStart)}
+        </span>
         <span className={styles.timelineLabel}>UTC · sim clock · playback {playbackSpeed}×</span>
-        <span className={styles.timelineLabel}>end {timeLabel(effEnd)}</span>
+        <span className={styles.timelineLabel} suppressHydrationWarning>
+          end {timeLabel(effEnd)}
+        </span>
       </div>
     </footer>
   );

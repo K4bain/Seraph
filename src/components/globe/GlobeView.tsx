@@ -11,11 +11,12 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Layers3, RotateCcw, Satellite, X } from "lucide-react";
+import { Layers3, RotateCcw, Satellite } from "lucide-react";
 import { entityPoint } from "@/core/geo/gazetteer";
 import { injectWidgetsCss, loadCesium, type CesiumNS } from "./wwv/cesiumLoader";
 import { useWwvViewer } from "./wwv/useWwvViewer";
 import { DEFAULT_LAYERS, type LayerKey, type WwvLayers } from "./wwv/layers";
+import InfoPanel from "./wwv/InfoPanel";
 import LayerPanel from "./wwv/LayerPanel";
 import Timeline from "./wwv/Timeline";
 import styles from "./GlobeView.module.css";
@@ -304,24 +305,7 @@ export default function GlobeView({ canvasId }: { canvasId?: string }) {
         />
       )}
 
-      {selected && (
-        <div className={styles.infoCard}>
-          <div className={styles.infoHead}>
-            <span className={styles.infoName}>{selected.label}</span>
-            <button className={styles.iconBtn} onClick={() => setSelected(null)} aria-label="Close details">
-              <X className={styles.iconBtnIcon} />
-            </button>
-          </div>
-          <div className={styles.infoMeta}>
-            {selected.subtype ?? "entity"}
-            {selected.approximate ? " · approximate (country centroid)" : ""}
-          </div>
-          <div className={styles.infoCoord}>
-            {selected.lat.toFixed(4)}, {selected.lon.toFixed(4)}
-          </div>
-          {selected.detail && <div className={styles.infoDetail}>{selected.detail}</div>}
-        </div>
-      )}
+      {selected && <InfoPanel marker={selected} onClose={() => setSelected(null)} />}
 
       <Timeline
         simTime={clock.simTime}

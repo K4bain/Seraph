@@ -279,6 +279,10 @@ export function useWwvViewer({
       Cartesian2: new (x: number, y: number) => unknown;
       Cartographic: { fromCartesian: (p: unknown) => { longitude: number; latitude: number; height: number } };
       Color: { fromCssColorString: (css: string) => unknown };
+      Material: {
+        fromType: (type: unknown, opts: Record<string, unknown>) => unknown;
+        ColorType: unknown;
+      };
       Math: { toDegrees: (r: number) => number };
       SceneMode: CesiumSceneMode;
       SceneTransforms?: CesiumSceneTransforms;
@@ -612,28 +616,34 @@ export function useWwvViewer({
             dotColors.push(member.color);
           }
         }
-        resizeCollection(render.spokes, spokePairs.length);
-        resizeCollection(render.memberDots, dotPositions.length);
-        const spokeMaterial = (c.Color.fromCssColorString("#f0883e") as {
+        // Rebuild spokes + member dots per frame via add(). Polyline.material
+        // must be a real Cesium Material: a raw Color has no destroy(), so the
+        // next remove()/removeAll() crashes in _destroy. add() gives each item a
+        // clean lifecycle and removal destroys it properly.
+        render.spokes.removeAll();
+        render.memberDots.removeAll();
+        const spokeColor = (c.Color.fromCssColorString("#f0883e") as {
           withAlpha: (a: number) => unknown;
         }).withAlpha(0.35);
         for (let i = 0; i < spokePairs.length; i++) {
-          const spoke = render.spokes.get(i);
-          spoke.positions = spokePairs[i];
-          spoke.width = 1;
-          spoke.material = spokeMaterial;
+          render.spokes.add({
+            positions: spokePairs[i],
+            width: 1,
+            material: c.Material.fromType(c.Material.ColorType, { color: spokeColor }),
+          });
         }
         for (let i = 0; i < dotPositions.length; i++) {
-          const dot = render.memberDots.get(i);
-          dot.position = dotPositions[i];
-          dot.image = feedDot(dotColors[i] ?? "#abb2bf");
-          dot.width = 8;
-          dot.height = 8;
-          dot.disableDepthTestDistance = Number.POSITIVE_INFINITY;
+          render.memberDots.add({
+            position: dotPositions[i],
+            image: feedDot(dotColors[i] ?? "#abb2bf"),
+            width: 8,
+            height: 8,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          });
         }
       } else {
-        resizeCollection(render.spokes, 0);
-        resizeCollection(render.memberDots, 0);
+        render.spokes.removeAll();
+        render.memberDots.removeAll();
       }
     };
 

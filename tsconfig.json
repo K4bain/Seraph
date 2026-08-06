@@ -14,9 +14,18 @@
         "name": "next"
       }
     ],
-    "paths": {
+"paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@worldwideview/wwv-plugin-sdk": [
+        "./packages/wwv-plugin-sdk/src"
+      ],
+      "@worldwideview/wwv-lib-aviation": [
+        "./packages/wwv-lib-aviation/src"
+      ],
+      "@worldwideview/wwv-lib-incidents": [
+        "./packages/wwv-lib-incidents/src"
       ]
     },
     "allowJs": true

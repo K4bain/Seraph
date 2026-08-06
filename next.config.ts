@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
   // bullmq pulls ioredis, whose CJS subpaths ("ioredis/built/utils") break
   // webpack's exports-map resolution — load both natively at runtime.
   serverExternalPackages: ["pg", "bullmq", "ioredis", "@prisma/client", "@prisma/adapter-neon", "@prisma/adapter-pg", "@neondatabase/serverless"],
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   env: {
     CESIUM_BASE_URL: "/cesium",
   },

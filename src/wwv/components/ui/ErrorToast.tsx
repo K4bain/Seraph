@@ -1,0 +1,55 @@
+"use client";
+
+/**
+ * @file ErrorToast.tsx
+ * @description Global error notification component.
+ * Displays critical system errors or validation failures in a
+ * non-blocking overlay with auto-dismiss functionality.
+ * @module src/components/ui
+ */
+
+import { useEffect } from "react";
+import { useStore } from "@/wwv/core/state/store";
+import { AlertTriangle, X } from "lucide-react";
+import styles from "./ErrorToast.module.css";
+
+/**
+ * @component ErrorToast
+ * @description Renders a dismissible error message anchored to the viewport.
+ * Automatically clears after a timeout via the Zustand global store.
+ */
+export default function ErrorToast() {
+    const errorToastMessage = useStore((state) => state.errorToastMessage);
+    const clearErrorToast = useStore((state) => state.clearErrorToast);
+
+    useEffect(() => {
+        if (errorToastMessage) {
+            const timer = setTimeout(() => {
+                clearErrorToast();
+            }, 6000); // auto dismiss after 6s
+            return () => clearTimeout(timer);
+        }
+    }, [errorToastMessage, clearErrorToast]);
+
+    if (!errorToastMessage) return null;
+
+    return (
+      <div className={styles.overlay}>
+        <div className={styles.toast}>
+          <div className={styles.iconWrapper}>
+            <AlertTriangle color="#ef4444" size={20} />
+          </div>
+          <div className={styles.message}>
+            {errorToastMessage}
+          </div>
+          <button
+            className={styles.dismiss}
+            onClick={clearErrorToast}
+            aria-label="Dismiss Error"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+    );
+}

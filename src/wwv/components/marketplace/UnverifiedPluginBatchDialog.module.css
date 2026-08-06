@@ -1,0 +1,141 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(var(--glass-blur));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog {
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: var(--glass-shadow);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.icon {
+  font-size: 2.4rem;
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f59e0b;
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: #999;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-glass);
+  border: 1px solid var(--glass-border-inner);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.item:hover {
+  background: var(--bg-glass-hover);
+  box-shadow: var(--glass-shadow-inner);
+  transform: scale(0.99);
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #f59e0b;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pluginName {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  font-weight: 500;
+}
+
+.risk {
+  font-size: 0.78rem;
+  color: #777;
+  line-height: 1.4;
+  text-align: center;
+  margin: 0 0 20px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.denyBtn,
+.allowBtn {
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  box-shadow: var(--glass-shadow-inner);
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.denyBtn {
+  background: var(--bg-glass);
+  border: 1px solid var(--glass-border-inner);
+  color: var(--text-primary);
+}
+
+.allowBtn {
+  background: #f59e0b;
+  color: #0a0a0a;
+}
+
+.denyBtn:hover,
+.allowBtn:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.denyBtn:active,
+.allowBtn:active {
+  transform: scale(0.95);
+}
+
+.allowBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

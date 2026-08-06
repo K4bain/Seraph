@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, MapPin, Radio, Search, User } from "lucide-react";
+import { Boxes, MapPin, Radio, ScanLine, Search, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ const tabs: Tab[] = [
   { href: "/geolocate", label: "Geolocate", icon: MapPin },
   { href: "/feed", label: "Feed", icon: Radio },
   { href: "/canvas", label: "Canvases", icon: Boxes },
+  { href: "/imint", label: "Image Intel", icon: ScanLine },
   { href: "/settings", label: "Profile", icon: User },
 ];
 

@@ -13,6 +13,7 @@ import {
   MapPin,
   MapPinned,
   Radio,
+  ScanLine,
   ScrollText,
   Search,
   Server,
@@ -63,6 +64,7 @@ const sections: NavSection[] = [
       { href: "/geo", label: "Geo View", icon: MapPinned },
       { href: "/globe", label: "World View", icon: Globe },
       { href: "/geolocate", label: "Geolocate", icon: MapPin },
+      { href: "/imint", label: "Image Intel", icon: ScanLine },
     ],
   },
   {

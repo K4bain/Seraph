@@ -11,6 +11,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY packages/seraph-graph-types/package.json packages/seraph-graph-types/package.json
 COPY packages/seraph-connector-sdk/package.json packages/seraph-connector-sdk/package.json
+COPY packages/wwv-plugin-sdk/package.json packages/wwv-plugin-sdk/package.json
+COPY packages/wwv-lib-aviation/package.json packages/wwv-lib-aviation/package.json
+COPY packages/wwv-lib-incidents/package.json packages/wwv-lib-incidents/package.json
 COPY prisma/ prisma/
 RUN pnpm install --frozen-lockfile
 
@@ -27,6 +30,8 @@ RUN mkdir -p /app/public
 # supplied via fly.toml [build.args] (e.g. the collab WebSocket URL).
 ARG NEXT_PUBLIC_WS_SERVER_URL
 ENV NEXT_PUBLIC_WS_SERVER_URL=${NEXT_PUBLIC_WS_SERVER_URL}
+ARG NEXT_PUBLIC_WWV_EDITION
+ENV NEXT_PUBLIC_WWV_EDITION=${NEXT_PUBLIC_WWV_EDITION}
 ENV NEXT_TELEMETRY_DISABLED=1
 # CesiumJS static assets land in public/cesium for the runner stage.
 RUN node scripts/copy-cesium.mjs

@@ -19,13 +19,15 @@
     "melchior": {
       "job": "imint-geo",
       "claim": ["src/app/(app)/imint/**", "src/components/imint/**"],
-      "status": "active",
+      "status": "landed",
+      "sha": "c2f1d1d",
       "brief": "add a Geolocate action to the IMINT flow"
     },
     "artaban": {
       "job": "ci-build-gate",
       "claim": ["src/app/api/geolocate/route.ts", ".github/workflows/ci.yml", "package.json", "pnpm-lock.yaml", "README.md"],
-      "status": "active",
+      "status": "landed",
+      "sha": "a60527e",
       "brief": "wire proxy fallback + CI build gate + docs"
     }
   },

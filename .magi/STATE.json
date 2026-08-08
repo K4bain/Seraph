@@ -2,8 +2,33 @@
   "schema": 1,
   "repo": "K4bain/Seraph",
   "branch": "master",
-  "updatedAt": "2026-08-07T23:35:03Z",
-  "lanes": {},
+  "updatedAt": "2026-08-08T09:00:00Z",
+  "lanes": {
+    "caspar": {
+      "job": "geolocate-ui",
+      "claim": ["src/app/(app)/geolocate/**", "src/components/geolocate/**"],
+      "status": "active",
+      "brief": "build the real /geolocate page (upload -> /api/geolocate -> candidates list)"
+    },
+    "balthazar": {
+      "job": "wwv-seam",
+      "claim": ["src/app/globe/**"],
+      "status": "active",
+      "brief": "harden the /globe mount seam (error boundary, hydration, cesium fallback)"
+    },
+    "melchior": {
+      "job": "imint-geo",
+      "claim": ["src/app/(app)/imint/**", "src/components/imint/**"],
+      "status": "active",
+      "brief": "add a Geolocate action to the IMINT flow"
+    },
+    "artaban": {
+      "job": "ci-build-gate",
+      "claim": ["src/app/api/geolocate/route.ts", ".github/workflows/ci.yml", "package.json", "pnpm-lock.yaml", "README.md"],
+      "status": "active",
+      "brief": "wire proxy fallback + CI build gate + docs"
+    }
+  },
   "history": [
     {
       "lane": "melchior",

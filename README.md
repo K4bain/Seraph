@@ -155,22 +155,54 @@ smoke test of https://seraph-production-ab66.up.railway.app:
 | Navigation restructure | DONE | `AppSidebar` + `MobileTabBar` in `src/components/layout/`; search-first shell in `(app)/layout.tsx` |
 | README rewrite | DONE | Seraph search-first OSINT pitch (this file); no Meridian branding left |
 
-### Geolocation (IMINT)
+### Geolocate
 
-`services/geolocate` is a CLIP image-embedding + FAISS nearest-neighbor search
-microservice over geo-tagged images. `POST /geolocate` returns candidate
-lat/lon + confidence score + provenance for a submitted image; `/health`
-reports service liveness.
+Image-geolocation via a CLIP + FAISS microservice. The Next.js app exposes a
+proxy endpoint; the actual embedding/search happens in the
+`services/geolocate` microservice.
 
-| Item | State | Evidence |
+#### POST /api/geolocate (Next.js proxy)
+
+Proxies a multipart upload to the geolocate microservice and returns the
+service JSON verbatim.
+
+Response envelope is the service's JSON (`query_hash`, `candidates`, optional
+`hint` when the index is empty). Errors: `400` for missing/invalid input,
+`502` with `code: "GEO_UNAVAILABLE"` when the microservice is unreachable or
+times out.
+
+#### Environment
+
+| Var | Default | Purpose |
 | --- | --- | --- |
-| Geolocation service | IN PROGRESS | skeleton merged via Copilot PR #4 (`services/geolocate/app`) |
-| Index build scripts | IN PROGRESS | `app/index_build.py` + `notebooks/BUILD_INDEX_COLAB.md` |
-| App UI wiring | IN PROGRESS | `/geolocate` integration landing; `GEOLOCATE_URL` env var |
+| `GEOLOCATE_URL` | `http://localhost:8000/geolocate` | base URL of the geolocate microservice endpoint |
+| `GEOLOCATE_TIMEOUT_MS` | `12000` | per-request upstream timeout in milliseconds |
 
-**Integration:** set `GEOLOCATE_URL` in app/worker env to point at the deployed
-service. Note: the FAISS index must be seeded with a geo-tagged image dataset
-before searches return meaningful results.
+#### services/geolocate microservice
+
+FastAPI app (`services/geolocate/app/api.py`): `POST /geolocate` embeds the
+image with CLIP (`transformers`, `openai/clip-vit-base-patch32`) and runs a
+FAISS `IndexFlatIP(d=512)` nearest-neighbor search for lat/lon candidates.
+Data lives at `INDEX_PATH` (`data/index.faiss`) and `META_PATH`
+(`data/meta.json`). `/health` reports liveness + index entry count.
+
+Build the index (on a machine with torch + RAM for the model):
+
+```bash
+cd services/geolocate
+python scripts/build_index.py --meta sample_meta.csv
+# writes data/index.faiss, data/meta.json, data/manifest.json
+```
+
+`bash scripts/build_data.sh` seeds ~5 public Wikimedia landmark images.
+Index files are gitignored / dockerignored and built at runtime.
+
+#### CI gate
+
+The dev box OOMs on `next build` (cgroup limited to ~7.7GB shared memory), so
+the full build gate runs in GitHub Actions instead — `.github/workflows/ci.yml`
+runs on push to `master` and on pull requests: frozen-lockfile pnpm install,
+lint, typecheck, tests, and a production build on `ubuntu-latest`.
 
 **Production smoke test** (2026-08-05): `/` 200 · `/search` 200 · `/feed` 200 ·
 `/api/health` 200 · `/api/feed/events` 200 · `/api/feed/markets` 200 ·

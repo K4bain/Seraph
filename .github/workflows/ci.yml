@@ -1,0 +1,47 @@
+name: ci
+# Build gate for Seraph's web app.
+#
+# Why this exists: the local dev box OOMs on `next build` — its cgroup is
+# limited to ~7.7GB of shared memory (container cgroup memory limit), which
+# the webpack/prisma/Cesium build phase blows through reliably. GitHub's
+# default ubuntu-latest runner has plenty of RAM, so this workflow is the
+# authoritative gate: frozen lockfile install, lint, typecheck, tests, and a
+# real production build all run here before a PR into master lands.
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

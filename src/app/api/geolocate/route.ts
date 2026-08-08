@@ -3,7 +3,14 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 const GEOLOCATE_DEFAULT_URL = "http://localhost:8000/geolocate";
-const GEOLOCATE_TIMEOUT_MS = 12_000;
+const GEOLOCATE_DEFAULT_TIMEOUT_MS = 12_000;
+
+// Timeout is configurable per-deployment via GEOLOCATE_TIMEOUT_MS
+// (milliseconds); falls back to 12s when unset or invalid.
+function geolocateTimeoutMs(): number {
+  const raw = Number(process.env.GEOLOCATE_TIMEOUT_MS);
+  return Number.isFinite(raw) && raw > 0 ? raw : GEOLOCATE_DEFAULT_TIMEOUT_MS;
+}
 
 /**
  * POST /api/geolocate
@@ -38,7 +45,7 @@ export async function POST(req: Request) {
     const res = await fetch(url, {
       method: "POST",
       body: upstream,
-      signal: AbortSignal.timeout(GEOLOCATE_TIMEOUT_MS),
+      signal: AbortSignal.timeout(geolocateTimeoutMs()),
     });
     const body = await res.json();
     return NextResponse.json(body, { status: res.status });

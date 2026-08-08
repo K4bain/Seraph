@@ -7,7 +7,7 @@
 
 "use client";
 
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 
 /**
  * Props for the PluginErrorBoundary component.
@@ -34,7 +34,7 @@ interface State {
  * nothing (null), allowing the rest of the UI (sidebar, globe) to remain functional.
  */
 export class PluginErrorBoundary extends Component<Props, State> {
-  public state: State = {
+  public override state: State = {
     hasError: false
   };
 
@@ -42,11 +42,11 @@ export class PluginErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public override componentDidCatch(error: Error, _errorInfo: ErrorInfo) {
     console.error(`[PluginErrorBoundary] Plugin component '${this.props.pluginId}' crashed during render and was isolated:`, error);
   }
 
-  public render() {
+  public override render() {
     if (this.state.hasError) {
       // Return null so the rest of the application can continue running
       return null;

@@ -5,14 +5,13 @@
 
 import React, { useEffect, useRef, useMemo } from "react";
 import {
- Ion, buildModuleUrl, Entity as CesiumEntity, Transforms, Matrix4, Cartesian3, HeadingPitchRoll, Math as CesiumMath
+ Ion, Entity as CesiumEntity, Transforms, Matrix4, Cartesian3, HeadingPitchRoll, Math as CesiumMath
 } from "cesium";
 import { Viewer } from "resium";
 import { useStore } from "@/wwv/core/state/store";
 import { pluginManager } from "@/wwv/core/plugins/PluginManager";
 import type { GeoEntity, CesiumEntityOptions } from "@/wwv/core/plugins/PluginTypes";
 import { applyFilters } from "@/wwv/core/filters/filterEngine";
-import { dataBus } from "@/wwv/core/data/DataBus";
 import { PluginErrorBoundary } from "@/wwv/components/common/PluginErrorBoundary";
 import { subscribeToCameraPresets } from "./CameraController";
 import { setupInteractionHandlers } from "./InteractionHandler";

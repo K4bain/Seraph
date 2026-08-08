@@ -26,9 +26,9 @@ export function verifyCrossServiceSignature(
         return { valid: false, reason: "malformed_header" };
     }
 
-    const timestamp = parseInt(tMatch[1], 10);
-    const nonce = nMatch[1];
-    const providedSig = sigMatch[1];
+    const timestamp = parseInt(tMatch[1]!, 10);
+    const nonce = nMatch[1]!;
+    const providedSig = sigMatch[1]!;
 
     const nowSeconds = Math.floor(Date.now() / 1000);
     if (Math.abs(nowSeconds - timestamp) > 300) {

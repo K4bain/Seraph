@@ -37,8 +37,8 @@ export function mapGeoJsonToEntities(
             return {
                 id: `${pluginId}-${f.id ?? i}`,
                 pluginId,
-                longitude: coords[0],
-                latitude: coords[1],
+                longitude: coords[0]!,
+                latitude: coords[1]!,
                 altitude: coords[2] ?? undefined,
                 heading: asNumber(getNestedValue(f, mapping.heading ?? "")),
                 speed: asNumber(getNestedValue(f, mapping.speed ?? "")),

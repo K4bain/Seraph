@@ -28,8 +28,6 @@ export class DeclarativePlugin implements WorldPlugin {
     readonly category: PluginCategory;
     readonly version: string;
 
-    private context: PluginContext | null = null;
-
     constructor(private readonly manifest: PluginManifest) {
         this.id = manifest.id;
         this.name = manifest.name;
@@ -45,15 +43,13 @@ export class DeclarativePlugin implements WorldPlugin {
      * @param ctx - The host context provided by the manager.
      * @returns A promise that resolves when initialization is complete.
      */
-    async initialize(ctx: PluginContext): Promise<void> {
-        this.context = ctx;
+    async initialize(_ctx: PluginContext): Promise<void> {
     }
 
     /**
      * Cleans up internal state and stops all active processes.
      */
     destroy(): void {
-        this.context = null;
     }
 
     /**

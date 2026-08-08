@@ -10,13 +10,10 @@ import { redis } from "@/wwv/lib/redis";
 import { prisma } from "@/wwv/lib/db";
 import { getEngineUrl } from "@/wwv/lib/data-query/service";
 import { isSigningKeyValid } from "@/wwv/lib/signingKeyConfig";
-import { isDemo, isDemoAdminConfigured, getDemoAdminSecret } from "@/wwv/core/edition";
+import { isDemo, getDemoAdminSecret } from "@/wwv/core/edition";
 
 // Shared probe timeout in milliseconds.
 const PROBE_TIMEOUT_MS = 2000;
-
-// Longer timeout for probes that may involve HTTP calls to external services.
-const READINESS_TIMEOUT_MS = 5000;
 
 // ---------------------------------------------------------------------------
 // Timeout utility
@@ -153,14 +150,14 @@ export async function probeDefaultPlugins(): Promise<boolean> {
 
         if (!expectedPluginIds || expectedPluginIds.length === 0) return count > 0;
 
-        const installed = await withTimeout(
+        const installed = (await withTimeout(
             prisma.installedPlugin.findMany({
                 where: { pluginId: { in: expectedPluginIds } },
                 select: { pluginId: true },
             }),
             [],
             PROBE_TIMEOUT_MS,
-        );
+        )) as unknown as Array<{ pluginId: string }>;
 
         const installedSet = new Set(installed.map((r) => r.pluginId));
         return expectedPluginIds.every((id) => installedSet.has(id));

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
-import { PrismaClient } from "../../generated/prisma/index.js";
+import { PrismaClient } from "../../generated/prisma/client";
 
 /**
  * Prisma client singleton — PostgreSQL only.

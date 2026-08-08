@@ -1,7 +1,7 @@
 import {
     Cartesian3, Cartographic, Color, Ellipsoid,
     PointPrimitiveCollection, BillboardCollection, LabelCollection, PolylineCollection,
-    VerticalOrigin, DistanceDisplayCondition, NearFarScalar, HeightReference,
+    VerticalOrigin, DistanceDisplayCondition, NearFarScalar,
 } from "cesium";
 import type { Viewer as CesiumViewer } from "cesium";
 import type { GeoEntity, CesiumEntityOptions } from "@/wwv/core/plugins/PluginTypes";
@@ -181,7 +181,10 @@ export async function renderEntitiesChunked(
     const currentIds = new Set<string>();
     const completed = await globalChunkedProcessor.processChunked(visibleEntities, 500, (chunk) => {
         if (viewer.isDestroyed()) return;
-        for (let i = 0; i < chunk.length; i++) renderSingleEntity(chunk[i], existingMap, points, billboards, labels, currentIds);
+        for (let i = 0; i < chunk.length; i++) {
+            const entry = chunk[i];
+            if (entry) renderSingleEntity(entry, existingMap, points, billboards, labels, currentIds);
+        }
         if (onChunkProcessed) onChunkProcessed();
     });
 

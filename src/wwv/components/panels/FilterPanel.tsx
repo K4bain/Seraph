@@ -9,11 +9,10 @@ import { useState } from "react";
 import { useStore } from "@/wwv/core/state/store";
 import { pluginManager } from "@/wwv/core/plugins/PluginManager";
 import { PluginIcon } from "@/wwv/components/common/PluginIcon";
-import type { FilterDefinition, FilterValue } from "@/wwv/core/plugins/PluginTypes";
 import { trackEvent } from "@/wwv/lib/analytics";
-import {
- TextFilter, SelectFilter, RangeFilter, BooleanFilter, FilterControl
-} from "./FilterControls";
+import { FilterControl } from "./FilterControls";
+
+export { FilterControl };
 
 /**
  * @component FilterSection

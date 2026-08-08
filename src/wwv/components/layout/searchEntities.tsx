@@ -78,7 +78,7 @@ export function searchEntities(
                 title: managed.plugin.name,
                 icon: <PluginIcon icon={managed.plugin.icon} size={16} />,
                 results: results.slice(0, 5),
-                maxScore: results[0].score,
+                maxScore: results[0]?.score ?? 0,
             });
         }
     }

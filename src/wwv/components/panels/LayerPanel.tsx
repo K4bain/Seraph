@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import {
- CircuitBoard, Download, DownloadCloud, Globe2, Puzzle, Search, Star
+ CircuitBoard, DownloadCloud, Globe2, Puzzle, Search, Star
 } from "lucide-react";
 
 import { useStore } from "@/wwv/core/state/store";
@@ -100,7 +100,6 @@ export function LayerPanel() {
     };
 
     const [activeTab, setActiveTab] = useState<"layers" | "imagery" | "favorites" | "import" | "plugins">("layers");
-    const fontSize = "13px";
 
     return (
       <aside

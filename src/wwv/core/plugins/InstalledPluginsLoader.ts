@@ -27,7 +27,7 @@ export async function loadInstalledPlugins(): Promise<number> {
 
         for (const record of records) {
             try {
-                const manifest = parseConfig(record.pluginId, record.config);
+                const manifest = parseConfig(record.pluginId, record.config ?? "{}");
                 if (!manifest) continue;
 
                 const result = validateManifest(manifest);

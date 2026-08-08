@@ -69,14 +69,14 @@ function applyGroups(groups: Map<string, AnimatableItem[]>): void {
             let needsCollapse = existing.children.length !== items.length;
             if (!needsCollapse) {
                 for (let i = 0; i < items.length; i++) {
-                    if (existing.children[i].entity.id !== items[i].entity.id) {
+                    if (existing.children[i]?.entity.id !== items[i]?.entity.id) {
                         needsCollapse = true;
                         break;
                     }
                 }
             }
 
-            existing.hubItem = items[0];
+            existing.hubItem = items[0]!;
             existing.children = items;
 
             if (needsCollapse && (existing.state === "expanded" || existing.state === "expanding")) {
@@ -89,7 +89,7 @@ function applyGroups(groups: Map<string, AnimatableItem[]>): void {
         } else {
             const stack: EntityStack = {
                 id: key,
-hubItem: items[0],
+hubItem: items[0]!,
 children: items,
                 state: "collapsed",
 stateStartMs: Date.now(),

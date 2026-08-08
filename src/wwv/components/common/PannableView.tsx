@@ -74,8 +74,11 @@ export const PannableView: React.FC<PannableViewProps> = ({ children }) => {
     const getPointersDistance = (pointers: Map<number, { x: number; y: number }>) => {
         if (pointers.size < 2) return 0;
         const pts = Array.from(pointers.values());
-        const dx = pts[0].x - pts[1].x;
-        const dy = pts[0].y - pts[1].y;
+        const p0 = pts[0];
+        const p1 = pts[1];
+        if (!p0 || !p1) return 0;
+        const dx = p0.x - p1.x;
+        const dy = p0.y - p1.y;
         return Math.sqrt(dx * dx + dy * dy);
     };
 
@@ -145,6 +148,7 @@ export const PannableView: React.FC<PannableViewProps> = ({ children }) => {
 
         if (activePointers.current.size === 1) {
              const remainingPointer = Array.from(activePointers.current.values())[0];
+             if (!remainingPointer) return;
              dragStart.current = { x: remainingPointer.x, y: remainingPointer.y };
              setPan((currentPan) => {
                  panStart.current = { ...currentPan };

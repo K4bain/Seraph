@@ -52,12 +52,6 @@ export function IntelTab() {
                 const pluginIcon = managed?.plugin.icon;
                 const pluginName = managed?.plugin.name || selectedEntity.pluginId;
 
-                const displayProps = Object.entries(selectedEntity.properties).filter(
-                    ([key]) => !["id", "pluginId"].includes(key)
-                        && selectedEntity.properties[key] !== null
-                        && selectedEntity.properties[key] !== undefined
-                );
-
                 return (
                   <div className="intel-panel__entity">
                     <div className="intel-panel__entity-header">

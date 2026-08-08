@@ -64,7 +64,6 @@ export abstract class BaseAviationPlugin implements WorldPlugin {
 
     renderEntity(entity: GeoEntity): CesiumEntityOptions {
         const alt = entity.properties.altitude_m as number | null;
-        const isAirborne = !entity.properties.on_ground;
         
         return {
             type: "model", 

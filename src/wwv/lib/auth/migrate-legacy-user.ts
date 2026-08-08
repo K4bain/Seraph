@@ -26,7 +26,7 @@ export async function migrateLegacyUserIfNeeded(
   if (!legacyUser) return null;
 
   // Verify password against the old bcrypt hash (NextAuth used bcryptjs)
-  if (!compareSync(password, legacyUser.hashedPassword)) return null;
+  if (!legacyUser.hashedPassword || !compareSync(password, legacyUser.hashedPassword)) return null;
 
   // Password verified — create a BetterAuthUser + BetterAuthAccount
   const userId = crypto.randomUUID();

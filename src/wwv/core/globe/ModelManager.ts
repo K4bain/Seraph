@@ -12,7 +12,6 @@ import {
     Matrix4,
 } from "cesium";
 import type { Scene } from "cesium";
-import type { GeoEntity, CesiumEntityOptions } from "@/wwv/core/plugins/PluginTypes";
 import type { AnimatableItem } from "./EntityRenderer";
 
 /** Track pending model loads to prevent duplicate async loads for the same entity */

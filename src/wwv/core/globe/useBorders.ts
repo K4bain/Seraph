@@ -36,7 +36,7 @@ import type { Viewer as CesiumViewer } from "cesium";
 export function useBorders(
     viewer: CesiumViewer | null,
     enabled: boolean,
-    isGoogle3D: boolean = false, // Kept for signature compatibility
+    _isGoogle3D: boolean = false, // Kept for signature compatibility
 ) {
     const bordersDataRef = useRef<{
         primitives: Primitive[];
@@ -58,7 +58,8 @@ export function useBorders(
             bordersDataRef.current.primitives.forEach((p) => p.show = enabled);
             const {labels} = bordersDataRef.current;
             for (let i = 0; i < labels.length; ++i) {
-                labels.get(i).show = enabled;
+                const label = labels.get(i);
+                if (label) label.show = enabled;
             }
             return;
         }
@@ -113,8 +114,10 @@ export function useBorders(
 
                     if (positions && positions.length > 0) {
                         // Close the loop if not closed
-                        if (entity.polygon && !Cartesian3.equals(positions[0], positions[positions.length - 1])) {
-                            positions = [...positions, positions[0]];
+                        const first = positions[0];
+                        const last = positions[positions.length - 1];
+                        if (entity.polygon && first && last && !Cartesian3.equals(first, last)) {
+                            positions = [...positions, first];
                         }
 
                         // Compile into an unmanaged geometry instance
@@ -135,7 +138,9 @@ export function useBorders(
                             let sumLat = 0; let
 sumLon = 0;
                             for (let j = 0; j < positions.length; j++) {
-                                const carto = Cartographic.fromCartesian(positions[j]);
+                                const pos = positions[j];
+                                if (!pos) continue;
+                                const carto = Cartographic.fromCartesian(pos);
                                 sumLat += carto.latitude;
                                 sumLon += carto.longitude;
                             }
@@ -199,7 +204,8 @@ sumLon = 0;
                 const currentlyEnabled = enabledRef.current;
                 primitivesList.forEach((p) => p.show = currentlyEnabled);
                 for (let i = 0; i < labels.length; ++i) {
-                    labels.get(i).show = currentlyEnabled;
+                    const label = labels.get(i);
+                    if (label) label.show = currentlyEnabled;
                 }
             } catch (err) {
                 console.warn("[useBorders] Failed to compile low-level 3D borders", err);

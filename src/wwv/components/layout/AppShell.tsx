@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { LayerPanel } from "@/wwv/components/panels/LayerPanel";
 import { EntityInfoCard } from "@/wwv/components/panels/EntityInfoCard";
 import { DataConfigPanel } from "@/wwv/components/panels/DataConfig";

@@ -27,9 +27,6 @@ const scratchVelocity = new Cartesian3();
 const scratchNorthPole = new Cartesian3(0, 0, 1);
 const scratchSurfaceNormal = new Cartesian3();
 
-const SELECTED_SCALE_FACTOR = 1.35;
-const HOVER_SCALE_FACTOR = 1.25;
-
 /** Overall background opacity for unclustered entities when a spiderifier is open */
 export const FADED_OPACITY = 0.4;
 

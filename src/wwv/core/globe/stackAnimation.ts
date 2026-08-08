@@ -61,7 +61,7 @@ function lerp(a: number, b: number, t: number): number { return a + (b - a) * t;
  * Run one animation tick for all stacks.
  * Returns true if ANY stack is currently animating (requiring a continuous render).
  */
-export function tickStackAnimation(labels: LabelCollection | null, billboards: BillboardCollection | null): boolean {
+export function tickStackAnimation(_labels: LabelCollection | null, billboards: BillboardCollection | null): boolean {
     const now = Date.now();
     const activeStacks = getStacks();
     let needsRender = false;
@@ -90,7 +90,6 @@ function tickSingle(stack: EntityStack, now: number, billboards: BillboardCollec
     const t = Math.min(elapsed / ANIM_DURATION_MS, 1.0);
 
     const isOpen = state === "expanding" || state === "expanded";
-    const isClosed = state === "collapsed" || state === "collapsing";
     const isAnimating = state === "expanding" || state === "collapsing";
 
     // Transition end
@@ -100,7 +99,7 @@ function tickSingle(stack: EntityStack, now: number, billboards: BillboardCollec
 
         // Final pass to ensure everything hidden completely
         for (let i = 0; i < children.length; i++) {
-            const prim = children[i].primitive;
+            const prim = children[i]?.primitive;
             if (prim && !prim.isDestroyed?.() && prim.show) prim.show = false;
         }
     }
@@ -113,6 +112,7 @@ function tickSingle(stack: EntityStack, now: number, billboards: BillboardCollec
         // Animate ALL children (no one is left behind!)
         for (let i = 0; i < children.length; i++) {
             const item = children[i];
+            if (!item) continue;
             const prim = item.primitive;
             if (!prim || prim.isDestroyed?.()) continue;
 
@@ -147,7 +147,7 @@ function tickSingle(stack: EntityStack, now: number, billboards: BillboardCollec
         // Enforce the collapsed hidden state exactly once to catch newly clustered primitives
         if (!(stack as any)._enforcedHidden) {
             for (let i = 0; i < children.length; i++) {
-                const prim = children[i].primitive;
+                const prim = children[i]?.primitive;
                 if (prim && !prim.isDestroyed?.() && prim.show) prim.show = false;
             }
             (stack as any)._enforcedHidden = true;

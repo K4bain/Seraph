@@ -18,7 +18,7 @@ class CacheLayer {
 
     async init(): Promise<void> {
         if (typeof window === "undefined") return;
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const request = indexedDB.open(this.dbName, 1);
             request.onupgradeneeded = () => {
                 const db = request.result;

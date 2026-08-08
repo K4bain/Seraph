@@ -44,7 +44,6 @@ interface FloatingWindowProps {
  * @param {FloatingWindowProps} props - Component properties.
  */
 export const FloatingWindow: React.FC<FloatingWindowProps> = ({
-    id,
     title,
     children,
     initialPosition = { x: 100, y: 100 },
@@ -121,6 +120,7 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({
     const handleTouchStartDrag = (e: React.TouchEvent) => {
         if ((e.target as HTMLElement).closest(".window-controls")) return;
         const touch = e.touches[0];
+        if (!touch) return;
         setIsDragging(true);
         dragStart.current = { x: touch.clientX - posRef.current.x, y: touch.clientY - posRef.current.y };
     };
@@ -128,6 +128,7 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({
     const handleTouchStartResize = (e: React.TouchEvent) => {
         e.stopPropagation();
         const touch = e.touches[0];
+        if (!touch) return;
         setIsResizing(true);
         dragStart.current = { x: touch.clientX, y: touch.clientY };
     };
@@ -135,6 +136,7 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({
     const handleTouchMove = useCallback((e: TouchEvent) => {
         e.preventDefault(); // prevent page scroll while dragging
         const touch = e.touches[0];
+        if (!touch) return;
         if (isDragging) {
             setPos({ x: touch.clientX - dragStart.current.x, y: touch.clientY - dragStart.current.y });
         } else if (isResizing) {

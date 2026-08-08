@@ -71,7 +71,7 @@ export async function resolveActiveSessionId(userId: string): Promise<string | n
         let bestScore = -Infinity;
 
         for (let i = 0; i < flat.length; i += 2) {
-            const member = flat[i];
+            const member = flat[i]!;
             const score = Number(flat[i + 1]);
             if (now - score < STALE_THRESHOLD_MS && score > bestScore) {
                 bestScore = score;

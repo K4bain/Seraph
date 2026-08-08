@@ -78,7 +78,6 @@ function generateStaticPluginSource(manifest: any): string {
     const category = manifest.category || "custom";
     const icon = manifest.icon || "MapPin";
     const version = manifest._packageVersion || "1.0.0";
-    const packageName = manifest._packageName;
 
     const color =
         manifest.rendering?.defaultColor ||

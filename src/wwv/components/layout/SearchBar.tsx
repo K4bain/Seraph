@@ -7,11 +7,10 @@
  * @module src/components/layout
  */
 
-import { useState, useEffect, useRef } from "react";
-import { Search, MapPin } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Search } from "lucide-react";
 import { useIsMobile } from "@/wwv/core/hooks/useIsMobile";
 import { useSearch } from "./useSearch";
-import type { SearchResult, SearchSection } from "./useSearch";
 
 /**
  * @function HighlightMatch
@@ -81,7 +80,8 @@ export function SearchBar() {
             setSelectedIndex((prev) => (prev - 1 + flatResults.length) % flatResults.length);
         } else if (e.key === "Enter") {
             e.preventDefault();
-            handleSelect(flatResults[selectedIndex]);
+            const selected = flatResults[selectedIndex];
+            if (selected) handleSelect(selected);
         } else if (e.key === "Escape") {
             setIsOpen(false);
         }

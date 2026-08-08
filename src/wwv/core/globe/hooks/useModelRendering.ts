@@ -17,7 +17,6 @@ import {
     Matrix4,
 } from "cesium";
 import type { Viewer as CesiumViewer } from "cesium";
-import type { GeoEntity, CesiumEntityOptions } from "@/wwv/core/plugins/PluginTypes";
 import type { AnimatableItem } from "../EntityRenderer";
 
 /** Maximum concurrent 3D models to keep GPU happy */

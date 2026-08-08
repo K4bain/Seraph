@@ -4,7 +4,7 @@
  * Centralizes cache utilities that are shared across EntityRenderer,
  * AnimationLoop, and other rendering modules.
  */
-import { Cartesian3, Color, Ellipsoid } from "cesium";
+import { Cartesian3, Color } from "cesium";
 import type { CesiumEntityOptions } from "@/wwv/core/plugins/PluginTypes";
 import type { AnimatableItem } from "./EntityRenderer";
 

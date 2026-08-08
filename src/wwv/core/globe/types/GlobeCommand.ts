@@ -136,7 +136,7 @@ export function isValidGlobeCommand(obj: unknown): obj is GlobeCommand {
                 const bbox = cmd["bbox"];
                 if (!Array.isArray(bbox) || bbox.length !== 4) return false;
                 if (!bbox.every((v: unknown) => isNumber(v))) return false;
-                const [west, south, east, north] = bbox as number[];
+                const [west, south, east, north] = bbox as [number, number, number, number];
                 if (west < -180 || west > 180) return false;
                 if (south < -90 || south > 90) return false;
                 if (east < -180 || east > 180) return false;

@@ -11,7 +11,7 @@ export function usePersistentDataSync() {
         try {
             const match = document.cookie.match(/(^| )wwv_graphics=([^;]+)/);
             if (match) {
-                const saved = JSON.parse(decodeURIComponent(match[2]));
+                const saved = JSON.parse(decodeURIComponent(match[2] ?? ""));
                 updateMapConfig(saved);
             }
         } catch (e) {
@@ -25,7 +25,7 @@ export function usePersistentDataSync() {
             try {
                 const match = document.cookie.match(/(^| )wwv_favorites=([^;]+)/);
                 if (match) {
-                    const saved = JSON.parse(decodeURIComponent(match[2]));
+                    const saved = JSON.parse(decodeURIComponent(match[2] ?? ""));
                     initFavorites(saved);
                 }
             } catch (e) {

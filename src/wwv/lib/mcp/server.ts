@@ -162,7 +162,7 @@ export async function registerOrientationPrompts(
             // oldest first), so sort by lastSeen descending to pick the genuinely
             // most-recent session (matches composeGlobeContext / get_globe_context).
             const sorted = [...sessions].sort((a, b) => b.lastSeen - a.lastSeen);
-            const mostRecent = sorted[0];
+            const mostRecent = sorted[0]!;
             const snapshot = await readGlobeState(userId, mostRecent.sessionId);
 
             const sessionLines = sorted.map(

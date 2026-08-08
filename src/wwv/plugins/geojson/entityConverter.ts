@@ -15,21 +15,21 @@ function representativePoint(
     switch (geom.type) {
         case "Point": {
             const [lon, lat, alt] = geom.coordinates;
-            return { lat, lon, ...(alt !== undefined ? { alt } : {}) };
+            return { lat: lat!, lon: lon!, ...(alt !== undefined ? { alt } : {}) };
         }
         case "MultiPoint":
         case "LineString": {
             const first = geom.coordinates[0] as number[];
-            return { lat: first[1], lon: first[0] };
+            return { lat: first[1]!, lon: first[0]! };
         }
         case "Polygon":
         case "MultiLineString": {
             const ring = geom.coordinates[0] as number[][];
-            return { lat: ring[0][1], lon: ring[0][0] };
+            return { lat: ring[0]![1]!, lon: ring[0]![0]! };
         }
         case "MultiPolygon": {
             const poly = geom.coordinates[0] as number[][][];
-            return { lat: poly[0][0][1], lon: poly[0][0][0] };
+            return { lat: poly[0]![0]![1]!, lon: poly[0]![0]![0]! };
         }
         default:
             return { lat: 0, lon: 0 };

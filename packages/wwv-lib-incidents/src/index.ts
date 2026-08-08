@@ -37,7 +37,7 @@ export abstract class BaseIncidentPlugin implements WorldPlugin {
     protected abstract getSeverityColor(value: number): string;
     protected abstract getSeveritySize(value: number): number;
 
-    protected getEntityIcon(entity: GeoEntity): any {
+    protected getEntityIcon(_entity: GeoEntity): any {
         return this.icon;
     }
 

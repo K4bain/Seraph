@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react";
 import { buildUserKeyHeaders } from "@/wwv/lib/userApiKeys";
-import { categorizePlace, type PlaceCategory } from "./placeCategories";
+import { categorizePlace } from "./placeCategories";
 import type { SearchResult, SearchSection } from "./searchTypes";
 
 export async function searchLocations(query: string): Promise<SearchSection | null> {
@@ -32,7 +32,7 @@ export async function searchLocations(query: string): Promise<SearchSection | nu
             title: "Places",
             icon: <MapPin size={16} />,
             results: results.slice(0, 5),
-            maxScore: results[0].score,
+            maxScore: results[0]?.score ?? 0,
         };
     } catch (err) {
         console.error("Error fetching places:", err);

@@ -7,8 +7,6 @@ import { FileJson } from "lucide-react";
 import type {
     WorldPlugin,
     GeoEntity,
-    TimeRange,
-    PluginContext,
     LayerConfig,
     CesiumEntityOptions,
 } from "@/wwv/core/plugins/PluginTypes";
@@ -22,7 +20,7 @@ const LAYER_COLORS = [
 ];
 
 export function pickLayerColor(index: number): string {
-    return LAYER_COLORS[index % LAYER_COLORS.length];
+    return LAYER_COLORS[index % LAYER_COLORS.length]!;
 }
 
 export interface ImportedPluginConfig {

@@ -284,13 +284,13 @@ export function ApiKeysTab() {
                           <StatusIcon status={st} />
                           <button
                             onClick={() => handleManualVerify(entry.service)}
-                            disabled={!keys[entry.service] || keys[entry.service].length < MIN_KEY_LENGTH || st === "verifying"}
+                            disabled={(keys[entry.service]?.length ?? 0) < MIN_KEY_LENGTH || st === "verifying"}
                             title="Verify key"
                             style={{
                                         ...toggleBtnStyle,
                                         color: st === "valid" ? "#22c55e" : st === "invalid" ? "#ef4444" : "var(--text-muted)",
-                                        opacity: (!keys[entry.service] || keys[entry.service].length < MIN_KEY_LENGTH || st === "verifying") ? 0.4 : 1,
-                                        cursor: (!keys[entry.service] || keys[entry.service].length < MIN_KEY_LENGTH || st === "verifying") ? "not-allowed" : "pointer",
+                                        opacity: ((keys[entry.service]?.length ?? 0) < MIN_KEY_LENGTH || st === "verifying") ? 0.4 : 1,
+                                        cursor: ((keys[entry.service]?.length ?? 0) < MIN_KEY_LENGTH || st === "verifying") ? "not-allowed" : "pointer",
                                     }}
                           >
                             <ShieldCheck size={14} />

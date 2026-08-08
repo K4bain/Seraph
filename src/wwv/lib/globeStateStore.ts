@@ -49,7 +49,7 @@ export async function readActiveSessions(
         const stale: string[] = [];
 
         for (let i = 0; i < flat.length; i += 2) {
-            const member = flat[i];
+            const member = flat[i]!;
             const score = Number(flat[i + 1]);
             if (now - score < STALE_THRESHOLD_MS) {
                 active.push({ sessionId: member, lastSeen: score });

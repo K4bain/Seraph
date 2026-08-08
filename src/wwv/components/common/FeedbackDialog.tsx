@@ -7,7 +7,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { X, Paperclip, Upload } from "lucide-react";
 import Image from "next/image";
 import { useStore } from "@/wwv/core/state/store";

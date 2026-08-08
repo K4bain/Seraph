@@ -13,7 +13,6 @@ import {
     BillboardCollection,
     LabelCollection,
     DistanceDisplayCondition,
-    HeightReference,
 } from "cesium";
 import type { GeoEntity, CesiumEntityOptions } from "@/wwv/core/plugins/PluginTypes";
 import type { AnimatableItem } from "./EntityRenderer";

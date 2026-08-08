@@ -76,7 +76,7 @@ export function convertToGeoJson(
   let {altField} = options;
 
   if (!latField || !lonField) {
-    const detected = detectGeoFields(data[0]);
+    const detected = detectGeoFields(data[0]!);
     if (!detected) {
       throw new Error(
         "Could not auto-detect latitude/longitude fields. "

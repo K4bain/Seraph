@@ -20,6 +20,7 @@ export function assignRingOffsets(stack: EntityStack, spiderOffsets: Map<string,
         for (let i = 0; i < count; i++) {
             const angle = (2 * Math.PI * i) / count - Math.PI / 2; // start from top
             const childItem = stack.children[i];
+            if (!childItem) continue;
             spiderOffsets.set(childItem.entity.id, {
                 targetX: radius * Math.cos(angle),
                 targetY: radius * Math.sin(angle),
@@ -40,6 +41,7 @@ currentY: 0,
             if (radius > outerRadius) outerRadius = radius;
 
             const childItem = stack.children[i];
+            if (!childItem) continue;
             spiderOffsets.set(childItem.entity.id, {
                 targetX: radius * Math.cos(angle),
                 targetY: radius * Math.sin(angle),

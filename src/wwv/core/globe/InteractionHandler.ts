@@ -3,13 +3,12 @@ import {
     ScreenSpaceEventType,
     defined,
     SceneMode,
-    SceneTransforms,
 } from "cesium";
 import type { Viewer as CesiumViewer, Cartesian2 } from "cesium";
 import type { GeoEntity } from "@/wwv/core/plugins/PluginTypes";
 import { useStore } from "@/wwv/core/state/store";
 import {
-    findStackByEntityId, expandStack, collapseStack, getStacks
+    findStackByEntityId, expandStack, collapseStack
 } from "./StackManager";
 
 /**

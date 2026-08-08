@@ -14,19 +14,6 @@ import { pluginManager } from "@/wwv/core/plugins/PluginManager";
 import type { WorldPlugin } from "@/wwv/core/plugins/PluginTypes";
 import "./LayerItem.css";
 
-// ─── Category Labels ────────────────────────────────────────
-
-const CATEGORY_LABELS: Record<string, string> = {
-    aviation: "Aviation",
-    maritime: "Maritime",
-    "natural-disaster": "Natural Disaster",
-    conflict: "Conflict",
-    infrastructure: "Infrastructure",
-    cyber: "Cyber",
-    economic: "Economic",
-    custom: "Custom",
-};
-
 // ─── Source / Trust Helpers ─────────────────────────────────
 
 function isLocalPlugin(pluginId: string): boolean {

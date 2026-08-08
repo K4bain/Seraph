@@ -1,8 +1,8 @@
-import { Cartesian3, Color, Ellipsoid } from "cesium";
+import { Cartesian3, Color } from "cesium";
 import type { Viewer as CesiumViewer } from "cesium";
 import { useStore } from "@/wwv/core/state/store";
 import {
- createLabel, removeLabel, getCollections, type AnimatableItem
+ createLabel, getCollections, type AnimatableItem
 } from "./EntityRenderer";
 import { tickStackAnimation } from "./stackAnimation";
 import { updateModelTransform } from "./ModelManager";
@@ -46,8 +46,10 @@ function ensureBuckets(animatables: AnimatableItem[]): AnimationBuckets {
     const dynamic: AnimatableItem[] = [];
     const staticBatch: AnimatableItem[] = [];
     for (let i = 0; i < animatables.length; i++) {
-        const {speed} = animatables[i].entity;
-        (speed !== undefined && speed > 0) ? dynamic.push(animatables[i]) : staticBatch.push(animatables[i]);
+        const item = animatables[i];
+        if (!item) continue;
+        const { speed } = item.entity;
+        (speed !== undefined && speed > 0) ? dynamic.push(item) : staticBatch.push(item);
     }
     cachedBuckets = { dynamic, staticBatch };
     return cachedBuckets;
@@ -161,22 +163,28 @@ export function createUpdateLoop(
 
         // Pass 1: Dynamic entities — every frame
         for (let i = 0; i < dynamic.length; i++) {
-            const isFaded = anyExpanded && !isEntityInExpandedStack(dynamic[i].entity.id);
-            processEntity(dynamic[i], camPos, Dh, nowMs, selectedId, hoveredId, labelsCollection, true, i, isFaded);
+            const item = dynamic[i];
+            if (!item) continue;
+            const isFaded = anyExpanded && !isEntityInExpandedStack(item.entity.id);
+            processEntity(item, camPos, Dh, nowMs, selectedId, hoveredId, labelsCollection, true, i, isFaded);
         }
 
         // Pass 2: Static entities — cull frames only (unless interactive)
         if (isStaticCullFrame || forceFullPass) {
             for (let i = 0; i < staticBatch.length; i++) {
-                const isFaded = anyExpanded && !isEntityInExpandedStack(staticBatch[i].entity.id);
-                processEntity(staticBatch[i], camPos, Dh, nowMs, selectedId, hoveredId, labelsCollection, false, i, isFaded);
+                const item = staticBatch[i];
+                if (!item) continue;
+                const isFaded = anyExpanded && !isEntityInExpandedStack(item.entity.id);
+                processEntity(item, camPos, Dh, nowMs, selectedId, hoveredId, labelsCollection, false, i, isFaded);
             }
         } else {
             for (let i = 0; i < staticBatch.length; i++) {
-                const {id} = staticBatch[i].entity;
+                const item = staticBatch[i];
+                if (!item) continue;
+                const { id } = item.entity;
                 if (id === selectedId || id === hoveredId || id === prevSelectedId || id === prevHoveredId) {
                     const isFaded = anyExpanded && !isEntityInExpandedStack(id);
-                    processEntity(staticBatch[i], camPos, Dh, nowMs, selectedId, hoveredId, labelsCollection, false, i, isFaded);
+                    processEntity(item, camPos, Dh, nowMs, selectedId, hoveredId, labelsCollection, false, i, isFaded);
                 }
             }
         }
@@ -193,13 +201,13 @@ export function createUpdateLoop(
 function processEntity(
     item: AnimatableItem,
 camPos: Cartesian3,
-Dh: number,
+_dh: number,
 nowMs: number,
     selectedId: string | null,
 hoveredId: string | null,
 labelsCollection: any,
 isDynamic: boolean,
-    entityIndex: number,
+    _entityIndex: number,
 isFaded: boolean
 ): void {
     const { primitive, entity, posRef } = item;
@@ -273,7 +281,7 @@ isFaded: boolean
 }
 
 /** Hide label to save render time, but do NOT remove it. Creating/Removing labels triggers massive WebGL buffer rewrites. */
-function hideLabel(item: AnimatableItem, labelsCollection: any): void {
+function hideLabel(item: AnimatableItem, _labelsCollection: any): void {
     if (!item.labelPrimitive || item.labelPrimitive.isDestroyed?.()) return;
     if (item.labelPrimitive.show !== false) item.labelPrimitive.show = false;
     // We intentionally do NOT call removeLabel here. Let Cesium use the 'show' boolean

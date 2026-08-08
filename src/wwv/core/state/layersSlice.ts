@@ -41,33 +41,42 @@ export interface LayersSlice {
 
 export const createLayersSlice: StateCreator<AppStore, [], [], LayersSlice> = (set) => ({
     layers: {},
-    toggleLayer: (pluginId) => set((state) => ({
+    toggleLayer: (pluginId) => set((state) => {
+        const base = state.layers[pluginId] ?? { enabled: false, entityCount: 0, loading: false };
+        return {
             layers: {
                 ...state.layers,
-                [pluginId]: {
-                    ...state.layers[pluginId],
-                    enabled: !state.layers[pluginId]?.enabled,
-                },
+                [pluginId]: { ...base, enabled: !base.enabled },
             },
-        })),
-    setLayerEnabled: (pluginId, enabled) => set((state) => ({
+        };
+    }),
+    setLayerEnabled: (pluginId, enabled) => set((state) => {
+        const base = state.layers[pluginId] ?? { enabled: false, entityCount: 0, loading: false };
+        return {
             layers: {
                 ...state.layers,
-                [pluginId]: { ...state.layers[pluginId], enabled },
+                [pluginId]: { ...base, enabled },
             },
-        })),
-    setEntityCount: (pluginId, count) => set((state) => ({
+        };
+    }),
+    setEntityCount: (pluginId, count) => set((state) => {
+        const base = state.layers[pluginId] ?? { enabled: false, entityCount: 0, loading: false };
+        return {
             layers: {
                 ...state.layers,
-                [pluginId]: { ...state.layers[pluginId], entityCount: count },
+                [pluginId]: { ...base, entityCount: count },
             },
-        })),
-    setLayerLoading: (pluginId, loading) => set((state) => ({
+        };
+    }),
+    setLayerLoading: (pluginId, loading) => set((state) => {
+        const base = state.layers[pluginId] ?? { enabled: false, entityCount: 0, loading: false };
+        return {
             layers: {
                 ...state.layers,
-                [pluginId]: { ...state.layers[pluginId], loading },
+                [pluginId]: { ...base, loading },
             },
-        })),
+        };
+    }),
     initLayer: (pluginId, defaultEnabled = false) => set((state) => ({
             layers: {
                 ...state.layers,

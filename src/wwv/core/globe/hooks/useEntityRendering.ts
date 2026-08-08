@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/immutability */
 import { useEffect, useRef } from "react";
 import type { Viewer as CesiumViewer } from "cesium";
-import { Cartographic, Cartesian3 } from "cesium";
+import { Cartesian3 } from "cesium";
 import type { GeoEntity, CesiumEntityOptions } from "@/wwv/core/plugins/PluginTypes";
 import {
  renderEntities, renderEntitiesChunked, AnimatableItem, getCollections

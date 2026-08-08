@@ -10,12 +10,11 @@ import { useStore } from "@/wwv/core/state/store";
 import { pluginManager } from "@/wwv/core/plugins/PluginManager";
 import { PluginIcon } from "@/wwv/components/common/PluginIcon";
 import {
- Eye, MapPin, Lock, Unlock, Star, ExternalLink, Maximize2, Filter, RotateCcw
+ Eye, MapPin, Lock, Unlock, Star, Filter, RotateCcw
 } from "lucide-react";
 import { dataBus } from "@/wwv/core/data/DataBus";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { PluginErrorBoundary } from "@/wwv/components/common/PluginErrorBoundary";
-import { sectionHeaderStyle } from "./sharedStyles";
 import { TimestampProperty } from "../properties/TimestampProperty";
 import { DynamicPropertiesRender } from "../properties/DynamicPropertiesRender";
 
@@ -332,12 +331,6 @@ export function IntelTab() {
     const managed = pluginManager.getPlugin(selectedEntity.pluginId);
     const pluginIcon = managed?.plugin.icon;
     const pluginName = managed?.plugin.name || selectedEntity.pluginId;
-
-    const displayProps = Object.entries(selectedEntity.properties).filter(
-        ([key]) => !["id", "pluginId"].includes(key)
-            && selectedEntity.properties[key] !== null
-            && selectedEntity.properties[key] !== undefined
-    );
 
     const DetailComp = managed?.plugin.getDetailComponent?.();
 

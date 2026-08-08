@@ -303,7 +303,7 @@ export function PluginsTab() {
                     body: JSON.stringify({ pluginId, version: updates[pluginId] }),
                 });
                 if (res.ok) {
-                    trackEvent("plugin-update", { plugin: pluginId, version: updates[pluginId] });
+                    trackEvent("plugin-update", { plugin: pluginId, version: updates[pluginId] ?? "" });
                     setUpdates((prev) => {
                         const next = { ...prev };
                         delete next[pluginId];
@@ -402,7 +402,7 @@ export function PluginsTab() {
                   {updates[record.pluginId] ? (
                     <button
                       className="plugin-item__update"
-                      onClick={() => handleUpdate(record.pluginId, updates[record.pluginId])}
+                      onClick={() => handleUpdate(record.pluginId, updates[record.pluginId] ?? "")}
                       disabled={updating === record.pluginId || removing === record.pluginId}
                       title={`Update to v${updates[record.pluginId]}`}
                     >

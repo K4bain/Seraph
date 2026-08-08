@@ -89,7 +89,7 @@ export async function safeFetch(urlStr: string, options: FetchOptions = {}): Pro
 
     const customAgent = new Agent({
         connect: {
-            lookup: (hostname, opts, callback) => {
+            lookup: (_hostname, _opts, callback) => {
                 callback(null, [{ address: resolvedIp, family: resolvedFamily }]);
             }
         }

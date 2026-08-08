@@ -29,7 +29,7 @@ const TIER_MAX: Record<string, number> = {
  * Unknown tiers fall back to "free" limits.
  */
 export function getTierBudget(tier: string): RateLimitBudget {
-    const maxRequests = TIER_MAX[tier.toLowerCase()] ?? TIER_MAX.free;
+    const maxRequests = TIER_MAX[tier.toLowerCase()] ?? TIER_MAX.free!;
     return { maxRequests, windowMs: DEFAULT_WINDOW_MS };
 }
 

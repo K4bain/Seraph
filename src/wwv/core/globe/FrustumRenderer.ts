@@ -105,11 +105,15 @@ export class FrustumRenderer {
         this.entityMap.set(id, lines);
     }
 
-    private updateExisting(viewer: CesiumViewer, id: string, edges: FrustumEdges): void {
+    private updateExisting(_viewer: CesiumViewer, id: string, edges: FrustumEdges): void {
         const corners = [edges.topLeft, edges.topRight, edges.bottomLeft, edges.bottomRight];
         const existing = this.entityMap.get(id)!;
         for (let i = 0; i < 4; i++) {
-            existing[i].polyline!.positions = toPositions(edges.apex, corners[i]) as any;
+            const corner = corners[i];
+            if (!corner) continue;
+            const line = existing[i];
+            if (!line) continue;
+            line.polyline!.positions = toPositions(edges.apex, corner) as any;
         }
     }
 

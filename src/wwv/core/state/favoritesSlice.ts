@@ -9,7 +9,7 @@ import type { StateCreator } from "zustand";
 import type { GeoEntity } from "@/wwv/core/plugins/PluginTypes";
 import { isDemo } from "@/wwv/core/edition";
 import type { AppStore } from "./store";
-import type { ReactNode, ComponentType } from "react";
+import type { ComponentType } from "react";
 
 /**
  * A bookmarked entity with metadata for quick retrieval.

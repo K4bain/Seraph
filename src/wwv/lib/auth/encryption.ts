@@ -54,8 +54,8 @@ export async function decryptCredential(cred: EncryptedCredential): Promise<stri
             return reject(new Error("Invalid ciphertext payload"));
         }
 
-        const ciphertext = payloadParts[0];
-        const authTag = Buffer.from(payloadParts[1], "base64");
+        const ciphertext = payloadParts[0]!;
+        const authTag = Buffer.from(payloadParts[1]!, "base64");
 
         crypto.pbkdf2(getMasterKey(), salt, ITERATIONS, KEY_LENGTH, DIGEST, (err, key) => {
             if (err) return reject(err);
@@ -64,7 +64,7 @@ export async function decryptCredential(cred: EncryptedCredential): Promise<stri
                 const decipher = crypto.createDecipheriv(ALGORITHM, key, nonce);
                 decipher.setAuthTag(authTag);
 
-                let plainText = decipher.update(ciphertext, "base64", "utf8");
+                let plainText = decipher.update(ciphertext, "base64", "utf8") as unknown as string;
                 plainText += decipher.final("utf8");
                 resolve(plainText);
             } catch (decipherErr) {

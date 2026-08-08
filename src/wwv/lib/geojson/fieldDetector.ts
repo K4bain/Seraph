@@ -39,7 +39,9 @@ function matchScore(key: string, patterns: string[]): number {
 
   // Contains match pass (lower priority offset)
   for (let i = 0; i < patterns.length; i++) {
-    if (lower.includes(patterns[i])) return patterns.length + i;
+    const pattern = patterns[i];
+    if (!pattern) continue;
+    if (lower.includes(pattern)) return patterns.length + i;
   }
   return -1;
 }

@@ -28,7 +28,8 @@ function assignId(feature: GeoJsonFeature, index: number): GeoJsonFeature {
 
 function isValidCoordinate(coord: number[]): boolean {
   if (coord.length < 2) return false;
-  const [lon, lat] = coord;
+  const lon = coord[0]!;
+  const lat = coord[1]!;
   return lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90;
 }
 
@@ -144,7 +145,7 @@ function buildResult(raw: GeoJsonFeatureCollection): NormalizeResult {
 
   for (let i = 0; i < raw.features.length; i++) {
     const feature = raw.features[i];
-    if (feature.geometry && validateGeometry(feature.geometry)) {
+    if (feature && feature.geometry && validateGeometry(feature.geometry)) {
       valid.push(assignId(feature, i));
       geometryTypesSet.add(feature.geometry.type);
     } else {

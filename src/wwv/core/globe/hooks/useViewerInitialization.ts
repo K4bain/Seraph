@@ -45,7 +45,7 @@ export function useViewerInitialization(sceneSettings: any) {
         // Initialize collections so renderers can start immediately
         initPrimitiveCollections(viewer);
 
-        viewer.scene.renderError.addEventListener((scene, error) => {
+        viewer.scene.renderError.addEventListener((_scene, error) => {
             console.error("[Cesium Render Error] Render loop crashed! Exception:");
             console.error(error);
         });

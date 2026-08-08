@@ -9,13 +9,12 @@
 import { useStore } from "@/wwv/core/state/store";
 import { FilterSection } from "@/wwv/components/panels/FilterPanel";
 import {
- Cog, FilterIcon, Info, Key, MessageSquare
+ Cog, FilterIcon, Info, MessageSquare
 } from "lucide-react";
 import { useIsMobile } from "@/wwv/core/hooks/useIsMobile";
 import { useResizablePanel } from "@/wwv/core/hooks/useResizablePanel";
 
 import { IntelTab } from "./IntelTab";
-import { CacheTab } from "./CacheTab";
 import { OverlayTab } from "./OverlayTab";
 import { sectionHeaderStyle } from "./sharedStyles";
 
@@ -31,7 +30,6 @@ export function DataConfigPanel() {
     const { width, startResizing } = useResizablePanel(320, 260, 800, 'right');
     const configPanelOpen = useStore((s) => s.configPanelOpen);
     const openMobilePanel = useStore((s) => s.openMobilePanel);
-    const selectedEntity = useStore((s) => s.selectedEntity);
     const setFeedbackDialogOpen = useStore((s) => s.setFeedbackDialogOpen);
     const activeTab = useStore((s) => s.activeConfigTab);
     const setActiveTab = useStore((s) => s.setActiveConfigTab);

@@ -84,9 +84,13 @@ export function computeFrustumEdges(params: FrustumParams): FrustumEdges {
         [halfH, -halfV], // bottomRight
     ];
 
-    const [topLeft, topRight, bottomLeft, bottomRight] = corners.map(
+    const [topLeftArr, topRightArr, bottomLeftArr, bottomRightArr] = corners.map(
         ([hOff, vOff]) => projectCorner(lat, lon, alt, heading, pitch, hOff, vOff, rangeMtrs),
     );
+    const topLeft = topLeftArr ?? apex;
+    const topRight = topRightArr ?? apex;
+    const bottomLeft = bottomLeftArr ?? apex;
+    const bottomRight = bottomRightArr ?? apex;
 
     return {
  apex, topLeft, topRight, bottomLeft, bottomRight

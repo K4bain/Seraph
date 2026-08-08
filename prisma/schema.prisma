@@ -24,6 +24,8 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
+  hashedPassword String?
+  role          String?
   accounts      Account[]
   sessions      Session[]
   memberships   WorkspaceMember[]
@@ -77,12 +79,18 @@ enum WorkspaceRole {
 }
 
 model Workspace {
-  id        String            @id @default(cuid())
-  slug      String            @unique
-  name      String
-  createdAt DateTime          @default(now())
-  members   WorkspaceMember[]
-  canvases  Canvas[]
+  id           String            @id @default(cuid())
+  slug         String            @unique
+  name         String
+  ownerId      String?
+  locked       Boolean           @default(false)
+  lockedReason String?
+  lockedAt     DateTime?
+  createdAt    DateTime          @default(now())
+  members      WorkspaceMember[]
+  canvases     Canvas[]
+
+  @@index([ownerId])
 }
 
 model WorkspaceMember {
@@ -204,4 +212,106 @@ model WatchlistAlert {
   createdAt   DateTime      @default(now())
 
   @@index([watchlistId, read])
+}
+
+// ---------- WorldWideView port (marketplace, orgs, tiers, keys) ----------
+
+/// A plugin installed from the Worldwide View marketplace.
+/// Mirror of the WWV-era store; hydrated at boot by InstalledPluginsLoader.
+model InstalledPlugin {
+  pluginId    String   @id
+  version     String
+  config      String?
+  enabled     Boolean  @default(true)
+  installedAt DateTime @default(now())
+
+  @@index([enabled])
+}
+
+/// Key/value settings store (WWV era: default-plugins guard etc.).
+model Setting {
+  key   String @id
+  value String
+}
+
+/// WWV data-API keys. `prefix` is the plaintext lookup handle; the key
+/// itself is only ever stored as an HMAC hash (T-16-01).
+model UserApiKey {
+  id           String    @id @default(cuid())
+  prefix       String    @unique
+  hashedSecret String
+  userId       String
+  lastUsedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// One-time setup token (SHA-256 hash stored, raw shown once).
+model SetupToken {
+  id             String    @id @default(cuid())
+  tokenHash      String    @unique
+  userId         String
+  organizationId String?
+  expiresAt      DateTime
+  usedAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Organization membership used for tiered access + tenant isolation.
+model PluginMember {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String   @default("member")
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+/// Billing / access tier attached to an organization.
+model OrgTier {
+  organizationId String    @id
+  tier           String
+  status         String    @default("active")
+  trialEndsAt    DateTime?
+  updatedAt      DateTime  @updatedAt
+}
+
+/// Encrypted marketplace credential (AES-256-GCM; PKCE exchange).
+model MarketplaceCredential {
+  id         String   @id @default(cuid())
+  tenantId   String   @unique
+  version    String
+  salt       String
+  nonce      String
+  ciphertext String
+  createdAt  DateTime @default(now())
+}
+
+/// Better Auth user (WWV-era naming for the auth tables).
+model BetterAuthUser {
+  id            String    @id
+  name          String?
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+/// Better Auth account (WWV-era naming for the auth tables).
+model BetterAuthAccount {
+  id         String    @id
+  accountId  String
+  providerId String
+  userId     String
+  password   String?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
 }

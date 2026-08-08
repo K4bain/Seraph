@@ -66,8 +66,23 @@ export default function ApiKeysPanel() {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    fetch("/api/keys")
+      .then(async (res) => {
+        if (!res.ok) return null;
+        return (await res.json()) as { keys: ApiKeyRow[] };
+      })
+      .then((body) => {
+        if (cancelled || !body) return;
+        setKeys(body.keys);
+      })
+      .catch(() => {
+        /* panel stays empty on failure */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function create() {
     const trimmed = name.trim();

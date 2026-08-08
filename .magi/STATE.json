@@ -2,6 +2,105 @@
   "schema": 1,
   "repo": "K4bain/Seraph",
   "branch": "master",
-  "updatedAt": "2026-08-08T00:00:00Z",
-  "lanes": {}
+  "updatedAt": "2026-08-07T23:35:03Z",
+  "lanes": {},
+  "history": [
+    {
+      "lane": "melchior",
+      "job": "hydration-melchior",
+      "branch": "magi/20260806-0327-hydration",
+      "sha": "4876dd698674505b0c9f2700f74592ebb166b881",
+      "status": "done",
+      "files": [
+        "src/components/globe/wwv/Timeline.tsx"
+      ]
+    },
+    {
+      "lane": "artaban",
+      "job": "integrator-artaban",
+      "branch": "magi/20260806-0328-integrator",
+      "sha": "cbf4741000ddffa13d8b15b6cf2556cd58ee6791",
+      "status": "done",
+      "files": [
+        "src/components/globe/GlobeView.module.css",
+        "src/components/globe/wwv/InfoPanel.tsx"
+      ]
+    },
+    {
+      "lane": "balthazar",
+      "job": "audit-data-balthazar",
+      "branch": "magi/20260806-0331-audit-data",
+      "sha": "eaeff2deb657376c31ffd297de04652cffb1d066",
+      "status": "done",
+      "files": [
+        "src/components/globe/wwv/satellites.ts"
+      ]
+    },
+    {
+      "lane": "caspar",
+      "job": "fix-cluster-caspar",
+      "branch": "magi/20260806-0331-fix-cluster",
+      "sha": "881c0fbd28bbf9205043912ce1a45516aaecf350",
+      "status": "done",
+      "files": [
+        "src/components/globe/wwv/useWwvViewer.ts"
+      ]
+    },
+    {
+      "lane": "unassigned",
+      "job": "port-laneB-engine",
+      "branch": "magi/20260806-1945-core",
+      "sha": "81eb1483442d7b875660d815aff5d40616201236",
+      "status": "done",
+      "files": [
+        "src/wwv/core/*",
+        "src/wwv/lib/*",
+        "src/wwv/hooks/*",
+        "src/wwv/types/*"
+      ]
+    },
+    {
+      "lane": "unassigned",
+      "job": "port-laneC-ui",
+      "branch": "magi/20260806-1945-laneC",
+      "sha": "225a042e0e261f8b854b90adc4c01a461c3f1591",
+      "status": "done",
+      "files": [
+        "src/wwv/components/*",
+        "src/wwv/plugins/*",
+        "src/wwv/styles/*",
+        "src/wwv/globals.css"
+      ]
+    },
+    {
+      "lane": "unassigned",
+      "job": "port-laneD-routes",
+      "branch": "magi/20260806-1945-routes",
+      "sha": "b15b205eb6c9f44b6c77b208fc10dfac71a55100",
+      "status": "done",
+      "files": [
+        "src/app/globe/page.tsx",
+        "src/app/globe/layout.tsx",
+        "src/app/(app)/geolocate/page.tsx",
+        "removed src/components/globe/**"
+      ]
+    },
+    {
+      "lane": "caspar",
+      "job": "wwv-deps-caspar",
+      "branch": "magi/20260806-1946-wwv-deps",
+      "sha": "5f5bef2c1e49e74cb64b089daae9b67756dd4e8b",
+      "status": "done",
+      "files": [
+        "package.json",
+        "next.config.ts",
+        "pnpm-workspace.yaml",
+        "packages/wwv-plugin-sdk/*",
+        "packages/wwv-lib-aviation/*",
+        "packages/wwv-lib-incidents/*",
+        "scripts/copy-cesium.mjs",
+        ".env.example"
+      ]
+    }
+  ]
 }

@@ -145,7 +145,11 @@ function circleLayout(center: { id: string; label: string }, others: Connections
 
 export default function EntityProfile() {
   const params = useParams<{ id: string }>();
-  const id = decodeURIComponent(params.id);
+  const encoded = params.id;
+  return <EntityProfileContent key={encoded} id={decodeURIComponent(encoded)} />;
+}
+
+function EntityProfileContent({ id }: { id: string }) {
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [timeline, setTimeline] = useState<TimelineResponse | null>(null);
   const [connections, setConnections] = useState<ConnectionsResponse | null>(null);
@@ -154,8 +158,6 @@ export default function EntityProfile() {
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
     const encoded = encodeURIComponent(id);
     Promise.all([
       fetch(`/api/entity/${encoded}`, { signal: controller.signal }).then((res) => res.json()),

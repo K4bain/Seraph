@@ -46,13 +46,21 @@ single lane's branch.
   that another lane has claimed (STATE.json's `files` lists the lanes).
 - Own lane state: append YOUR segment to `.magi/STATE.json` on YOUR branch
   (additive key = lane name) before pushing. Orchestrator merges later.
+- **Job naming**: every job MUST be prefixed with its lane
+  (caspar-|balthazar-|melchior-|artaban-) so history maps to terminals.
 - If `git fetch` fails once: retry once; if still failing, proceed WITHOUT
   the link and say so in your summary (degraded-link note, do not block).
 - Pushing: commit to branch `magi/<ts>-<slug>`, push, then in your STRICT
   JSON summary include `ref`, `sha`, and a `seams` array naming any of the 8
   items above you had to compensate for.
+- Orchestrator gate: every merge runs `gate-merge.ps1` on the big box
+  (`pnpm test`; `-Full` also `next build`) BEFORE master is marked landed —
+  workers' cgroups OOM on full builds, so this is the orchestrator's gate.
 
 ## Acceptance per lane
+- **Gate**: after writing, run `bash .magi/verify.sh` (scoped tsc + eslint on
+  changed files; add `-full` for vitest on changed tests). It exits 0/1 and
+  prints VERDICT lines. Report verdict + exit code in your summary.
 - No `.test.ts`/`.spec.ts`/`.test.tsx`/`.spec.tsx` junk left in your landing
   zone unless it's the test job.
 - Relative/absolute import resolution verified with a real compile where

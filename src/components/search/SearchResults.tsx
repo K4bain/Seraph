@@ -8,7 +8,7 @@
  */
 
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   Bot,
@@ -82,9 +82,12 @@ export default function SearchResults() {
   const searchParams = useSearchParams();
   const query = (searchParams.get("q") ?? "").trim();
   const type = searchParams.get("type") ?? "";
+  return <SearchResultsContent key={`${query}|${type}`} query={query} type={type} />;
+}
 
+function SearchResultsContent({ query, type }: { query: string; type: string }) {
   const [data, setData] = useState<SearchResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(() => query.length > 0);
   const [error, setError] = useState<string | null>(null);
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [summaryOpen, setSummaryOpen] = useState(false);
@@ -96,33 +99,33 @@ export default function SearchResults() {
   const [pickTarget, setPickTarget] = useState<string>("");
   const summaryAbort = useRef<AbortController | null>(null);
 
-  const load = useCallback(async () => {
-    if (!query) {
-      setData(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    setSummary("");
-    setHidden(new Set());
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}${type ? `&type=${type}` : ""}`);
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(body?.error ?? `search failed (${res.status})`);
-      }
-      setData((await res.json()) as SearchResponse);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [query, type]);
-
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!query) return;
+    let cancelled = false;
+    fetch(`/api/search?q=${encodeURIComponent(query)}${type ? `&type=${type}` : ""}`)
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = (await res.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(body?.error ?? `search failed (${res.status})`);
+        }
+        return (await res.json()) as SearchResponse;
+      })
+      .then((body) => {
+        if (cancelled) return;
+        setData(body);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : String(err));
+        setData(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [query, type]);
 
   useEffect(() => {
     return () => summaryAbort.current?.abort();

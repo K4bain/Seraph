@@ -65,25 +65,32 @@ function WorldEvents() {
   const [loading, setLoading] = useState(true);
   const [lastFetched, setLastFetched] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch("/api/feed/events");
-      const body = (await res.json()) as { events?: FeedEvent[]; error?: string };
-      setEvents(body.events ?? []);
-      setError(body.error ?? null);
-      setLastFetched(new Date().toISOString());
-    } catch {
-      setError("Could not reach the events feed.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    void load();
-    const interval = setInterval(() => void load(), REFRESH_MS);
-    return () => clearInterval(interval);
-  }, [load]);
+    let cancelled = false;
+    const refresh = () => {
+      fetch("/api/feed/events")
+        .then((res) => res.json())
+        .then((body) => {
+          if (cancelled) return;
+          const eventsBody = body as { events?: FeedEvent[]; error?: string };
+          setEvents(eventsBody.events ?? []);
+          setError(eventsBody.error ?? null);
+          setLastFetched(new Date().toISOString());
+        })
+        .catch(() => {
+          if (!cancelled) setError("Could not reach the events feed.");
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    };
+    refresh();
+    const interval = setInterval(refresh, REFRESH_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -196,20 +203,25 @@ function Markets() {
   const [feed, setFeed] = useState<MarketsFeed | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch("/api/feed/markets");
-      setFeed((await res.json()) as MarketsFeed);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    void load();
-    const interval = setInterval(() => void load(), REFRESH_MS);
-    return () => clearInterval(interval);
-  }, [load]);
+    let cancelled = false;
+    const refresh = () => {
+      fetch("/api/feed/markets")
+        .then((res) => res.json())
+        .then((body) => {
+          if (!cancelled) setFeed(body as MarketsFeed);
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    };
+    refresh();
+    const interval = setInterval(refresh, REFRESH_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
 
   if (loading && !feed) {
     return (

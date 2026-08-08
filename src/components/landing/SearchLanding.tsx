@@ -44,13 +44,16 @@ export default function SearchLanding() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(RECENT_KEY);
-      if (raw) setRecent((JSON.parse(raw) as RecentSearch[]).slice(0, 5));
-    } catch {
-      // corrupt or unavailable storage — landing still works
-    }
-    inputRef.current?.focus();
+    const timer = setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(RECENT_KEY);
+        if (raw) setRecent((JSON.parse(raw) as RecentSearch[]).slice(0, 5));
+      } catch {
+        // corrupt or unavailable storage — landing still works
+      }
+      inputRef.current?.focus();
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const submit = (q: string, t: SearchType) => {

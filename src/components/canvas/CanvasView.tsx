@@ -156,9 +156,23 @@ export default function CanvasView({ canvasId }: { canvasId: string }) {
   // --- Realtime presence (Yjs awareness) ---------------------------------
   const { peers, sendPresence } = useCollabPresence(canvasId);
   const shellRef = useRef<HTMLDivElement | null>(null);
+  const [shellRect, setShellRect] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const viewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
+  const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
   const lastCursorRef = useRef<CursorState | null>(null);
   const lastPointerSentAt = useRef(0);
+
+  useEffect(() => {
+    const el = shellRef.current;
+    if (!el) return;
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      setShellRect({ left: rect.left, top: rect.top });
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   /** Convert a screen point into flow coordinates for the current viewport. */
   const toFlowPoint = useCallback((clientX: number, clientY: number): CursorState => {
@@ -178,8 +192,9 @@ export default function CanvasView({ canvasId }: { canvasId: string }) {
     [sendPresence, toFlowPoint],
   );
 
-  const onMove = useCallback((_event: unknown, viewport: Viewport) => {
-    viewportRef.current = viewport;
+  const onMove = useCallback((_event: unknown, next: Viewport) => {
+    viewportRef.current = next;
+    setViewport(next);
   }, []);
 
   // Hydrate from the latest snapshot on mount; seed a demo graph when empty.
@@ -257,16 +272,15 @@ export default function CanvasView({ canvasId }: { canvasId: string }) {
   const remoteCursors = Array.from(peers.values())
     .map((peer) => {
       if (!peer.cursor) return null;
-      const rect = shellRef.current?.getBoundingClientRect();
-      const left = rect?.left ?? 0;
-      const top = rect?.top ?? 0;
+      const left = shellRect.left;
+      const top = shellRect.top;
       return (
         <div
           key={peer.user.id}
           className={styles.remoteCursor}
           style={{
-            left: left + peer.cursor.x * viewportRef.current.zoom + viewportRef.current.x,
-            top: top + peer.cursor.y * viewportRef.current.zoom + viewportRef.current.y,
+            left: left + peer.cursor.x * viewport.zoom + viewport.x,
+            top: top + peer.cursor.y * viewport.zoom + viewport.y,
           }}
         >
           <span className={styles.cursorArrow} style={{ borderTopColor: peer.user.color }} />

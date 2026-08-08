@@ -20,13 +20,13 @@ export async function migrateLegacyUserIfNeeded(
   if (existingBetterUser) return null;
 
   // Query the legacy users table
-  const legacyUser = await prisma.user.findUnique({
+  const legacyUser = await prisma.legacyUser.findUnique({
     where: { email },
   });
   if (!legacyUser) return null;
 
   // Verify password against the old bcrypt hash (NextAuth used bcryptjs)
-  if (!legacyUser.hashedPassword || !compareSync(password, legacyUser.hashedPassword)) return null;
+  if (!compareSync(password, legacyUser.hashedPassword)) return null;
 
   // Password verified — create a BetterAuthUser + BetterAuthAccount
   const userId = crypto.randomUUID();

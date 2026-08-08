@@ -24,8 +24,6 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
-  hashedPassword String?
-  role          String?
   accounts      Account[]
   sessions      Session[]
   memberships   WorkspaceMember[]
@@ -215,39 +213,54 @@ model WatchlistAlert {
 }
 
 // ---------- WorldWideView port (marketplace, orgs, tiers, keys) ----------
+// Model names/shapes mirror the ORIGINAL WWV-era production schema (the live
+// Neon DB): every model below carries the exact @@map + column shape of the
+// table it reads/writes. Do not rename fields used by src/wwv code.
 
 /// A plugin installed from the Worldwide View marketplace.
-/// Mirror of the WWV-era store; hydrated at boot by InstalledPluginsLoader.
+/// (original table: installed_plugins)
 model InstalledPlugin {
-  pluginId    String   @id
+  id          String   @id @default(cuid())
+  tenantId    String?
+  pluginId    String
   version     String
-  config      String?
+  config      String   @default("{}")
   enabled     Boolean  @default(true)
   installedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([enabled])
+  @@map("installed_plugins")
 }
 
-/// Key/value settings store (WWV era: default-plugins guard etc.).
+/// Key/value settings store (default-plugins guard etc.).
+/// (original table: settings)
 model Setting {
-  key   String @id
-  value String
+  id       String  @id @default(cuid())
+  tenantId String?
+  key      String
+  value    String
+
+  @@map("settings")
 }
 
 /// WWV data-API keys. `prefix` is the plaintext lookup handle; the key
 /// itself is only ever stored as an HMAC hash (T-16-01).
+/// (original table: user_api_keys)
 model UserApiKey {
   id           String    @id @default(cuid())
+  userId       String
+  tenantId     String?
   prefix       String    @unique
   hashedSecret String
-  userId       String
-  lastUsedAt   DateTime?
+  name         String    @default("")
   createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
 
-  @@index([userId])
+  @@map("user_api_keys")
 }
 
 /// One-time setup token (SHA-256 hash stored, raw shown once).
+/// (original table: setup_tokens)
 model SetupToken {
   id             String    @id @default(cuid())
   tokenHash      String    @unique
@@ -257,61 +270,90 @@ model SetupToken {
   usedAt         DateTime?
   createdAt      DateTime  @default(now())
 
-  @@index([userId])
+  @@map("setup_tokens")
 }
 
 /// Organization membership used for tiered access + tenant isolation.
+/// (original table: member)
 model PluginMember {
   id             String   @id @default(cuid())
-  userId         String
   organizationId String
+  userId         String
   role           String   @default("member")
   createdAt      DateTime @default(now())
 
-  @@unique([userId, organizationId])
-  @@index([organizationId])
+  @@map("member")
 }
 
 /// Billing / access tier attached to an organization.
+/// (original table: org_tiers)
 model OrgTier {
-  organizationId String    @id
-  tier           String
+  id             String    @id @default(cuid())
+  organizationId String    @unique
+  tier           String    @default("free")
   status         String    @default("active")
   trialEndsAt    DateTime?
   updatedAt      DateTime  @updatedAt
+  createdAt      DateTime  @default(now())
+
+  @@map("org_tiers")
 }
 
 /// Encrypted marketplace credential (AES-256-GCM; PKCE exchange).
+/// (original table: marketplace_credentials)
 model MarketplaceCredential {
   id         String   @id @default(cuid())
-  tenantId   String   @unique
+  tenantId   String?  @unique
   version    String
   salt       String
   nonce      String
   ciphertext String
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("marketplace_credentials")
 }
 
-/// Better Auth user (WWV-era naming for the auth tables).
+/// Better Auth user (WWV-era). Lives in the ACTIVE auth table.
+/// (original table: user)
 model BetterAuthUser {
   id            String    @id
-  name          String?
+  name          String
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
-  role          String?
+  role          String    @default("user")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  @@map("user")
 }
 
-/// Better Auth account (WWV-era naming for the auth tables).
+/// Better Auth account (WWV-era). Passwords live here (providerId "credential").
+/// (original table: account)
 model BetterAuthAccount {
-  id         String    @id
-  accountId  String
+  id        String    @id
+  userId    String
+  accountId String
   providerId String
-  userId     String
-  password   String?
-  createdAt  DateTime  @default(now())
+  password  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  @@index([userId])
+  @@map("account")
+}
+
+/// LEGACY pre-Better-Auth user (bcrypt hashedPassword). Read-only in the
+/// port: used by the legacy-user migration to verify old logins.
+/// (original table: users)
+model LegacyUser {
+  id             String    @id
+  email          String    @unique
+  name           String
+  hashedPassword String
+  role           String    @default("user")
+  createdAt      DateTime  @default(now())
+  sessionVersion Int       @default(0)
+
+  @@map("users")
 }

@@ -150,14 +150,14 @@ export async function probeDefaultPlugins(): Promise<boolean> {
 
         if (!expectedPluginIds || expectedPluginIds.length === 0) return count > 0;
 
-        const installed = (await withTimeout(
+        const installed = await withTimeout(
             prisma.installedPlugin.findMany({
                 where: { pluginId: { in: expectedPluginIds } },
                 select: { pluginId: true },
             }),
             [],
             PROBE_TIMEOUT_MS,
-        )) as unknown as Array<{ pluginId: string }>;
+        );
 
         const installedSet = new Set(installed.map((r) => r.pluginId));
         return expectedPluginIds.every((id) => installedSet.has(id));

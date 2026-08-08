@@ -25,11 +25,19 @@ echo "GATING $(echo "$FILES" | wc -l) changed files"
 
 ts_src="$(echo "$FILES" | grep -E '\.(ts|tsx)$' || true)"
 if [ -n "$ts_src" ]; then
-  if npx tsc --noEmit --skipLibCheck "$ts_src" >/dev/null 2>&1; then
-    echo "VERDICT PASS tsc (scoped, $(( $(echo "$ts_src" | wc -l) )) files)"
+  # Scoped typecheck that still honors the project tsconfig (--jsx, @/ paths,
+  # strictness), unlike plain `tsc file.tsx` which ignores tsconfig entirely
+  # (would fail with TS17004/TS2307). Generates a temp config extending the
+  # repo tsconfig with noEmit + include: changed files only.
+  TMPCFG=".verify-tsconfig.json"
+  printf '{\n  "extends": "./tsconfig.json",\n  "compilerOptions": { "noEmit": true, "skipLibCheck": true },\n  "include": [%s]\n}\n' "$(printf '%s' "$ts_src" | sed 's|^|"|; s|$|"|' | paste -sd, -)" > "$TMPCFG"
+  if npx tsc -p "$TMPCFG" >/dev/null 2>&1; then
+    echo "VERDICT PASS tsc (project config, scoped, $(( $(echo "$ts_src" | wc -l) )) files)"
   else
-    echo "VERDICT FAIL tsc on changed source"; FAILS=$((FAILS+1))
+    echo "VERDICT FAIL tsc on changed source (run: npx tsc -p .verify-tsconfig.json to see errors)"
+    FAILS=$((FAILS+1))
   fi
+  rm -f "$TMPCFG"
 else
   echo "VERDICT SKIP tsc (no ts/tsx changed)"
 fi

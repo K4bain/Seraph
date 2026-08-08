@@ -2,7 +2,7 @@
   "schema": 1,
   "repo": "K4bain/Seraph",
   "branch": "master",
-  "updatedAt": "2026-08-08T09:00:00Z",
+  "updatedAt": "2026-08-08T06:10:00Z",
   "lanes": {
     "caspar": {
       "job": "geolocate-ui",
@@ -14,7 +14,8 @@
     "balthazar": {
       "job": "wwv-seam",
       "claim": ["src/app/globe/**"],
-      "status": "active",
+      "status": "landed",
+      "sha": "6e1e8bf",
       "brief": "harden the /globe mount seam (error boundary, hydration, cesium fallback)"
     },
     "melchior": {

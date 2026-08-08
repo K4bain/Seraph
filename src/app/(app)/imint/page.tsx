@@ -22,6 +22,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { GeolocateCard } from "@/components/imint/GeoLocateCard";
 
 interface ImgMetadata {
   takenAt?: string;
@@ -302,6 +304,10 @@ export default function ImintPage() {
           )}
         </>
       )}
+
+      <Separator />
+
+      <GeolocateCard file={file} />
     </div>
   );
 }

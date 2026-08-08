@@ -6,6 +6,7 @@
   "lanes": {
     "caspar": {
       "job": "geolocate-ui",
+      "branch": "magi/20260808-0551-caspar-geolocate",
       "claim": ["src/app/(app)/geolocate/**", "src/components/geolocate/**"],
       "status": "active",
       "brief": "build the real /geolocate page (upload -> /api/geolocate -> candidates list)"
